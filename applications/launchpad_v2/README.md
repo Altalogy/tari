@@ -12,6 +12,14 @@ The Tari Launchpad is dedicated for beginners in Blockchain world, as well as fo
 * Node (`> 16.*`)
 * Docker Engine & Docker Compose installed
 
+**Techs**
+
+* Tauri
+* React
+* Typescript
+* Rust
+
+**Steps**
 
 ```bash
 # Installation
