@@ -1,46 +1,45 @@
-# Getting Started with Create React App
+# Tari Launchpad
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+GUI to manage Tari Docker containers.
 
-## Available Scripts
+The Tari Launchpad is dedicated for beginners in Blockchain world, as well as for experienced users. The application helps the user to download Tari Docker images, run specific containers, and give the insight into the running containers.
 
-In the project directory, you can run:
+## Getting started
 
-### `yarn start`
+**Minimal requirements**
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+* Rust (`> 1.58`)
+* Node (`> 16.*`)
+* Docker Engine & Docker Compose installed
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
 
-### `yarn test`
+```bash
+# Installation
+$ yarn install
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+# Run the application
+$ yarn tauri dev
+```
 
-### `yarn build`
+### Other scripts
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+#### ESlint
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```bash
+$ yarn lint
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+# With auto-fix
+$ yarn lint:fix
+```
 
-### `yarn eject`
+## Development notes
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+### Locales
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+The project doesn't support i18n, and doesn't use any i18n package. However, all texts are located in `./src/locales/*`. It's recommended to place any static text in the `./src/locales/*` and import into the component from there.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+Recommendations:
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+1. Common words and phrases add to the `common.ts` file.
+2. Use dedicated files for specific feature/view, ie. 'baseNode.ts` would contain texts from the Base Node view.
+3. Avoid duplications
