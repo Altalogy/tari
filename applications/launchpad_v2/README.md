@@ -51,3 +51,17 @@ Recommendations:
 1. Common words and phrases add to the `common.ts` file.
 2. Use dedicated files for specific feature/view, ie. 'baseNode.ts` would contain texts from the Base Node view.
 3. Avoid duplications
+
+### GUI directory structure
+
+- `assets`
+- `components` - contains only basic UI elements, ie. buttons, cards, etc. The component should not be connected to the Redux store.
+- `containers` - implements the logic and can be connected to the Redux.
+- `layouts`
+- `locales` - for now, we do not add any i18n package to manage this. Just use simple Context API
+- `modules` - add things that could be worth to export to other projects
+- `pages` - aka. routes. In our case, it will be probably just one page here.
+- `store` - redux related code
+- `styles` - Design system
+- `types` - (?) not sure if we need this. It should contain common types used across the application. we keep it for now and remove at the end if not needed.
+- `utils` - helpers etc.
