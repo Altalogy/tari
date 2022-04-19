@@ -1,0 +1,24 @@
+import { fireEvent, render, screen } from '@testing-library/react'
+import { ThemeProvider } from 'styled-components'
+
+import Switch from '.'
+import themes from '../../../styles/themes'
+
+describe('Switch', () => {
+  it('should render without crash', () => {
+    const onClick = jest.fn()
+    const testLabel = 'Test label for the switch component'
+    render(
+      <ThemeProvider theme={themes.light}>
+        <Switch value={false} label={testLabel} onClick={onClick} />
+      </ThemeProvider>,
+    )
+
+    const el = screen.getByTestId('switch-input-cmp')
+    expect(el).toBeInTheDocument()
+
+    fireEvent.click(el)
+
+    expect(onClick).toHaveBeenCalled()
+  })
+})
