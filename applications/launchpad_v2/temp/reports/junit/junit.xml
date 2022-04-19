@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="9" failures="0" errors="0" time="4.515">
+  <testsuite name="ExpertViewUtils" errors="0" failures="0" skipped="0" timestamp="2022-04-20T11:31:26" time="1.381" tests="1">
+    <testcase classname="ExpertViewUtils should properly convert expert drawer variant into value" name="ExpertViewUtils should properly convert expert drawer variant into value" time="0.003">
+    </testcase>
+  </testsuite>
+  <testsuite name="Logo" errors="0" failures="0" skipped="0" timestamp="2022-04-20T11:31:26" time="1.473" tests="4">
+    <testcase classname="Logo should render the signet variant" name="Logo should render the signet variant" time="0.017">
+    </testcase>
+    <testcase classname="Logo should render the logo variant" name="Logo should render the logo variant" time="0.004">
+    </testcase>
+    <testcase classname="Logo should render the full variant" name="Logo should render the full variant" time="0.004">
+    </testcase>
+    <testcase classname="Logo should render the default variant" name="Logo should render the default variant" time="0.002">
+    </testcase>
+  </testsuite>
+  <testsuite name="Switch" errors="0" failures="0" skipped="0" timestamp="2022-04-20T11:31:26" time="1.497" tests="1">
+    <testcase classname="Switch should render without crash" name="Switch should render without crash" time="0.035">
+    </testcase>
+  </testsuite>
+  <testsuite name="Footer" errors="0" failures="0" skipped="0" timestamp="2022-04-20T11:31:26" time="1.496" tests="1">
+    <testcase classname="Footer should render without crash" name="Footer should render without crash" time="0.015">
+    </testcase>
+  </testsuite>
+  <testsuite name="TitleBar" errors="0" failures="0" skipped="0" timestamp="2022-04-20T11:31:26" time="1.543" tests="1">
+    <testcase classname="TitleBar should render all required components" name="TitleBar should render all required components" time="0.055">
+    </testcase>
+  </testsuite>
+  <testsuite name="undefined" errors="0" failures="0" skipped="0" timestamp="2022-04-20T11:31:26" time="1.575" tests="1">
+    <testcase classname=" renders learn react link" name=" renders learn react link" time="0.058">
+    </testcase>
+  </testsuite>
+</testsuites>
