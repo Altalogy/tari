@@ -178,7 +178,7 @@ workflows:
               ignore:
                 - gh-pages
                 - /launchpad.*/ # TODO: Remove this filter once the branch is merged into development
-      - run-launchpad-tests:
+      - run-launchpad-tests: # TODO: Remove this workflow once the branch is merged into development
           filters:
             branches:
               only:
