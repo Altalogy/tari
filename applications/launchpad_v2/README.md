@@ -64,6 +64,26 @@ $ npm run bundle
 1. Prefer default export
 1. Put types and interface in co-located `types.ts` file
 
+component JSDoc examples:
+```js
+/**
+ * renders tari button
+ *
+ * @prop {() => void} onClick - event handler for click event
+ * @prop {string} color - text color of the button text
+ */
+const TariButton = ({ onClick }: TariButtonProps) => { ... }
+```
+
+```js
+/**
+ * renders tari button
+ *
+ * @prop {TariButtonProps} props - tari button props
+ */
+const TariButton = ({ onClick }: TariButtonProps) => { ... }
+```
+
 ### Definition of done
 
 - _must have_: a minimal test that tries to render a given component
