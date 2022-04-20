@@ -10,7 +10,7 @@ body {
   border-radius: 10px;
   display: flex;
   overflow: hidden;
-  background: transparent;
+  background: #fff;
 }
 
 div#root {
@@ -18,5 +18,5 @@ div#root {
   flex: 1;
   border-radius: 10px;
   overflow: hidden;
-  background: #fff;
+  background: transparent;
 }

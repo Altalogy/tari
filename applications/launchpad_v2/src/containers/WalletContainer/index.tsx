@@ -1,3 +1,7 @@
+/**
+ * @TODO move user-facing text to i18n file when implementing
+ */
+
 const WalletContainer = () => {
   return (
     <div>

@@ -14,6 +14,10 @@ import { ViewType } from '../../../store/app/types'
 import { selectView } from '../../../store/app/selectors'
 
 /**
+ * @TODO move user-facing text to i18n file when implementing
+ */
+
+/**
  * Dashboard view containing three main tabs: Mining, Wallet and BaseNode
  */
 const DashboardContainer = () => {

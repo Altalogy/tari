@@ -8,9 +8,10 @@ describe('Switch', () => {
   it('should render without crash', () => {
     const onClick = jest.fn()
     const testLabel = 'Test label for the switch component'
+    const val = false
     render(
       <ThemeProvider theme={themes.light}>
-        <Switch value={false} label={testLabel} onClick={onClick} />
+        <Switch value={val} label={testLabel} onClick={onClick} />
       </ThemeProvider>,
     )
 
@@ -20,5 +21,6 @@ describe('Switch', () => {
     fireEvent.click(el)
 
     expect(onClick).toHaveBeenCalled()
+    expect(onClick).toHaveBeenCalledWith(!val)
   })
 })

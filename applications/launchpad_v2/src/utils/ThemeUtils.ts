@@ -1,11 +1,12 @@
-import themes, { ThemeType } from '../styles/themes'
+import themes from '../styles/themes'
+import { ThemeType } from '../styles/themes/types'
 
-class ThemeUtils {
+const ThemeUtils = {
   /**
    * Get the configuration of styles for a given theme.
    * @param {ThemeType} name - the name of the theme, ie. 'light', 'dark'
    */
-  static getThemeConfig = (name?: ThemeType) => {
+  getThemeConfig: (name?: ThemeType) => {
     if (!name) {
       return themes.light
     }

@@ -4,13 +4,13 @@ import { ExpertViewType } from '../store/app/types'
 /**
  * Helpers for the ExpertView
  */
-class ExpertViewUtils {
+const ExpertViewUtils = {
   /**
    * Helper used to convert 'hidden', 'open', 'fullscreen' into actual '%' value
    * @param {ExpertViewType} expertView
    * @param {string} [openViewSize = '50%'] - the value for 'open' mode, ie. '40%'
    */
-  static convertExpertViewModeToValue = (
+  convertExpertViewModeToValue: (
     expertView: ExpertViewType,
     openViewSize = '50%',
   ) => {
@@ -29,13 +29,13 @@ class ExpertViewUtils {
 
     const invertedSize = `${100 - parseFloat(size)}%`
     return [size, invertedSize]
-  }
+  },
 
   /**
    * Animate the Expert View drawer
    * @param size
    */
-  static drawerAnim = (size: string) => useSpring({ width: size })
+  useDrawerAnim: (size: string) => useSpring({ width: size })
 }
 
 export default ExpertViewUtils

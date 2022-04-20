@@ -1,7 +1,7 @@
 export interface SwitchProps {
-  value?: boolean
+  value: boolean
   label?: string
-  onClick?: (val: boolean) => void
+  onClick: (val: boolean) => void
   invertedStyle?: boolean
   testId?: string
 }

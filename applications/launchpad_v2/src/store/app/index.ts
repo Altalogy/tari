@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { ThemeType } from '../../styles/themes'
+import { ThemeType } from '../../styles/themes/types'
 
 import { AppState, ExpertViewType, ViewType } from './types'
 
@@ -13,7 +13,7 @@ const appSlice = createSlice({
   name: 'app',
   initialState: appInitialState,
   reducers: {
-    toggleExpertView(state, { payload }: { payload: ExpertViewType }) {
+    setExpertView(state, { payload }: { payload: ExpertViewType }) {
       state.expertView = payload
     },
     setTheme(state, { payload }: { payload: ThemeType }) {
@@ -25,7 +25,7 @@ const appSlice = createSlice({
   },
 })
 
-export const { toggleExpertView, setTheme, setPage } = appSlice.actions
+export const { setExpertView, setTheme, setPage } = appSlice.actions
 
 const reducer = appSlice.reducer
 export default reducer

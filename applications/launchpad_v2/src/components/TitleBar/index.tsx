@@ -9,12 +9,13 @@ import Logo from '../Logo'
 import Switch from '../Inputs/Switch'
 
 import { selectExpertView } from '../../store/app/selectors'
+import { setExpertView } from '../../store/app'
 
 import SvgCloseCross from '../../styles/Icons/CloseCross'
 import SvgSetting from '../../styles/Icons/Setting2'
 
-import { toggleExpertView } from '../../store/app'
 import ExpertViewUtils from '../../utils/ExpertViewUtils'
+import t from '../../locales'
 
 import {
   LeftCol,
@@ -36,7 +37,7 @@ const TitleBar = ({ drawerViewWidth = '50%' }: TitleBarProps) => {
     drawerViewWidth,
   )
 
-  const drawerContainerStyle = ExpertViewUtils.drawerAnim(expertViewSize)
+  const drawerContainerStyle = ExpertViewUtils.useDrawerAnim(expertViewSize)
 
   const logoColorAnim = useSpring({
     color: expertView === 'fullscreen' ? theme.background : theme.primary,
@@ -62,9 +63,9 @@ const TitleBar = ({ drawerViewWidth = '50%' }: TitleBarProps) => {
 
   const onExpertViewClick = () => {
     if (expertView !== 'hidden') {
-      dispatch(toggleExpertView('hidden'))
+      dispatch(setExpertView('hidden'))
     } else {
-      dispatch(toggleExpertView('open'))
+      dispatch(setExpertView('open'))
     }
   }
 
@@ -191,7 +192,7 @@ const TitleBar = ({ drawerViewWidth = '50%' }: TitleBarProps) => {
         }}
       >
         <Button variant='text' leftIcon={<SvgSetting />}>
-          Settings
+          {t.common.nouns.settings}
         </Button>
         <Switch
           value={expertView !== 'hidden'}

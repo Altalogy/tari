@@ -25,6 +25,9 @@ export const MainContainer = styled(animated.div)`
   padding-top: 60px;
 `
 
+/**
+ * @TODO move background color to the theme
+ */
 export const ExpertViewBackgroundOverlay = styled(animated.div)`
   position: absolute;
   top: 0;

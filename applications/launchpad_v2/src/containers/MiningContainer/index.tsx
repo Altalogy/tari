@@ -2,6 +2,10 @@ import { useDispatch } from 'react-redux'
 
 import { setTheme } from '../../store/app'
 
+/**
+ * @TODO move user-facing text to i18n file when implementing
+ */
+
 const MiningContainer = () => {
   const dispatch = useDispatch()
   return (

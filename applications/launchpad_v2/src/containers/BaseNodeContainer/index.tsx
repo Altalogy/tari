@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react'
 import { invoke } from '@tauri-apps/api/tauri'
 
+/**
+ * @TODO move user-facing text to i18n file when implementing
+ */
+
 const BaseNodeContainer = () => {
   const [images, setImages] = useState<string[]>([])
 

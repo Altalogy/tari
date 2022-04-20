@@ -43,20 +43,14 @@ describe('TitleBar', () => {
 
     const closeWindowBtn = screen.getByTestId('close-window-btn')
     expect(closeWindowBtn).toBeInTheDocument()
-    fireEvent.click(closeWindowBtn)
 
     const minWindowBtn = screen.getByTestId('minimize-window-btn')
     expect(minWindowBtn).toBeInTheDocument()
-    fireEvent.click(minWindowBtn)
 
     const maxWindowBtn = screen.getByTestId('maximize-window-btn')
     expect(maxWindowBtn).toBeInTheDocument()
-    fireEvent.click(maxWindowBtn)
 
     const expertViewBtn = screen.getByTestId('titlebar-expert-view-btn')
     expect(expertViewBtn).toBeInTheDocument()
-    fireEvent.click(expertViewBtn)
-
-    fireEvent.click(expertViewBtn)
   })
 })

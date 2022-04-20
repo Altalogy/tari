@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from 'react-redux'
-import { toggleExpertView } from '../../../store/app'
+import { setExpertView } from '../../../store/app'
 import { selectExpertView } from '../../../store/app/selectors'
 
 const ExpertView = () => {
@@ -12,9 +12,7 @@ const ExpertView = () => {
       <button
         onClick={() =>
           dispatch(
-            toggleExpertView(
-              expertView === 'fullscreen' ? 'open' : 'fullscreen',
-            ),
+            setExpertView(expertView === 'fullscreen' ? 'open' : 'fullscreen'),
           )
         }
       >

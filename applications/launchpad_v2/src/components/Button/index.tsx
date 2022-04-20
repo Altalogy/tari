@@ -55,17 +55,17 @@ const Button = ({
         {btnContent}
       </StyledLink>
     )
-  } else {
-    return (
-      <StyledButton
-        type={type}
-        onClick={() => onClick && onClick()}
-        style={baseStyle}
-      >
-        {btnContent}
-      </StyledButton>
-    )
   }
+
+  return (
+    <StyledButton
+      type={type}
+      onClick={() => onClick && onClick()}
+      style={baseStyle}
+    >
+      {btnContent}
+    </StyledButton>
+  )
 }
 
 export default Button

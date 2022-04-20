@@ -31,7 +31,7 @@ const MainLayout = ({ drawerViewWidth = '50%' }: MainLayoutProps) => {
   const mainContainerStyle = useSpring({
     width: expertView === 'open' ? invertedExpertViewSize : '100%',
   })
-  const drawerContainerStyle = ExpertViewUtils.drawerAnim(expertViewSize)
+  const drawerContainerStyle = ExpertViewUtils.useDrawerAnim(expertViewSize)
   const drawerContentStyle = useSpring({
     left: `${invertedExpertViewSize}%`,
     marginRight: expertViewSize === '0%' ? '-100%' : '0%',
