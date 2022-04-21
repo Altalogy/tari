@@ -9,7 +9,6 @@ const networkOptions = networks.map(network => ({
   value: network,
   key: network,
 }))
-
 const BaseNodeContainer = () => {
   const [images, setImages] = useState<string[]>([])
   const [tariNetwork, setTariNetwork] = useState(networkOptions[0])
