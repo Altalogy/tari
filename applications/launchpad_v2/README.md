@@ -72,7 +72,7 @@ component JSDoc examples:
  * @prop {() => void} onClick - event handler for click event
  * @prop {string} color - text color of the button text
  */
-const TariButton = ({ onClick }: TariButtonProps) => { ... }
+const TariButton = ({ onClick, color }: TariButtonProps) => { ... }
 ```
 
 ```js
