@@ -1,6 +1,5 @@
-import { CSSProperties } from 'styled-components'
-import { ReactNode } from 'react'
 import { AnimatedComponent } from 'react-spring'
+import { ReactNode, CSSProperties } from 'react'
 
 /**
  * @typedef TextProps
