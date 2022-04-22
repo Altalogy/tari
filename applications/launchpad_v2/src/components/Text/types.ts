@@ -1,5 +1,4 @@
-import { CSSProperties } from 'styled-components'
-import { ReactNode } from 'react'
+import { ReactNode, CSSProperties } from 'react'
 import { AnimatedComponent } from 'react-spring'
 
 /**
