@@ -10,5 +10,5 @@ export const StyledFooter = styled.footer`
 
 export const FooterTextWrapper = styled(animated.div)`
   text-align: center;
-  color: ${({ theme }) => theme.tetriary};
+  color: ${({ theme }) => theme.tertiary};
 `

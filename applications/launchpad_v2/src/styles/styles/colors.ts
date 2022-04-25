@@ -2,7 +2,7 @@ const colors = {
   dark: {
     primary: '#20053D',
     secondary: '#716A78',
-    tetriary: '#837A8B',
+    tertiary: '#837A8B',
     borders: '#EDECEE',
     placeholder: '#D6D4D9',
     input: '#000000',

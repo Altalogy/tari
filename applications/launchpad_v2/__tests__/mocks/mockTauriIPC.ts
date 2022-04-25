@@ -15,7 +15,7 @@ export const defaultTauriMockValues: Record<string, unknown> = {
  * The Tauri IPC mock.
  *
  * It uses Tauri's mockIPC and returns the value set in the `props`.
- * If nothing found in `props`, it will return a value from from `defaultTauriMockValues`.
+ * If nothing found in `props`, it will return a value from `defaultTauriMockValues`.
  *
  * @param {Record<string, unknown>} props - pass the value you expect in tests
  *

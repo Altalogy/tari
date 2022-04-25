@@ -3,7 +3,7 @@ import styles from '../styles'
 const lightTheme = {
   primary: styles.colors.dark.primary,
   secondary: styles.colors.dark.secondary,
-  tetriary: styles.colors.dark.tetriary,
+  tertiary: styles.colors.dark.tertiary,
   background: styles.colors.light.primary,
   backgroundSecondary: styles.colors.light.background,
   backgroundImage: styles.colors.light.backgroundImage,
@@ -19,7 +19,7 @@ const lightTheme = {
   inverted: {
     primary: styles.colors.light.primary,
     secondary: styles.colors.dark.secondary,
-    tetriary: styles.colors.dark.tetriary,
+    tertiary: styles.colors.dark.tertiary,
     background: styles.colors.darkMode.modalBackgroundSecondary,
     backgroundSecondary: styles.colors.darkMode.modalBackground,
     backgroundImage: styles.colors.light.backgroundImage,
