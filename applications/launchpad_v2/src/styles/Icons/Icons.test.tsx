@@ -163,8 +163,8 @@ const ICONS = [
 
 describe('Icons', () => {
   ICONS.forEach(icon => {
-    it(`renders ${icon} icon without crashing`, () => {
-      const ComponentToRender = require(`./${icon}`).default
+    it(`renders ${icon} icon without crashing`, async () => {
+      const ComponentToRender = (await import(`./${icon}`)).default
       render(<ComponentToRender />)
 
       const el = screen.getByTestId(`svg-${icon.toLowerCase()}`)
