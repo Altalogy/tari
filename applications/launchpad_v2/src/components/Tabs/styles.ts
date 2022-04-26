@@ -6,6 +6,7 @@ export const TabsContainer = styled.div`
   align-items: flex-start;
   flex-direction: column;
   position: relative;
+  white-space: no-wrap;
 `
 
 export const TabOptions = styled.div`
@@ -24,6 +25,7 @@ export const Tab = styled.button`
   margin: 0px;
   position: relative;
   cursor: pointer;
+  align-items: center;
 `
 
 export const TabSelectedBorder = styled(animated.div)`
@@ -44,8 +46,14 @@ export const FontWeightCompensation = styled.div`
 
 export const TabContent = styled.div<{ selected?: boolean }>`
   position: absolute;
-  top: 12px;
-  left: 12px;
+  top: 0;
+  left: 0;
+  display: flex;
+  padding: 12px;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
 
   & > p {
     margin: 0;

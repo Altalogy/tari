@@ -14,10 +14,11 @@ import {
 import { TabsProps } from './types'
 
 /**
- * Tabs component
+ * Tabs component renders the set of tab header tiles.
  *
- * @TODO add details on how to compose the tab content to make the 'selected' styling work properly
+ * @param {TabsProps} props - props of the Tabs component
  *
+ * @typedef TabsProps
  * @param {TabProp[]} tabs - the list of tabs.
  * @param {string} selected - the id of the selected tab. It has to match the `id` prop of the tab.
  * @param {(val: string) => void} onSelect - on tab click.
@@ -28,14 +29,18 @@ import { TabsProps } from './types'
  */
 const Tabs = ({ tabs, selected, onSelect }: TabsProps) => {
   const tabsRefs = useRef<(HTMLButtonElement | null)[]>([])
-  // Needs to re-render the component twice on the initial mount,
-  // because on first rendering, it adds tabs to the DOM, and on
-  // the second render, it can calculate correct values for bolded fonts.
-  // So the `initialized` is an integer incremented from 0 to 2
+
+  // The animation of the bottom 'border' that indicates the selected tab,
+  // is based on sizes of the rendered tabs. It means, that the componenets
+  // have to be rendered first, then the parent component can read widths,
+  // and finally the size and shift can ba calculated.
+  // Also, the Tabs component needs to re-render tabs twice on the initial mount,
+  // because the selected tab uses bold font, which changes tabs widths.
   const [initialized, setInitialzed] = useState(0)
 
   useEffect(() => {
     tabsRefs.current = tabsRefs.current.slice(0, tabs.length)
+    setInitialzed(1)
   }, [tabs])
 
   useEffect(() => {
@@ -83,11 +88,19 @@ const Tabs = ({ tabs, selected, onSelect }: TabsProps) => {
             onClick={() => onSelect(tab.id)}
           >
             <FontWeightCompensation>
-              <Text type='defaultHeavy'>{tab.content}</Text>
+              <Text
+                as={'span'}
+                type='defaultHeavy'
+                style={{ whiteSpace: 'nowrap', width: '100%' }}
+              >
+                {tab.content}
+              </Text>
             </FontWeightCompensation>
             <TabContent selected={selected === tab.id}>
               <Text
+                as={'span'}
                 type={selected === tab.id ? 'defaultHeavy' : 'defaultMedium'}
+                style={{ whiteSpace: 'nowrap', width: '100%' }}
               >
                 {tab.content}
               </Text>
