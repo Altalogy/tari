@@ -1,4 +1,4 @@
-import { AnimatedComponent } from 'react-spring'
+import { AnimatedComponent, SpringValue } from 'react-spring'
 import { ReactNode, CSSProperties } from 'react'
 
 /**
@@ -25,7 +25,7 @@ export interface TextProps {
     | 'microOblique'
   children: ReactNode
   color?: string
-  style?: CSSProperties
+  style?: CSSProperties | Record<string, SpringValue<string>>
   as?:
     | 'h1'
     | 'h2'
