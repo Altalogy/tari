@@ -1,6 +1,8 @@
 import Box from '../Box'
+import Tag from '../Tag'
 import Text from '../Text'
 
+import { BoxHeader, BoxContent } from './styles'
 import { NodeBoxProps } from './types'
 
 /**
@@ -17,11 +19,22 @@ import { NodeBoxProps } from './types'
  * @example
  * TODO
  */
-const NodeBox = ({ title, status = 'inactive' }: NodeBoxProps) => {
+const NodeBox = ({ title, tag, children }: NodeBoxProps) => {
   return (
     <Box testId='node-box-cmp'>
-      {title ? <Text>{title}</Text> : null}
-      <p>The box {status}</p>
+      <BoxHeader>
+        {tag ? (
+          <Tag type={tag.type} variant='large'>
+            {tag.text}
+          </Tag>
+        ) : null}
+      </BoxHeader>
+      {title ? (
+        <Text as='h2' type='header'>
+          {title}
+        </Text>
+      ) : null}
+      <BoxContent>{children}</BoxContent>
     </Box>
   )
 }

@@ -1,6 +1,11 @@
-export type NodeBoxStatusType = 'inactive' | 'active'
+import { ReactNode } from 'react'
+import { TagType } from '../Tag/types'
 
 export interface NodeBoxProps {
   title?: string
-  status?: NodeBoxStatusType
+  tag?: {
+    text: string
+    type?: TagType
+  }
+  children?: ReactNode
 }

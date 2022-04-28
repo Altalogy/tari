@@ -1,4 +1,4 @@
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import Switch from '../../components/Switch'
 
 import Text from '../../components/Text'
@@ -14,12 +14,14 @@ import { selectTheme } from '../../store/app/selectors'
 import { NodesContainer } from './styles'
 import MiningBoxTari from './MiningBoxTari'
 import MiningBoxMerged from './MiningBoxMerged'
+import { actions } from '../../store/wallet'
+import { useAppDispatch } from '../../store/hooks'
 
 /**
  * The Mining dashboard
  */
 const MiningContainer = () => {
-  const dispatch = useDispatch()
+  const dispatch = useAppDispatch()
   const currentTheme = useSelector(selectTheme)
 
   return (
@@ -32,6 +34,14 @@ const MiningContainer = () => {
       </NodesContainer>
 
       <MiningViewActions />
+
+      <button onClick={() => dispatch(actions.unlockWallet('pass'))}>
+        Set pass
+      </button>
+
+      <button onClick={() => dispatch(actions.unlockWallet(''))}>
+        Clear pass
+      </button>
 
       <div style={{ marginTop: 80 }}>
         <button onClick={() => dispatch(setTheme('light'))}>
