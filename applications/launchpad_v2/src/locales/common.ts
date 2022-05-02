@@ -17,7 +17,7 @@ const translations = {
     running: 'Running',
     paused: 'Paused',
   },
-  pharses: {
+  phrases: {
     actionRequired: 'Action required',
     startHere: 'Start here',
   },

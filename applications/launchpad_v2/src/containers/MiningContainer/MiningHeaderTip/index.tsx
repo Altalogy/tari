@@ -13,9 +13,14 @@ import { StyledMiningHeaderTip } from './styles'
 const MiningHeaderTip = () => {
   return (
     <StyledMiningHeaderTip>
-      <SvgStar />
+      <SvgStar height={18} width={18} style={{ marginRight: 8 }} />
       <Text>{t.mining.headerTips.oneStepAway}</Text>
-      <Button type='link' href='https://google.com' rightIcon={<SvgInfo1 />}>
+      <Button
+        type='link'
+        variant='text'
+        href='https://google.com'
+        rightIcon={<SvgInfo1 />}
+      >
         {t.mining.headerTips.wantToKnowMore}
       </Button>
     </StyledMiningHeaderTip>

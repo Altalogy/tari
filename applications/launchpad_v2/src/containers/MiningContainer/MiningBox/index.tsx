@@ -42,7 +42,7 @@ const parseLastSessionToCoins = (lastSession: MiningSession | undefined) => {
         lastSession.total && lastSession.total[coin]
           ? lastSession.total[coin]
           : '0',
-      loading: false,
+      loading: true,
       suffixText: t.mining.minedInLastSession,
     }))
   }
@@ -113,12 +113,12 @@ const MiningBox = ({ node, children }: MiningBoxProps) => {
     UNKNOWN: {},
     SETUP_REQUIRED: {
       tag: {
-        text: t.common.pharses.startHere,
+        text: t.common.phrases.startHere,
       },
     },
     BLOCKED: {
       tag: {
-        text: t.common.pharses.actionRequired,
+        text: t.common.phrases.actionRequired,
         type: 'warning',
       },
     },
