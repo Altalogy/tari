@@ -1,32 +1,110 @@
-import NodeBox from '../../../components/NodeBox'
-import Text from '../../../components/Text'
+import { CSSProperties, useTheme } from 'styled-components'
+
+import Button from '../../../components/Button'
+import NodeBox, { NodeBoxContentPlaceholder } from '../../../components/NodeBox'
 import { TagType } from '../../../components/Tag/types'
+
 import { useAppDispatch, useAppSelector } from '../../../store/hooks'
-import { selectMiningNode } from '../../../store/mining/selectors'
+
 import { actions } from '../../../store/mining'
+import {
+  selectLastSession,
+  selectMiningNode,
+} from '../../../store/mining/selectors'
 import {
   MiningNodesStatus,
   MiningNodeStates,
+  MiningSession,
 } from '../../../store/mining/types'
 
+import t from '../../../locales'
+
 import { MiningBoxProps } from './types'
+import { MiningBoxContent } from './styles'
+import CoinsList from '../../../components/CoinsList'
 
 interface Config {
+  title?: string
   tag?: {
     text: string
     type?: TagType
   }
+  boxStyle?: CSSProperties
+  titleStyle?: CSSProperties
+  contentStyle?: CSSProperties
 }
 
+const parseLastSessionToCoins = (lastSession: MiningSession | undefined) => {
+  if (lastSession && lastSession.total) {
+    return Object.keys(lastSession.total).map(coin => ({
+      unit: coin,
+      amount:
+        lastSession.total && lastSession.total[coin]
+          ? lastSession.total[coin]
+          : '0',
+      loading: false,
+      suffixText: t.mining.minedInLastSession,
+    }))
+  }
+
+  return []
+}
+
+/**
+ * Generic component providing NodeBox-based UI, reading from global state
+ * and handling basic actions.
+ *
+ * The `node` param determines which record in the global mining state
+ * will be observed. The component will try automatically cast the found data
+ * to the UI.
+ *
+ * The container handles `MiningNodesStatus` states automatically, but specific states
+ * should be overwritten with two params:
+ * - `statuses` - customi UI for a given node status
+ * - `children` - override the content of the node box. Use this for statuses like `SETUP_REQUIRED` to provide
+ *                details and steps how to resolve this status.
+ *
+ * The general approach is:
+ * 1. Create parent container for specific node (ie. Tari Mining)
+ * 2. Import and render this MiningBox Container with minimal config (ie. `{ node: 'tari' }`)
+ * 3. Add in parent container any custom logic that will evaluate the correct status. If it's needed to provide
+ *    custom component and logic for a given status, push children component (it will override generic component and behaviour).
+ *
+ * @param {MiningNodeType} node - ie. tari, merged
+ * @param {Record<keyof MiningNodesStatus, NodeBoxStatusConfig>} [statuses] - the optional config overriding specific states.
+ * @param {ReactNode} [children] - component overriding the generic one composed by this container for a given status./
+ */
 const MiningBox = ({ node, children }: MiningBoxProps) => {
   const dispatch = useAppDispatch()
+  const theme = useTheme()
 
   const nodeState: MiningNodeStates = useAppSelector(state =>
     selectMiningNode(state, node),
   )
 
-  const defaultConfig = {
-    title: `${node.substring(0, 1).toUpperCase() + node.substring(1)} Mining`,
+  const lastSession: MiningSession | undefined = useAppSelector(state =>
+    selectLastSession(state, node),
+  )
+
+  const coins = parseLastSessionToCoins(lastSession)
+
+  // Is there any outgoing action, so the buttons should be disabled?
+  const disableActions = nodeState.pending
+
+  const defaultConfig: Config = {
+    title: `${node.substring(0, 1).toUpperCase() + node.substring(1)} ${
+      t.common.nouns.mining
+    }`,
+    boxStyle: {
+      color: theme.primary,
+      background: theme.background,
+    },
+    titleStyle: {
+      color: theme.primary,
+    },
+    contentStyle: {
+      color: theme.secondary,
+    },
   }
 
   const defaultStates: Partial<{
@@ -35,12 +113,39 @@ const MiningBox = ({ node, children }: MiningBoxProps) => {
     UNKNOWN: {},
     SETUP_REQUIRED: {
       tag: {
-        text: 'Start here',
+        text: t.common.pharses.startHere,
+      },
+    },
+    BLOCKED: {
+      tag: {
+        text: t.common.pharses.actionRequired,
+        type: 'warning',
+      },
+    },
+    PAUSED: {
+      tag: {
+        text: t.common.adjectives.paused,
+        type: 'light',
+      },
+    },
+    RUNNING: {
+      tag: {
+        text: t.common.adjectives.running,
+        type: 'running',
+      },
+      boxStyle: {
+        background: theme.tariGradient,
+      },
+      titleStyle: {
+        color: theme.inverted.primary,
+      },
+      contentStyle: {
+        color: theme.inverted.secondary,
       },
     },
     ERROR: {
       tag: {
-        text: 'Problem',
+        text: t.common.nouns.problem,
         type: 'warning',
       },
     },
@@ -59,91 +164,71 @@ const MiningBox = ({ node, children }: MiningBoxProps) => {
     switch (nodeState.status) {
       case 'UNKNOWN':
         return (
-          <div>
-            <Text>Unknown</Text>
-            <button
-              onClick={() =>
-                dispatch(
-                  actions.setNodeStatus({
-                    node: node,
-                    status: MiningNodesStatus.SETUP_REQUIRED,
-                  }),
-                )
-              }
-            >
-              Next
-            </button>
-          </div>
+          <NodeBoxContentPlaceholder>
+            {t.mining.placeholders.statusUnknown}
+          </NodeBoxContentPlaceholder>
         )
       case 'SETUP_REQUIRED':
         return (
-          <div>
-            <Text>Setup required</Text>
-            <button
-              onClick={() =>
-                dispatch(
-                  actions.setNodeStatus({
-                    node: node,
-                    status: MiningNodesStatus.ERROR,
-                  }),
-                )
-              }
-            >
-              Next
-            </button>
-          </div>
+          <NodeBoxContentPlaceholder>
+            {t.mining.placeholders.statusSetupRequired}
+          </NodeBoxContentPlaceholder>
+        )
+      case 'BLOCKED':
+        return (
+          <NodeBoxContentPlaceholder>
+            {t.mining.placeholders.statusBlocked}
+          </NodeBoxContentPlaceholder>
         )
       case 'ERROR':
         return (
-          <div>
-            <Text>Error</Text>
-            <button
-              onClick={() =>
-                dispatch(
-                  actions.setNodeStatus({
-                    node: node,
-                    status: MiningNodesStatus.PAUSED,
-                  }),
-                )
-              }
-            >
-              Next
-            </button>
-          </div>
+          <NodeBoxContentPlaceholder>
+            {t.mining.placeholders.statusError}
+          </NodeBoxContentPlaceholder>
         )
       case 'PAUSED':
         return (
-          <div>
-            <Text>Paused</Text>
-            <button
+          <MiningBoxContent>
+            {coins ? <CoinsList coins={coins} /> : null}
+            <Button
               onClick={() => dispatch(actions.startMiningNode({ node: node }))}
+              disabled={disableActions}
+              loading={disableActions}
             >
-              Start
-            </button>
-          </div>
+              {t.mining.actions.startMining}
+            </Button>
+          </MiningBoxContent>
         )
       case 'RUNNING':
         return (
-          <div>
-            <Text>Running</Text>
-            <button
+          <MiningBoxContent>
+            {coins ? (
+              <CoinsList coins={coins} color={theme.inverted.primary} />
+            ) : null}
+            <Button
+              variant='primary'
               onClick={() => dispatch(actions.stopMiningNode({ node: node }))}
+              disabled={disableActions}
+              loading={disableActions}
             >
-              Stop
-            </button>
-          </div>
+              {t.common.verbs.pause}
+            </Button>
+          </MiningBoxContent>
         )
     }
   }
 
-  console.log('MINING BOX a', node, nodeState.status)
-
   const content = componentForCurrentStatus()
 
   return (
-    <NodeBox title={currentState.title} tag={currentState.tag}>
+    <NodeBox
+      title={currentState.title}
+      tag={currentState.tag}
+      style={currentState.boxStyle}
+      titleStyle={currentState.titleStyle}
+      contentStyle={currentState.contentStyle}
+    >
       {content}
-      {nodeState.pending ? <Text>Pending...</Text> : null}
     </NodeBox>
   )
 }

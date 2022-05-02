@@ -1,12 +1,12 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
-import { NodeType } from './types'
+import { MiningNodeType } from '../../types/general'
 
 /**
  * Start given mining node
  * @prop {NodeType} node - the node name, ie. 'tari', 'merged'
  * @returns {Promise<void>}
  */
-export const startMiningNode = createAsyncThunk<void, { node: NodeType }>(
+export const startMiningNode = createAsyncThunk<void, { node: MiningNodeType }>(
   'mining/startNode',
   async ({ node }) => {
     console.log(`starting ${node} node`)
@@ -19,7 +19,7 @@ export const startMiningNode = createAsyncThunk<void, { node: NodeType }>(
  * @prop {NodeType} node - the node name, ie. 'tari', 'merged'
  * @returns {Promise<void>}
  */
-export const stopMiningNode = createAsyncThunk<void, { node: NodeType }>(
+export const stopMiningNode = createAsyncThunk<void, { node: MiningNodeType }>(
   'mining/stopNode',
   async ({ node }) => {
     console.log(`stopping ${node} node`)

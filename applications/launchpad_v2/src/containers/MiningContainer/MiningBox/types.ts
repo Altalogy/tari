@@ -1,6 +1,7 @@
 import { ReactNode } from 'react'
 import { TagType } from '../../../components/Tag/types'
-import { MiningNodesStatus, NodeType } from '../../../store/mining/types'
+import { MiningNodesStatus } from '../../../store/mining/types'
+import { MiningNodeType } from '../../../types/general'
 
 export interface NodeBoxStatusConfig {
   tag: {
@@ -10,7 +11,7 @@ export interface NodeBoxStatusConfig {
 }
 
 export interface MiningBoxProps {
-  node: NodeType
+  node: MiningNodeType
   statuses?: Record<keyof MiningNodesStatus, NodeBoxStatusConfig>
   children?: ReactNode
 }

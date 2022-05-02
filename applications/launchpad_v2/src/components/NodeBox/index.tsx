@@ -2,8 +2,8 @@ import Box from '../Box'
 import Tag from '../Tag'
 import Text from '../Text'
 
-import { BoxHeader, BoxContent } from './styles'
-import { NodeBoxProps } from './types'
+import { BoxHeader, BoxContent, NodeBoxPlacholder } from './styles'
+import { NodeBoxContentPlaceholderProps, NodeBoxProps } from './types'
 
 /**
  * The advanced Box component handling:
@@ -11,17 +11,25 @@ import { NodeBoxProps } from './types'
  * - header tag
  * - background depending on the status prop
  *
- * Used as a UI representation of the Node (aka. Docker container).
+ * Used for the UI representation of the Node (Docker container) as a Box component.
  *
  * @param {string} [title] - the box heading
- * @param {NodeBoxStatusType} [status = 'inactive'] - the status of the box/node
- *
- * @example
- * TODO
+ * @param {{ text: string; type?: TagType }} [tag = 'inactive'] - the status of the box/node
+ * @param {CSSWithSpring} [style] - the box style
+ * @param {CSSWithSpring} [titleStyle] - the title style
+ * @param {CSSWithSpring} [contentStyle] - the content style
+ * @param {ReactNode} [children] - the box heading
  */
-const NodeBox = ({ title, tag, children }: NodeBoxProps) => {
+const NodeBox = ({
+  title,
+  tag,
+  style,
+  titleStyle,
+  contentStyle,
+  children,
+}: NodeBoxProps) => {
   return (
-    <Box testId='node-box-cmp'>
+    <Box testId='node-box-cmp' style={style}>
       <BoxHeader>
         {tag ? (
           <Tag type={tag.type} variant='large'>
@@ -30,13 +38,29 @@ const NodeBox = ({ title, tag, children }: NodeBoxProps) => {
         ) : null}
       </BoxHeader>
       {title ? (
-        <Text as='h2' type='header'>
+        <Text as='h2' type='header' style={titleStyle}>
           {title}
         </Text>
       ) : null}
-      <BoxContent>{children}</BoxContent>
+      <BoxContent style={contentStyle}>{children}</BoxContent>
     </Box>
   )
+}
+
+/**
+ * Simple placholder container for the node box that provides default spacing and layout.
+ * @param {string | ReactNode} children - the content
+ */
+export const NodeBoxContentPlaceholder = ({
+  children,
+}: NodeBoxContentPlaceholderProps) => {
+  let content = children
+
+  if (typeof children === 'string') {
+    content = <Text color='inherit'>{children}</Text>
+  }
+
+  return <NodeBoxPlacholder>{content}</NodeBoxPlacholder>
 }
 
 export default NodeBox
