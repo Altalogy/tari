@@ -12,7 +12,7 @@ import { initialState as miningInitialState } from '../../../store/mining/index'
 import { MiningNodesStatus } from '../../../store/mining/types'
 
 describe('MiningHeaderTip', () => {
-  it('should render "one step away"', () => {
+  it('should render "one step away" when mining node status is SETUP_REQUIRED', () => {
     const miningState = {
       ...miningInitialState,
       tari: {
@@ -58,7 +58,7 @@ describe('MiningHeaderTip', () => {
     expect(el).toBeInTheDocument()
   })
 
-  it('should render "continue mining"', () => {
+  it('should render "continue mining" when mining node status is PAUSED and tokens were already mined', () => {
     const miningState = {
       ...miningInitialState,
       tari: {
@@ -104,7 +104,7 @@ describe('MiningHeaderTip', () => {
     expect(el).toBeInTheDocument()
   })
 
-  it('should render "running on"', () => {
+  it('should render "running on" when mining node status is RUNNING', () => {
     const miningState = {
       ...miningInitialState,
       tari: {

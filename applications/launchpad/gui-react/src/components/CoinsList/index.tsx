@@ -19,10 +19,7 @@ const CoinsList = ({ coins, color }: CoinsListProps) => {
   return (
     <StyledCoinsList color={color}>
       {coins.map((c, idx) => (
-        <CoinsListItem
-          key={`coin-${idx}`}
-          loading={c.loading ? c.loading.toString() : 'false'}
-        >
+        <CoinsListItem key={`coin-${idx}`} $loading={c.loading}>
           {c.loading ? (
             <Loading loading={true} style={{ marginRight: 12 }} />
           ) : null}

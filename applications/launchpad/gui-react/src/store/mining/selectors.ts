@@ -36,11 +36,9 @@ export const selectTariMiningStatus = (state: RootState) =>
  * (Is not in unknown, error or setup_required state)
  */
 export const selectCanAnyMiningNodeRun = (state: RootState) =>
-  !!(
-    [MiningNodesStatus.RUNNING, MiningNodesStatus.PAUSED].includes(
-      state.mining.tari.status,
-    ) ||
-    [MiningNodesStatus.RUNNING, MiningNodesStatus.PAUSED].includes(
-      state.mining.merged.status,
-    )
+  [MiningNodesStatus.RUNNING, MiningNodesStatus.PAUSED].includes(
+    state.mining.tari.status,
+  ) ||
+  [MiningNodesStatus.RUNNING, MiningNodesStatus.PAUSED].includes(
+    state.mining.merged.status,
   )

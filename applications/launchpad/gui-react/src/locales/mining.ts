@@ -2,9 +2,9 @@ const translations = {
   set_up_mining_hours: 'Set up mining hours',
   minedInLastSession: 'mined in last session',
   headerTips: {
-    oneStepAway: 'You are one step away from staring mining.',
+    oneStepAway: 'You are one step away from starting mining.',
     continueMining:
-      'Keep on going. You are one click away from staring mining.',
+      'Keep on going. You are one click away from starting mining.',
     runningOn: 'Awesome! Tari Mining is on.',
     wantToKnowMore: 'Want to know more',
   },
