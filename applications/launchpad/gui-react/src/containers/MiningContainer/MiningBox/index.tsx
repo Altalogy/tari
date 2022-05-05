@@ -198,6 +198,7 @@ const MiningBox = ({
               onClick={() => dispatch(actions.startMiningNode({ node: node }))}
               disabled={disableActions}
               loading={disableActions}
+              testId={`${node}-run-btn`}
             >
               {t.mining.actions.startMining}
             </Button>
@@ -214,6 +215,7 @@ const MiningBox = ({
               onClick={() => dispatch(actions.stopMiningNode({ node: node }))}
               disabled={disableActions}
               loading={disableActions}
+              testId={`${node}-pause-btn`}
             >
               {t.common.verbs.pause}
             </Button>
