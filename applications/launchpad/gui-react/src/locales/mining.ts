@@ -3,6 +3,9 @@ const translations = {
   minedInLastSession: 'mined in last session',
   headerTips: {
     oneStepAway: 'You are one step away from staring mining.',
+    continueMining:
+      'Keep on going. You are one click away from staring mining.',
+    runningOn: 'Awesome! Tari Mining is on.',
     wantToKnowMore: 'Want to know more',
   },
   actions: {
