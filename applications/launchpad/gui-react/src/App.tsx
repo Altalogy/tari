@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import styled, { ThemeProvider } from 'styled-components'
 
@@ -17,6 +18,11 @@ const AppContainer = styled.div`
 
 const App = () => {
   const themeConfig = useSelector(selectThemeConfig)
+  const [counter] = useState(() => Number(localStorage.getItem('tari.counter')))
+
+  useEffect(() => {
+    localStorage.setItem('tari.counter', (counter + 1).toString())
+  }, [])
 
   return (
     <ThemeProvider theme={themeConfig}>
