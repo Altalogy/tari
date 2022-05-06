@@ -22,6 +22,7 @@ import t from '../../../locales'
 
 import { MiningBoxProps, NodeBoxStatusConfig } from './types'
 import { MiningBoxContent, NodeIcons } from './styles'
+import { useMemo } from 'react'
 
 const parseLastSessionToCoins = (lastSession: MiningSession | undefined) => {
   if (lastSession && lastSession.total) {
@@ -152,13 +153,19 @@ const MiningBox = ({
     },
   }
 
-  const currentState = deepmerge.all([
-    defaultConfig,
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    defaultStates[nodeState.status]!,
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    statuses && statuses[nodeState.status] ? statuses[nodeState.status]! : {},
-  ]) as NodeBoxStatusConfig
+  const currentState = useMemo(
+    () =>
+      deepmerge.all([
+        defaultConfig,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        defaultStates[nodeState.status]!,
+        statuses && statuses[nodeState.status]
+          ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            statuses[nodeState.status]!
+          : {},
+      ]) as NodeBoxStatusConfig,
+    [statuses, nodeState],
+  )
 
   const componentForCurrentStatus = () => {
     if (children) {
