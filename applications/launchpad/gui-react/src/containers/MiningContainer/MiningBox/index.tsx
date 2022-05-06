@@ -1,6 +1,8 @@
 import { useTheme } from 'styled-components'
+import deepmerge from 'deepmerge'
 
 import Button from '../../../components/Button'
+import CoinsList from '../../../components/CoinsList'
 import NodeBox, { NodeBoxContentPlaceholder } from '../../../components/NodeBox'
 
 import { useAppDispatch, useAppSelector } from '../../../store/hooks'
@@ -20,8 +22,6 @@ import t from '../../../locales'
 
 import { MiningBoxProps, NodeBoxStatusConfig } from './types'
 import { MiningBoxContent, NodeIcons } from './styles'
-import CoinsList from '../../../components/CoinsList'
-import ObjectUtils from '../../../utils/Object'
 
 const parseLastSessionToCoins = (lastSession: MiningSession | undefined) => {
   if (lastSession && lastSession.total) {
@@ -152,13 +152,13 @@ const MiningBox = ({
     },
   }
 
-  const currentState = ObjectUtils.mergeDeep(
+  const currentState = deepmerge.all([
     defaultConfig,
-    defaultStates[nodeState.status],
-    statuses && statuses[nodeState.status]
-      ? statuses && statuses[nodeState.status]
-      : {},
-  )
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    defaultStates[nodeState.status]!,
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    statuses && statuses[nodeState.status] ? statuses[nodeState.status]! : {},
+  ]) as NodeBoxStatusConfig
 
   const componentForCurrentStatus = () => {
     if (children) {
