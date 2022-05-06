@@ -1,8 +1,7 @@
-import { CSSProperties, useTheme } from 'styled-components'
+import { useTheme } from 'styled-components'
 
 import Button from '../../../components/Button'
 import NodeBox, { NodeBoxContentPlaceholder } from '../../../components/NodeBox'
-import { TagType } from '../../../components/Tag/types'
 
 import { useAppDispatch, useAppSelector } from '../../../store/hooks'
 
@@ -19,20 +18,10 @@ import {
 
 import t from '../../../locales'
 
-import { MiningBoxProps } from './types'
-import { MiningBoxContent } from './styles'
+import { MiningBoxProps, NodeBoxStatusConfig } from './types'
+import { MiningBoxContent, NodeIcons } from './styles'
 import CoinsList from '../../../components/CoinsList'
-
-interface Config {
-  title?: string
-  tag?: {
-    text: string
-    type?: TagType
-  }
-  boxStyle?: CSSProperties
-  titleStyle?: CSSProperties
-  contentStyle?: CSSProperties
-}
+import ObjectUtils from '../../../utils/Object'
 
 const parseLastSessionToCoins = (lastSession: MiningSession | undefined) => {
   if (lastSession && lastSession.total) {
@@ -76,6 +65,8 @@ const parseLastSessionToCoins = (lastSession: MiningSession | undefined) => {
  */
 const MiningBox = ({
   node,
+  icons,
+  statuses,
   children,
   testId = 'mining-box-cmp',
 }: MiningBoxProps) => {
@@ -95,7 +86,7 @@ const MiningBox = ({
   // Is there any outgoing action, so the buttons should be disabled?
   const disableActions = nodeState.pending
 
-  const defaultConfig: Config = {
+  const defaultConfig: NodeBoxStatusConfig = {
     title: `${node.substring(0, 1).toUpperCase() + node.substring(1)} ${
       t.common.nouns.mining
     }`,
@@ -109,10 +100,13 @@ const MiningBox = ({
     contentStyle: {
       color: theme.secondary,
     },
+    icon: {
+      color: theme.backgroundImage,
+    },
   }
 
   const defaultStates: Partial<{
-    [key in keyof typeof MiningNodesStatus]: Config
+    [key in keyof typeof MiningNodesStatus]: NodeBoxStatusConfig
   }> = {
     UNKNOWN: {},
     SETUP_REQUIRED: {
@@ -146,6 +140,9 @@ const MiningBox = ({
       contentStyle: {
         color: theme.inverted.secondary,
       },
+      icon: {
+        color: theme.accentDark,
+      },
     },
     ERROR: {
       tag: {
@@ -155,10 +152,13 @@ const MiningBox = ({
     },
   }
 
-  const currentState = {
-    ...defaultConfig,
-    ...defaultStates[nodeState.status],
-  }
+  const currentState = ObjectUtils.mergeDeep(
+    defaultConfig,
+    defaultStates[nodeState.status],
+    statuses && statuses[nodeState.status]
+      ? statuses && statuses[nodeState.status]
+      : {},
+  )
 
   const componentForCurrentStatus = () => {
     if (children) {
@@ -230,11 +230,18 @@ const MiningBox = ({
     <NodeBox
       title={currentState.title}
       tag={currentState.tag}
-      style={currentState.boxStyle}
+      style={{ position: 'relative', ...currentState.boxStyle }}
       titleStyle={currentState.titleStyle}
       contentStyle={currentState.contentStyle}
       testId={testId}
     >
+      {icons && icons.length > 0 ? (
+        <NodeIcons
+          $color={currentState.icon?.color || theme.backgroundSecondary}
+        >
+          {icons.map(icon => icon)}
+        </NodeIcons>
+      ) : null}
       {content}
     </NodeBox>
   )
