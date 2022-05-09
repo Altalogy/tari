@@ -7,7 +7,7 @@ import { MiningNodesStatus, MiningState } from './types'
 export const initialState: MiningState = {
   tari: {
     pending: false,
-    status: MiningNodesStatus.SETUP_REQUIRED,
+    status: MiningNodesStatus.PAUSED,
     sessions: [
       {
         total: {
