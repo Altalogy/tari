@@ -16,6 +16,10 @@ import MiningBoxTari from './MiningBoxTari'
 import MiningBoxMerged from './MiningBoxMerged'
 import { actions } from '../../store/wallet'
 import { useAppDispatch } from '../../store/hooks'
+import Button from '../../components/Button'
+import SvgArrowLeft1 from '../../styles/Icons/ArrowLeft1'
+import SvgWallet from '../../styles/Icons/Wallet'
+import SvgSetting from '../../styles/Icons/Setting'
 
 /**
  * The Mining dashboard
@@ -58,6 +62,150 @@ const MiningContainer = () => {
             value={currentTheme === 'dark'}
             onClick={v => dispatch(setTheme(v ? 'dark' : 'light'))}
           />
+        </div>
+      </div>
+
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          marginTop: 60,
+          marginBottom: 60,
+        }}
+      >
+        <div style={{ margin: 10 }}>
+          <Button type='button' variant='primary'>
+            Primary
+          </Button>
+        </div>
+        <div style={{ margin: 10 }}>
+          <Button
+            type='button'
+            variant='primary'
+            rightIcon={<SvgSetting />}
+            leftIcon={<SvgSetting />}
+          >
+            Primary
+          </Button>
+        </div>
+        <div style={{ margin: 10 }}>
+          <Button
+            type='button'
+            variant='primary'
+            rightIcon={<SvgSetting />}
+            leftIcon={<SvgSetting />}
+            disabled={true}
+          >
+            Primary disabled
+          </Button>
+        </div>
+
+        <div style={{ margin: 10 }}>
+          <Button type='button' variant='secondary'>
+            secondary
+          </Button>
+        </div>
+        <div style={{ margin: 10 }}>
+          <Button
+            type='button'
+            variant='secondary'
+            rightIcon={<SvgSetting />}
+            leftIcon={<SvgSetting />}
+          >
+            secondary
+          </Button>
+        </div>
+        <div style={{ margin: 10 }}>
+          <Button
+            type='button'
+            variant='secondary'
+            rightIcon={<SvgSetting />}
+            leftIcon={<SvgSetting />}
+            disabled={true}
+          >
+            secondary disabled
+          </Button>
+        </div>
+
+        <div style={{ margin: 10 }}>
+          <Button type='button' variant='button-in-text'>
+            button in text
+          </Button>
+        </div>
+        <div style={{ margin: 10 }}>
+          <Button
+            type='button'
+            variant='button-in-text'
+            rightIcon={<SvgSetting />}
+            leftIcon={<SvgSetting />}
+          >
+            button in text
+          </Button>
+        </div>
+        <div style={{ margin: 10 }}>
+          <Button
+            type='button'
+            variant='button-in-text'
+            rightIcon={<SvgSetting />}
+            leftIcon={<SvgSetting />}
+            disabled={true}
+          >
+            button in text disabled
+          </Button>
+        </div>
+
+        <div style={{ margin: 10 }}>
+          <Button type='button' variant='text'>
+            Text Button
+          </Button>
+        </div>
+        <div style={{ margin: 10 }}>
+          <Button
+            type='button'
+            variant='text'
+            rightIcon={<SvgSetting />}
+            leftIcon={<SvgSetting />}
+          >
+            Text Button
+          </Button>
+        </div>
+        <div style={{ margin: 10 }}>
+          <Button
+            type='button'
+            variant='text'
+            rightIcon={<SvgSetting />}
+            leftIcon={<SvgSetting />}
+            disabled={true}
+          >
+            Text Button disabled
+          </Button>
+        </div>
+
+        <div style={{ margin: 10 }}>
+          <Button type='button' variant='warning'>
+            Warning Button
+          </Button>
+        </div>
+        <div style={{ margin: 10 }}>
+          <Button
+            type='button'
+            variant='warning'
+            rightIcon={<SvgSetting />}
+            leftIcon={<SvgSetting />}
+          >
+            Warning Button
+          </Button>
+        </div>
+        <div style={{ margin: 10 }}>
+          <Button
+            type='button'
+            variant='warning'
+            rightIcon={<SvgSetting />}
+            leftIcon={<SvgSetting />}
+            disabled={true}
+          >
+            Warning Button disabled
+          </Button>
         </div>
       </div>
     </div>

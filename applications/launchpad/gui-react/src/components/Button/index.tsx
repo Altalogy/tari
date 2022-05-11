@@ -1,10 +1,12 @@
 import Loading from '../Loading'
+import Text from '../Text'
 
 import {
-  ButtonText,
+  ButtonContentWrapper,
   IconWrapper,
   LoadingIconWrapper,
   StyledButton,
+  StyledButtonText,
   StyledLink,
 } from './styles'
 import { ButtonProps } from './types'
@@ -18,15 +20,46 @@ const Button = ({
   href,
   leftIcon,
   rightIcon,
+  autosizeIcons = true,
   onClick,
   loading,
   testId = 'button-cmp',
 }: ButtonProps) => {
+  let btnText = children
+
+  if (typeof children === 'string') {
+    btnText = (
+      <StyledButtonText>
+        <Text as='span'>{children}</Text>
+      </StyledButtonText>
+    )
+  }
+
   const btnContent = (
     <>
-      {leftIcon ? <IconWrapper>{leftIcon}</IconWrapper> : null}
-      <ButtonText>{children}</ButtonText>
-      {rightIcon ? <IconWrapper>{rightIcon}</IconWrapper> : null}
+      {leftIcon ? (
+        <IconWrapper
+          $spacing={'right'}
+          $autosizeIcon={autosizeIcons}
+          $variant={variant}
+          $disabled={disabled}
+        >
+          {leftIcon}
+        </IconWrapper>
+      ) : null}
+      <ButtonContentWrapper $variant={variant} disabled={disabled}>
+        {btnText}
+      </ButtonContentWrapper>
+      {rightIcon ? (
+        <IconWrapper
+          $spacing={'left'}
+          $autosizeIcon={autosizeIcons}
+          $variant={variant}
+          $disabled={disabled}
+        >
+          {rightIcon}
+        </IconWrapper>
+      ) : null}
       {loading ? (
         <LoadingIconWrapper>
           <Loading loading size='1em' />
@@ -35,7 +68,7 @@ const Button = ({
     </>
   )
 
-  if (type === 'button-in-text') {
+  if (variant === 'button-in-text') {
     return (
       <StyledLink
         as='button'
@@ -43,6 +76,7 @@ const Button = ({
         style={style}
         variant='text'
         data-testid={testId}
+        disabled={disabled}
       >
         {btnContent}
       </StyledLink>
