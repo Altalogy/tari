@@ -53,7 +53,7 @@ const DashboardContainer = ({
         title: 'Fantaritastic',
         // eslint-disable-next-line quotes
         body: "You've just mined a Tari block",
-        icon: TBotTest,
+        icon: '/home/tarnas/projects/altalogy/tari/applications/launchpad/gui-react/src/assets/images/test_tbot.png',
       })
 
     if (await isPermissionGranted()) {
