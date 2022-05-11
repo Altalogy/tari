@@ -74,8 +74,13 @@ const MiningContainer = () => {
         }}
       >
         <div style={{ margin: 10 }}>
-          <Button type='button' variant='primary'>
+          <Button type='button' variant='primary' loading>
             Primary
+          </Button>
+        </div>
+        <div style={{ margin: 10 }}>
+          <Button type='button' variant='primary'>
+            Primary loading
           </Button>
         </div>
         <div style={{ margin: 10 }}>
@@ -86,6 +91,17 @@ const MiningContainer = () => {
             leftIcon={<SvgSetting />}
           >
             Primary
+          </Button>
+        </div>
+        <div style={{ margin: 10 }}>
+          <Button
+            type='button'
+            variant='primary'
+            rightIcon={<SvgSetting />}
+            leftIcon={<SvgSetting />}
+            loading={true}
+          >
+            Primary loading
           </Button>
         </div>
         <div style={{ margin: 10 }}>
@@ -97,6 +113,18 @@ const MiningContainer = () => {
             leftIcon={<SvgSetting />}
           >
             Primary small
+          </Button>
+        </div>
+        <div style={{ margin: 10 }}>
+          <Button
+            type='button'
+            variant='primary'
+            size='small'
+            rightIcon={<SvgSetting />}
+            leftIcon={<SvgSetting />}
+            loading
+          >
+            Primary small loading
           </Button>
         </div>
         <div style={{ margin: 10 }}>
@@ -122,10 +150,28 @@ const MiningContainer = () => {
             Primary small disabled
           </Button>
         </div>
+        <div style={{ margin: 10 }}>
+          <Button
+            type='button'
+            variant='primary'
+            size='small'
+            rightIcon={<SvgSetting />}
+            leftIcon={<SvgSetting />}
+            disabled={true}
+            loading
+          >
+            Primary small disabled loading
+          </Button>
+        </div>
 
         <div style={{ margin: 10 }}>
           <Button type='button' variant='secondary'>
             secondary
+          </Button>
+        </div>
+        <div style={{ margin: 10 }}>
+          <Button type='button' variant='secondary' loading>
+            secondary loading
           </Button>
         </div>
         <div style={{ margin: 10 }}>

@@ -9,11 +9,13 @@ export type ButtonVariantType =
 
 export type ButtonSizeType = 'medium' | 'small'
 
+export type ButtonType = 'link' | 'button' | 'submit'
+
 export interface ButtonProps {
   disabled?: boolean
   children?: ReactNode
   style?: CSSProperties
-  type?: 'link' | 'button' | 'submit'
+  type?: ButtonType
   size?: ButtonSizeType
   href?: string
   variant?: ButtonVariantType
