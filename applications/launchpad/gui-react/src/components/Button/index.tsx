@@ -17,6 +17,7 @@ const Button = ({
   style,
   variant,
   type = 'button',
+  size = 'medium',
   href,
   leftIcon,
   rightIcon,
@@ -29,8 +30,13 @@ const Button = ({
 
   if (typeof children === 'string') {
     btnText = (
-      <StyledButtonText>
-        <Text as='span'>{children}</Text>
+      <StyledButtonText size={size}>
+        <Text
+          as='span'
+          type={size === 'small' ? 'smallMedium' : 'defaultMedium'}
+        >
+          {children}
+        </Text>
       </StyledButtonText>
     )
   }

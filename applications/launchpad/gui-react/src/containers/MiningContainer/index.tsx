@@ -92,11 +92,34 @@ const MiningContainer = () => {
           <Button
             type='button'
             variant='primary'
+            size='small'
+            rightIcon={<SvgSetting />}
+            leftIcon={<SvgSetting />}
+          >
+            Primary small
+          </Button>
+        </div>
+        <div style={{ margin: 10 }}>
+          <Button
+            type='button'
+            variant='primary'
             rightIcon={<SvgSetting />}
             leftIcon={<SvgSetting />}
             disabled={true}
           >
             Primary disabled
+          </Button>
+        </div>
+        <div style={{ margin: 10 }}>
+          <Button
+            type='button'
+            variant='primary'
+            size='small'
+            rightIcon={<SvgSetting />}
+            leftIcon={<SvgSetting />}
+            disabled={true}
+          >
+            Primary small disabled
           </Button>
         </div>
 
@@ -119,11 +142,34 @@ const MiningContainer = () => {
           <Button
             type='button'
             variant='secondary'
+            size='small'
+            rightIcon={<SvgSetting />}
+            leftIcon={<SvgSetting />}
+          >
+            secondary small
+          </Button>
+        </div>
+        <div style={{ margin: 10 }}>
+          <Button
+            type='button'
+            variant='secondary'
             rightIcon={<SvgSetting />}
             leftIcon={<SvgSetting />}
             disabled={true}
           >
             secondary disabled
+          </Button>
+        </div>
+        <div style={{ margin: 10 }}>
+          <Button
+            type='button'
+            variant='secondary'
+            size='small'
+            rightIcon={<SvgSetting />}
+            leftIcon={<SvgSetting />}
+            disabled={true}
+          >
+            secondary small disabled
           </Button>
         </div>
 
@@ -140,6 +186,17 @@ const MiningContainer = () => {
             leftIcon={<SvgSetting />}
           >
             button in text
+          </Button>
+        </div>
+        <div style={{ margin: 10 }}>
+          <Button
+            type='button'
+            variant='button-in-text'
+            size='small'
+            rightIcon={<SvgSetting />}
+            leftIcon={<SvgSetting />}
+          >
+            button in text small
           </Button>
         </div>
         <div style={{ margin: 10 }}>
@@ -200,11 +257,34 @@ const MiningContainer = () => {
           <Button
             type='button'
             variant='warning'
+            size='small'
+            rightIcon={<SvgSetting />}
+            leftIcon={<SvgSetting />}
+          >
+            Warning Button small
+          </Button>
+        </div>
+        <div style={{ margin: 10 }}>
+          <Button
+            type='button'
+            variant='warning'
             rightIcon={<SvgSetting />}
             leftIcon={<SvgSetting />}
             disabled={true}
           >
             Warning Button disabled
+          </Button>
+        </div>
+        <div style={{ margin: 10 }}>
+          <Button
+            type='button'
+            variant='warning'
+            size='small'
+            rightIcon={<SvgSetting />}
+            leftIcon={<SvgSetting />}
+            disabled={true}
+          >
+            Warning Button small disabled
           </Button>
         </div>
       </div>

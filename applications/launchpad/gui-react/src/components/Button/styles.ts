@@ -20,7 +20,6 @@ const getButtonBackgroundColor = ({
     default:
       return theme.tariGradient
   }
-  return variant === 'text' ? 'transparent' : theme.tariGradient
 }
 
 export const StyledButton = styled.button<
@@ -57,7 +56,7 @@ export const StyledButton = styled.button<
     return `1px solid ${theme.accent}`
   }};
   box-shadow: none;
-  padding: ${({ theme }) => theme.spacingVertical(0.46)}
+  padding: ${({ theme }) => theme.spacingVertical(0.5)}
     ${({ theme }) => theme.spacingHorizontal()};
   cursor: ${({ disabled }) => (disabled ? 'default' : 'pointer')};
   background: ${getButtonBackgroundColor};
@@ -134,9 +133,10 @@ export const StyledLink = styled.a<Pick<ButtonProps, 'variant' | 'disabled'>>`
   }
 `
 
-export const StyledButtonText = styled.span`
+export const StyledButtonText = styled.span<Pick<ButtonProps, 'size'>>`
   display: flex;
-  padding-top: ${({ theme }) => theme.spacingVertical(0.2)};
+  padding-top: ${({ theme, size }) =>
+    theme.spacingVertical(size === 'small' ? 0.1 : 0.2)};
 `
 
 export const IconWrapper = styled.span<{
