@@ -117,7 +117,7 @@ const TariButton = ({ onClick }: TariButtonProps) => { ... }
 
 - _must have_: a minimal test that tries to render a given component
 - _nice to have_: test that covers state changes and user interactions
-- _nice to have_: brief JSDoc to anything that has `export` label
+- _nice to have_: brief JSDoc to anything that has `export` label
 
 ### Locales
 
