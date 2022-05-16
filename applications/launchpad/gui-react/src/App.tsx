@@ -18,12 +18,14 @@ const AppContainer = styled.div`
   overflow: hidden;
   border-radius: 10;
 `
-
 const App = () => {
   const themeConfig = useAppSelector(selectThemeConfig)
   const dispatch = useAppDispatch()
   dispatch(loadDefaultServiceSettings())
 
+  /**
+   * @TODO - remove after mining dev
+   */
   useEffect(() => {
     const timer = setInterval(
       () => dispatch(miningActions.addAmount({ amount: '1000', node: 'tari' })),
@@ -32,6 +34,9 @@ const App = () => {
     return () => clearInterval(timer)
   }, [])
 
+  /**
+   * @TODO - remove after mining dev
+   */
   useEffect(() => {
     const timer = setInterval(
       () =>

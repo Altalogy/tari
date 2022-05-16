@@ -30,8 +30,8 @@ export const useSystemEvents = ({ dispatch }: { dispatch: AppDispatch }) => {
               return
             }
 
-            // console.log(`ACTION ${action} - ${containerId} - ${image}`)
-            // console.log(event)
+            console.log(`ACTION ${action} - ${containerId} - ${image}`)
+            console.log(event)
 
             dispatch(actions.updateStatus({ containerId, action }))
 
