@@ -16,10 +16,6 @@ import MiningBoxTari from './MiningBoxTari'
 import MiningBoxMerged from './MiningBoxMerged'
 import { actions } from '../../store/wallet'
 import { useAppDispatch } from '../../store/hooks'
-import Button from '../../components/Button'
-import SvgArrowLeft1 from '../../styles/Icons/ArrowLeft1'
-import SvgWallet from '../../styles/Icons/Wallet'
-import SvgSetting from '../../styles/Icons/Setting'
 
 /**
  * The Mining dashboard
@@ -38,14 +34,6 @@ const MiningContainer = () => {
       </NodesContainer>
 
       <MiningViewActions />
-
-      <button onClick={() => dispatch(actions.unlockWallet('pass'))}>
-        Set pass
-      </button>
-
-      <button onClick={() => dispatch(actions.unlockWallet(''))}>
-        Clear pass
-      </button>
 
       <div style={{ marginTop: 80 }}>
         <button onClick={() => dispatch(setTheme('light'))}>

@@ -10,6 +10,7 @@ const translations = {
   },
   actions: {
     startMining: 'Start mining',
+    setupAndStartMining: 'Set up & start mining',
   },
   viewActions: {
     setUpMiningHours: 'Set up mining hours',
@@ -20,7 +21,8 @@ const translations = {
     statusUnknown: 'The node status is unknown.',
     statusBlocked: 'The node cannot be started.',
     statusSetupRequired: 'The node requires further configuration.',
-    statusError: 'The node failed.',
+    statusError:
+      'TBD: Something went wrong with this or one of the dependent containers. Show alert like in the Expert View?',
   },
 }
 

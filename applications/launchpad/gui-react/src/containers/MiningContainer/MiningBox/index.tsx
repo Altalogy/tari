@@ -5,22 +5,14 @@ import Button from '../../../components/Button'
 import CoinsList from '../../../components/CoinsList'
 import NodeBox, { NodeBoxContentPlaceholder } from '../../../components/NodeBox'
 
-import { useAppDispatch, useAppSelector } from '../../../store/hooks'
+import { useAppDispatch } from '../../../store/hooks'
 
 import { actions } from '../../../store/mining'
-import {
-  selectLastSession,
-  selectMiningNode,
-} from '../../../store/mining/selectors'
-import {
-  MiningNodesStatus,
-  MiningNodeStates,
-  MiningSession,
-} from '../../../store/mining/types'
+import { MiningSession } from '../../../store/mining/types'
 
 import t from '../../../locales'
 
-import { MiningBoxProps, NodeBoxStatusConfig } from './types'
+import { MiningBoxProps, MiningBoxStatus, NodeBoxStatusConfig } from './types'
 import { MiningBoxContent, NodeIcons } from './styles'
 import { useMemo } from 'react'
 
@@ -68,24 +60,38 @@ const MiningBox = ({
   node,
   icons,
   statuses,
+  currentStatus,
   children,
   testId = 'mining-box-cmp',
+  nodeState,
+  containersState,
 }: MiningBoxProps) => {
   const dispatch = useAppDispatch()
   const theme = useTheme()
 
-  const nodeState: MiningNodeStates = useAppSelector(state =>
-    selectMiningNode(state, node),
-  )
+  let theCurrentStatus = currentStatus
 
-  const lastSession: MiningSession | undefined = useAppSelector(state =>
-    selectLastSession(state, node),
-  )
+  if (!theCurrentStatus) {
+    if (
+      containersState.error ||
+      containersState.dependsOn?.some(c => c.error)
+    ) {
+      theCurrentStatus = MiningBoxStatus.Error
+    } else if (containersState.running) {
+      theCurrentStatus = MiningBoxStatus.Running
+    } else {
+      theCurrentStatus = MiningBoxStatus.Paused
+    }
+  }
+
+  const lastSession = nodeState.sessions
+    ? nodeState.sessions[nodeState.sessions.length - 1]
+    : undefined
 
   const coins = parseLastSessionToCoins(lastSession)
 
   // Is there any outgoing action, so the buttons should be disabled?
-  const disableActions = nodeState.pending
+  const disableActions = containersState.pending
 
   const defaultConfig: NodeBoxStatusConfig = {
     title: `${node.substring(0, 1).toUpperCase() + node.substring(1)} ${
@@ -107,10 +113,9 @@ const MiningBox = ({
   }
 
   const defaultStates: Partial<{
-    [key in keyof typeof MiningNodesStatus]: NodeBoxStatusConfig
+    [key in MiningBoxStatus]: NodeBoxStatusConfig
   }> = {
-    UNKNOWN: {},
-    SETUP_REQUIRED: {
+    [MiningBoxStatus.SetupRequired]: {
       tag: {
         text: t.common.phrases.startHere,
       },
@@ -119,19 +124,13 @@ const MiningBox = ({
         borderColor: 'transparent',
       },
     },
-    BLOCKED: {
-      tag: {
-        text: t.common.phrases.actionRequired,
-        type: 'warning',
-      },
-    },
-    PAUSED: {
+    [MiningBoxStatus.Paused]: {
       tag: {
         text: t.common.adjectives.paused,
         type: 'light',
       },
     },
-    RUNNING: {
+    [MiningBoxStatus.Running]: {
       tag: {
         text: t.common.adjectives.running,
         type: 'running',
@@ -149,7 +148,7 @@ const MiningBox = ({
         color: theme.accentDark,
       },
     },
-    ERROR: {
+    [MiningBoxStatus.Error]: {
       tag: {
         text: t.common.nouns.problem,
         type: 'warning',
@@ -161,14 +160,12 @@ const MiningBox = ({
     () =>
       deepmerge.all([
         defaultConfig,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        defaultStates[nodeState.status]!,
-        statuses && statuses[nodeState.status]
-          ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            statuses[nodeState.status]!
+        theCurrentStatus ? defaultStates[theCurrentStatus]! : {},
+        theCurrentStatus && statuses && statuses[theCurrentStatus]
+          ? statuses[theCurrentStatus]!
           : {},
       ]) as NodeBoxStatusConfig,
-    [statuses, nodeState],
+    [theCurrentStatus, nodeState],
   )
 
   const componentForCurrentStatus = () => {
@@ -176,32 +173,33 @@ const MiningBox = ({
       return children
     }
 
-    switch (nodeState.status) {
-      case 'UNKNOWN':
-        return (
-          <NodeBoxContentPlaceholder testId='node-box-placeholder--unknown'>
-            {t.mining.placeholders.statusUnknown}
-          </NodeBoxContentPlaceholder>
-        )
-      case 'SETUP_REQUIRED':
+    switch (theCurrentStatus) {
+      case MiningBoxStatus.SetupRequired:
         return (
           <NodeBoxContentPlaceholder testId='node-box-placeholder--setup-required'>
             {t.mining.placeholders.statusSetupRequired}
           </NodeBoxContentPlaceholder>
         )
-      case 'BLOCKED':
-        return (
-          <NodeBoxContentPlaceholder testId='node-box-placeholder--blocked'>
-            {t.mining.placeholders.statusBlocked}
-          </NodeBoxContentPlaceholder>
-        )
-      case 'ERROR':
+      case MiningBoxStatus.Error:
         return (
           <NodeBoxContentPlaceholder testId='node-box-placeholder--error'>
-            {t.mining.placeholders.statusError}
+            <MiningBoxContent>
+              {coins ? <CoinsList coins={coins} /> : null}
+              <Button
+                onClick={() =>
+                  dispatch(actions.startMiningNode({ node: node }))
+                }
+                disabled={disableActions}
+                loading={disableActions}
+                testId={`${node}-run-btn`}
+              >
+                {t.mining.actions.startMining}
+              </Button>
+              <div>{t.mining.placeholders.statusError}</div>
+            </MiningBoxContent>
           </NodeBoxContentPlaceholder>
         )
-      case 'PAUSED':
+      case MiningBoxStatus.Paused:
         return (
           <MiningBoxContent data-testid='mining-box-paused-content'>
             {coins ? <CoinsList coins={coins} /> : null}
@@ -215,7 +213,7 @@ const MiningBox = ({
             </Button>
           </MiningBoxContent>
         )
-      case 'RUNNING':
+      case MiningBoxStatus.Running:
         return (
           <MiningBoxContent data-testid='mining-box-running-content'>
             {coins ? (

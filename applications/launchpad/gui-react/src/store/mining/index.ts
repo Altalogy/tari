@@ -1,13 +1,11 @@
-import { createSlice } from '@reduxjs/toolkit'
+import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { MiningNodeType } from '../../types/general'
 import { startMiningNode, stopMiningNode } from './thunks'
 
-import { MiningNodesStatus, MiningState } from './types'
+import { MiningState } from './types'
 
 export const initialState: MiningState = {
   tari: {
-    pending: false,
-    status: MiningNodesStatus.SETUP_REQUIRED,
     sessions: [
       {
         total: {
@@ -22,8 +20,7 @@ export const initialState: MiningState = {
     ],
   },
   merged: {
-    pending: false,
-    status: MiningNodesStatus.PAUSED,
+    addresses: [],
     sessions: [
       {
         total: {
@@ -45,49 +42,54 @@ const miningSlice = createSlice({
   name: 'mining',
   initialState,
   reducers: {
-    setNodeStatus(
+    addAmount(
       state,
-      {
-        payload,
-      }: { payload: { node: MiningNodeType; status: MiningNodesStatus } },
+      action: PayloadAction<{ amount: string; node: 'tari' | 'merged' }>,
     ) {
-      state[payload.node].status = payload.status
+      const node = action.payload.node
+
+      state[node].sessions![state[node].sessions!.length - 1].total!.xtr = (
+        Number(
+          state[node].sessions![state[node].sessions!.length - 1].total!.xtr,
+        ) + Number(action.payload.amount)
+      ).toString()
     },
   },
-  extraReducers: builder => {
-    builder
-      .addCase(startMiningNode.pending, (state, action) => {
-        const node = action.meta.arg.node
-        if (node in state) {
-          state[node].pending = true
-        }
-      })
-      .addCase(startMiningNode.fulfilled, (state, action) => {
-        const node = action.meta.arg.node
-        if (node in state) {
-          state[node].pending = false
-          state[node].status = MiningNodesStatus.RUNNING
-        }
-      })
-      .addCase(stopMiningNode.pending, (state, action) => {
-        const node = action.meta.arg.node
-        if (node in state) {
-          state[node].pending = true
-        }
-      })
-      .addCase(stopMiningNode.fulfilled, (state, action) => {
-        const node = action.meta.arg.node
-        if (node in state) {
-          state[node].pending = false
-          state[node].status = MiningNodesStatus.PAUSED
-        }
-      })
-  },
+  // extraReducers: builder => {
+  //   builder
+  //     .addCase(startMiningNode.pending, (state, action) => {
+  //       const node = action.meta.arg.node
+  //       if (node in state) {
+  //         state[node].pending = true
+  //       }
+  //     })
+  //     .addCase(startMiningNode.fulfilled, (state, action) => {
+  //       const node = action.meta.arg.node
+  //       if (node in state) {
+  //         state[node].pending = false
+  //         state[node].status = MiningNodesStatus.RUNNING
+  //       }
+  //     })
+  //     .addCase(stopMiningNode.pending, (state, action) => {
+  //       const node = action.meta.arg.node
+  //       if (node in state) {
+  //         state[node].pending = true
+  //       }
+  //     })
+  //     .addCase(stopMiningNode.fulfilled, (state, action) => {
+  //       const node = action.meta.arg.node
+  //       if (node in state) {
+  //         state[node].pending = false
+  //         state[node].status = MiningNodesStatus.PAUSED
+  //       }
+  //     })
+  // },
 })
 
-const { setNodeStatus } = miningSlice.actions
+const { actions: miningActions } = miningSlice
+
 export const actions = {
-  setNodeStatus,
+  ...miningActions,
   startMiningNode,
   stopMiningNode,
 }

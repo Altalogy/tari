@@ -1,5 +1,4 @@
 import { ReactNode } from 'react'
-import { useSelector } from 'react-redux'
 
 import MiningBox from '../MiningBox'
 import WalletPasswordWizard from '../../WalletPasswordWizard'
@@ -8,30 +7,27 @@ import SvgTariSignet from '../../../styles/Icons/TariSignet'
 
 import t from '../../../locales'
 
-import { useAppDispatch } from '../../../store/hooks'
-import { actions as miningActions } from '../../../store/mining'
-import { selectTariMiningStatus } from '../../../store/mining/selectors'
-import { MiningNodesStatus } from '../../../store/mining/types'
+import { useAppSelector } from '../../../store/hooks'
+import {
+  selectTariContainers,
+  selectTariMiningState,
+  selectTariSetupRequired,
+} from '../../../store/mining/selectors'
+import { TariMiningSetupRequired } from '../../../store/mining/types'
+import { MiningBoxStatus } from '../MiningBox/types'
 
 const MiningBoxTari = () => {
-  const dispatch = useAppDispatch()
-  const tariNodeStatus = useSelector(selectTariMiningStatus)
+  const nodeState = useAppSelector(selectTariMiningState)
+  const containersState = useAppSelector(selectTariContainers)
+  const tariSetupRequired = useAppSelector(selectTariSetupRequired)
 
   let boxContent: ReactNode | undefined
+  let currentStatus: MiningBoxStatus | undefined
 
-  if (tariNodeStatus === MiningNodesStatus.SETUP_REQUIRED) {
+  if (tariSetupRequired === TariMiningSetupRequired.MissingWalletAddress) {
+    currentStatus = MiningBoxStatus.SetupRequired
     boxContent = (
-      <WalletPasswordWizard
-        submitBtnText={t.mining.setUpTariWalletSubmitBtn}
-        onSuccess={() =>
-          dispatch(
-            miningActions.setNodeStatus({
-              node: 'tari',
-              status: MiningNodesStatus.PAUSED,
-            }),
-          )
-        }
-      />
+      <WalletPasswordWizard submitBtnText={t.mining.setUpTariWalletSubmitBtn} />
     )
   }
 
@@ -40,6 +36,9 @@ const MiningBoxTari = () => {
       node='tari'
       icons={[<SvgTariSignet key='tari-icon' />]}
       testId='tari-mining-box'
+      currentStatus={currentStatus}
+      nodeState={nodeState}
+      containersState={containersState}
     >
       {boxContent}
     </MiningBox>
