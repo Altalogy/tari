@@ -1,5 +1,7 @@
 import { mockIPC } from '@tauri-apps/api/mocks'
 
+import { ServiceDescriptor } from '../../src/store/containers/types'
+
 /**
  * Set of default values returned by `tauriIPCMock()`
  */
@@ -30,13 +32,20 @@ export const defaultTauriMockValues: Record<string, unknown> = {
  *   },
  * })
  */
-export const tauriIPCMock = (props: Record<string, unknown> = undefined) => {
+export const tauriIPCMock = (props: Record<string, unknown> = {}) => {
   return mockIPC((cmd, args) => {
     switch (cmd) {
       case 'tauri':
         return tauriCmdMock(cmd, args, props)
       case 'invoke':
         return
+      case 'start_service':
+        return {
+          id: `${args.serviceName}-id`,
+          logEventsName: 'logsEventsName', // May need to be changed
+          statsEventsName: 'statsEventsName', // May need to be changed
+          name: args.serviceName,
+        } as ServiceDescriptor
       default:
         return
     }

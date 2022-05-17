@@ -6764,11 +6764,7 @@ dependencies = [
  "tari_metrics",
  "tari_shutdown",
  "tari_storage",
-<<<<<<< HEAD
- "tari_test_utils 0.31.1",
-=======
  "tari_test_utils 0.32.0",
->>>>>>> launchpad_such_wow
  "tari_utilities",
  "tempfile",
  "thiserror",

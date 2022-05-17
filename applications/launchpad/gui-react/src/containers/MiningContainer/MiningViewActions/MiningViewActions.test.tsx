@@ -7,94 +7,51 @@ import MiningViewActions from '.'
 
 import themes from '../../../styles/themes'
 import { rootReducer } from '../../../store'
-import { initialState as miningInitialState } from '../../../store/mining/index'
+import {
+  initialMining,
+  initialWallet,
+  unlockedWallet,
+} from '../../../../__tests__/mocks/states'
 
 describe('MiningViewActions', () => {
-  // it('should render mining actions without crash', () => {
-  //   const miningState = {
-  //     ...miningInitialState,
-  //     tari: {
-  //       pending: false,
-  //       status: MiningNodesStatus.PAUSED,
-  //       sessions: [
-  //         {
-  //           total: {
-  //             xtr: '1000',
-  //           },
-  //         },
-  //         {
-  //           total: {
-  //             xtr: '2000',
-  //           },
-  //         },
-  //       ],
-  //     },
-  //     merged: {
-  //       pending: false,
-  //       status: MiningNodesStatus.PAUSED,
-  //     },
-  //   }
-  //   render(
-  //     <Provider
-  //       store={configureStore({
-  //         reducer: rootReducer,
-  //         preloadedState: {
-  //           mining: {
-  //             ...miningState,
-  //           },
-  //         },
-  //       })}
-  //     >
-  //       <ThemeProvider theme={themes.light}>
-  //         <MiningViewActions />
-  //       </ThemeProvider>
-  //     </Provider>,
-  //   )
-  //   const el = screen.getByTestId('mining-action-setup-mining-hours')
-  //   expect(el).toBeInTheDocument()
-  //   expect(el).not.toHaveAttribute('disabled')
-  // })
-  // it('set up mining hours should be disabled if none of mining nodes can be run', () => {
-  //   const miningState = {
-  //     ...miningInitialState,
-  //     tari: {
-  //       pending: false,
-  //       status: MiningNodesStatus.SETUP_REQUIRED,
-  //       sessions: [
-  //         {
-  //           total: {
-  //             xtr: '1000',
-  //           },
-  //         },
-  //         {
-  //           total: {
-  //             xtr: '2000',
-  //           },
-  //         },
-  //       ],
-  //     },
-  //     merged: {
-  //       pending: false,
-  //       status: MiningNodesStatus.ERROR,
-  //     },
-  //   }
-  //   render(
-  //     <Provider
-  //       store={configureStore({
-  //         reducer: rootReducer,
-  //         preloadedState: {
-  //           mining: {
-  //             ...miningState,
-  //           },
-  //         },
-  //       })}
-  //     >
-  //       <ThemeProvider theme={themes.light}>
-  //         <MiningViewActions />
-  //       </ThemeProvider>
-  //     </Provider>,
-  //   )
-  //   const el = screen.getByTestId('mining-action-setup-mining-hours')
-  //   expect(el).toHaveAttribute('disabled')
-  // })
+  it('should render mining actions without crash', () => {
+    render(
+      <Provider
+        store={configureStore({
+          reducer: rootReducer,
+          preloadedState: {
+            wallet: unlockedWallet,
+            mining: initialMining,
+          },
+        })}
+      >
+        <ThemeProvider theme={themes.light}>
+          <MiningViewActions />
+        </ThemeProvider>
+      </Provider>,
+    )
+    const el = screen.getByTestId('mining-action-setup-mining-hours')
+    expect(el).toBeInTheDocument()
+    expect(el).not.toHaveAttribute('disabled')
+  })
+
+  it('set up mining hours should be disabled if none of mining nodes can be run', () => {
+    render(
+      <Provider
+        store={configureStore({
+          reducer: rootReducer,
+          preloadedState: {
+            wallet: initialWallet,
+            mining: initialMining,
+          },
+        })}
+      >
+        <ThemeProvider theme={themes.light}>
+          <MiningViewActions />
+        </ThemeProvider>
+      </Provider>,
+    )
+    const el = screen.getByTestId('mining-action-setup-mining-hours')
+    expect(el).toHaveAttribute('disabled')
+  })
 })
