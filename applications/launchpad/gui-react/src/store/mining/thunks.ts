@@ -3,6 +3,7 @@ import { createAsyncThunk } from '@reduxjs/toolkit'
 import { MiningNodeType } from '../../types/general'
 import { selectContainerStatus } from '../containers/selectors'
 import { actions as containersActions } from '../containers'
+import { actions as miningActions } from './index'
 import { Container } from '../containers/types'
 
 import { RootState } from '..'
@@ -45,6 +46,7 @@ export const startMiningNode = createAsyncThunk<
         await thunkApi
           .dispatch(containersActions.start(Container.SHA3Miner))
           .unwrap()
+        await thunkApi.dispatch(miningActions.startNewSession({ node }))
         break
       case 'merged':
         await thunkApi
@@ -53,6 +55,7 @@ export const startMiningNode = createAsyncThunk<
         await thunkApi
           .dispatch(containersActions.start(Container.XMrig))
           .unwrap()
+        await thunkApi.dispatch(miningActions.startNewSession({ node }))
         break
       default:
         break
@@ -69,12 +72,17 @@ export const startMiningNode = createAsyncThunk<
  */
 export const stopMiningNode = createAsyncThunk<
   void,
-  { containers: { id: string; type: Container }[] },
+  {
+    node: 'tari' | 'merged'
+    containers: { id: string; type: Container }[]
+    sessionId?: string
+  },
   { state: RootState }
->('mining/stopNode', async ({ containers }, thunkApi) => {
+>('mining/stopNode', async ({ containers, node, sessionId }, thunkApi) => {
   try {
     const promises = containers.map(async c => {
       await thunkApi.dispatch(containersActions.stop(c.id)).unwrap()
+      thunkApi.dispatch(miningActions.stopSession({ node, sessionId }))
     })
     await Promise.all(promises)
   } catch (e) {

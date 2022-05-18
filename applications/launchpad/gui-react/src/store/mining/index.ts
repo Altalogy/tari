@@ -1,17 +1,25 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { startMiningNode, stopMiningNode } from './thunks'
+import { v4 as uuidv4 } from 'uuid'
 
-import { MiningState } from './types'
+import { startMiningNode, stopMiningNode } from './thunks'
+import { MiningSession, MiningState } from './types'
+
+const currencies: Record<'tari' | 'merged', string[]> = {
+  tari: ['xtr'],
+  merged: ['xtr', 'xmr'],
+}
 
 export const initialState: MiningState = {
   tari: {
     sessions: [
       {
+        startedAt: undefined,
         total: {
           xtr: '1000',
         },
       },
       {
+        startedAt: undefined,
         total: {
           xtr: '2000',
         },
@@ -22,12 +30,14 @@ export const initialState: MiningState = {
     addresses: [],
     sessions: [
       {
+        startedAt: undefined,
         total: {
           xtr: '1000',
           xmr: '1001',
         },
       },
       {
+        startedAt: undefined,
         total: {
           xtr: '2000',
           xmr: '2001',
@@ -56,6 +66,42 @@ const miningSlice = createSlice({
           state[node].sessions![state[node].sessions!.length - 1].total!.xtr,
         ) + Number(action.payload.amount)
       ).toString()
+    },
+    startNewSession(state, action: PayloadAction<{ node: 'tari' | 'merged' }>) {
+      const { node } = action.payload
+      const total: Record<string, string> = {}
+      currencies[node].forEach(c => {
+        total[c] = '0'
+      })
+
+      const newSession: MiningSession = {
+        id: uuidv4(),
+        startedAt: Number(Date.now()).toString(),
+        total,
+      }
+
+      if (!state[node].sessions) {
+        state[node].sessions = [newSession]
+        return
+      }
+
+      state[node].sessions!.push(newSession)
+    },
+    stopSession(
+      state,
+      action: PayloadAction<{ node: 'tari' | 'merged'; sessionId?: string }>,
+    ) {
+      const { node, sessionId } = action.payload
+
+      if (!state[node].sessions || !sessionId) {
+        return
+      }
+
+      const session = state[node].sessions?.find(s => s.id === sessionId)
+
+      if (session) {
+        session.finishedAt = Number(Date.now()).toString()
+      }
     },
   },
 })

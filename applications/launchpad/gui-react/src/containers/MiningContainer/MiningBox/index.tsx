@@ -15,6 +15,7 @@ import t from '../../../locales'
 import { MiningBoxProps, MiningBoxStatus, NodeBoxStatusConfig } from './types'
 import { MiningBoxContent, NodeIcons } from './styles'
 import { useMemo } from 'react'
+import RunningButton from '../../../components/RunningButton'
 
 const parseLastSessionToCoins = (lastSession: MiningSession | undefined) => {
   if (lastSession && lastSession.total) {
@@ -228,21 +229,19 @@ const MiningBox = ({
             {coins ? (
               <CoinsList coins={coins} color={theme.inverted.primary} />
             ) : null}
-            <Button
-              variant='primary'
+            <RunningButton
               onClick={() =>
                 dispatch(
                   actions.stopMiningNode({
+                    node,
                     containers: containersToStopOnPause,
+                    sessionId: lastSession?.id,
                   }),
                 )
               }
-              disabled={disableActions}
-              loading={disableActions}
+              startedAt={Number(Date.now())}
               testId={`${node}-pause-btn`}
-            >
-              {t.common.verbs.pause}
-            </Button>
+            />
           </MiningBoxContent>
         )
     }
