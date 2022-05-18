@@ -1,4 +1,5 @@
-import { useSelector } from 'react-redux'
+import { useState } from 'react'
+
 import Switch from '../../components/Switch'
 
 import Text from '../../components/Text'
@@ -8,20 +9,22 @@ import SvgMoon from '../../styles/Icons/Moon'
 import MiningHeaderTip from './MiningHeaderTip'
 import MiningViewActions from './MiningViewActions'
 
+import { useAppSelector, useAppDispatch } from '../../store/hooks'
 import { setTheme } from '../../store/app'
 import { selectTheme } from '../../store/app/selectors'
 
 import { NodesContainer } from './styles'
 import MiningBoxTari from './MiningBoxTari'
 import MiningBoxMerged from './MiningBoxMerged'
-import { useAppDispatch } from '../../store/hooks'
+import Scheduling from './Scheduling'
 
 /**
  * The Mining dashboard
  */
 const MiningContainer = () => {
   const dispatch = useAppDispatch()
-  const currentTheme = useSelector(selectTheme)
+  const currentTheme = useAppSelector(selectTheme)
+  const [schedulingOpen, setSchedulingOpen] = useState(false)
 
   return (
     <div>
@@ -32,7 +35,7 @@ const MiningContainer = () => {
         <MiningBoxMerged />
       </NodesContainer>
 
-      <MiningViewActions />
+      <MiningViewActions openScheduling={() => setSchedulingOpen(true)} />
 
       <div style={{ marginTop: 80 }}>
         <button onClick={() => dispatch(setTheme('light'))}>
@@ -51,6 +54,10 @@ const MiningContainer = () => {
           />
         </div>
       </div>
+      <Scheduling
+        open={schedulingOpen}
+        onClose={() => setSchedulingOpen(false)}
+      />
     </div>
   )
 }

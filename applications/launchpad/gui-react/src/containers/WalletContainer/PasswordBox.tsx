@@ -41,6 +41,7 @@ const PasswordBox = ({
       <Text>{t.wallet.password.cta}</Text>
       <form onSubmit={formSubmitHandler}>
         <PasswordInput
+          autoFocus
           onChange={updatePassword}
           value={password}
           disabled={pending}
@@ -50,9 +51,7 @@ const PasswordBox = ({
           }}
         />
         <Button disabled={disableSubmit} loading={pending} type='submit'>
-          <Text type='defaultMedium' style={{ lineHeight: '100%' }}>
-            {t.common.verbs.continue}
-          </Text>
+          {t.common.verbs.continue}
         </Button>
       </form>
     </Box>

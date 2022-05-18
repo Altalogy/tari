@@ -4,8 +4,10 @@ const translations: { [key: string]: { [key: string]: string } } = {
   verbs: {
     accept: 'Accept',
     cancel: 'Cancel',
+    tryAgain: 'Try again',
     stop: 'Stop',
     start: 'Start',
+    save: 'Save',
     pause: 'Pause',
     continue: 'Continue',
     close: 'Close',
@@ -24,9 +26,26 @@ const translations: { [key: string]: { [key: string]: string } } = {
     memory: 'Memory',
     error: 'Error',
   },
+  weekdayCapitals: {
+    sunday: 'S',
+    monday: 'M',
+    tuesday: 'T',
+    wednesday: 'W',
+    thursday: 'T',
+    friday: 'F',
+    saturday: 'S',
+  },
+  weekdayShort: {
+    sunday: 'Sun',
+    monday: 'Mon',
+    tuesday: 'Tue',
+    wednesday: 'Wed',
+    thursday: 'Thu',
+    friday: 'Fri',
+    saturday: 'Sat',
+  },
   adjectives: {
     running: 'Running',
-    unhealthy: 'Unhealthy',
     paused: 'Paused',
     copied: 'Copied',
   },
@@ -46,6 +65,10 @@ const translations: { [key: string]: { [key: string]: string } } = {
     [Container.XMrig]: 'xmrig',
     [Container.Monerod]: 'monerod',
     [Container.Frontail]: 'frontail',
+  },
+  miningType: {
+    tari: 'Tari Mining',
+    merged: 'Merged Mining',
   },
 }
 

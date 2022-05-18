@@ -31,6 +31,21 @@ const translations = {
     formDescription:
       'This is the address to which the Monero coins you earn will be sent. Make sure it is correct as you might accidentally give a generous gift to a stranger. 😅',
   },
+  scheduling: {
+    title: 'Mining schedules',
+    launchpadOpen:
+      'Tari Launchpad must be open at the scheduled hours for mining to start.',
+    noSchedules: 'No mining schedule has been set up yet',
+    add: 'Add schedule',
+    removeSchedule: 'Remove schedule',
+    ops: 'Ops!',
+    error_miningEndsBeforeItStarts:
+      /* eslint-disable-next-line quotes */
+      "I guess you need to correct the hours because mining can't stop before it even starts",
+    error_miningEndsWhenItStarts:
+      /* eslint-disable-next-line quotes */
+      "I guess you need to correct the hours because mining can't stop exactly when it starts",
+  },
 }
 
 export default translations
