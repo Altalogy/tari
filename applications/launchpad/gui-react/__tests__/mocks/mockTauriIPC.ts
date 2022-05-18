@@ -42,10 +42,12 @@ export const tauriIPCMock = (props: Record<string, unknown> = {}) => {
       case 'start_service':
         return {
           id: `${args.serviceName}-id`,
-          logEventsName: 'logsEventsName', // May need to be changed
-          statsEventsName: 'statsEventsName', // May need to be changed
+          logEventsName: `tari://docker_log_${args.serviceName}`,
+          statsEventsName: `tari://docker_stats_${args.serviceName}-id`,
           name: args.serviceName,
         } as ServiceDescriptor
+      case 'stop_service':
+        return true
       default:
         return
     }

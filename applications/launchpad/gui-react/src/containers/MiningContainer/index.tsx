@@ -14,7 +14,6 @@ import { selectTheme } from '../../store/app/selectors'
 import { NodesContainer } from './styles'
 import MiningBoxTari from './MiningBoxTari'
 import MiningBoxMerged from './MiningBoxMerged'
-import { actions } from '../../store/wallet'
 import { useAppDispatch } from '../../store/hooks'
 
 /**

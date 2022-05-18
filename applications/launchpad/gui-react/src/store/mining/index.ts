@@ -1,5 +1,4 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { MiningNodeType } from '../../types/general'
 import { startMiningNode, stopMiningNode } from './thunks'
 
 import { MiningState } from './types'
@@ -42,6 +41,10 @@ const miningSlice = createSlice({
   name: 'mining',
   initialState,
   reducers: {
+    /**
+     * @TODO - mock that need to be removed later. It is used along with timers in App.tsx
+     * to increase the amount of mined Tari and Merged
+     */
     addAmount(
       state,
       action: PayloadAction<{ amount: string; node: 'tari' | 'merged' }>,
@@ -55,35 +58,6 @@ const miningSlice = createSlice({
       ).toString()
     },
   },
-  // extraReducers: builder => {
-  //   builder
-  //     .addCase(startMiningNode.pending, (state, action) => {
-  //       const node = action.meta.arg.node
-  //       if (node in state) {
-  //         state[node].pending = true
-  //       }
-  //     })
-  //     .addCase(startMiningNode.fulfilled, (state, action) => {
-  //       const node = action.meta.arg.node
-  //       if (node in state) {
-  //         state[node].pending = false
-  //         state[node].status = MiningNodesStatus.RUNNING
-  //       }
-  //     })
-  //     .addCase(stopMiningNode.pending, (state, action) => {
-  //       const node = action.meta.arg.node
-  //       if (node in state) {
-  //         state[node].pending = true
-  //       }
-  //     })
-  //     .addCase(stopMiningNode.fulfilled, (state, action) => {
-  //       const node = action.meta.arg.node
-  //       if (node in state) {
-  //         state[node].pending = false
-  //         state[node].status = MiningNodesStatus.PAUSED
-  //       }
-  //     })
-  // },
 })
 
 const { actions: miningActions } = miningSlice

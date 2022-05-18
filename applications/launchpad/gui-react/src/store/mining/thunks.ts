@@ -8,7 +8,7 @@ import { Container } from '../containers/types'
 import { RootState } from '..'
 
 /**
- * Start given mining node
+ * Start given mining node. It spawns all dependencies if needed.
  * @prop {NodeType} node - the node name, ie. 'tari', 'merged'
  * @returns {Promise<void>}
  */
@@ -47,9 +47,6 @@ export const startMiningNode = createAsyncThunk<
           .unwrap()
         break
       case 'merged':
-        /**
-         * @TODO - convert to `Promise.all?`
-         */
         await thunkApi
           .dispatch(containersActions.start(Container.MMProxy))
           .unwrap()
@@ -66,39 +63,20 @@ export const startMiningNode = createAsyncThunk<
 })
 
 /**
- * Stop given mining node
- * @prop {NodeType} node - the node name, ie. 'tari', 'merged'
+ * Stop nodes with given IDs
+ * @prop {{ id: string; type: Container }[]} containers - the list of nodes with id and type
  * @returns {Promise<void>}
  */
 export const stopMiningNode = createAsyncThunk<
   void,
-  { node: MiningNodeType },
+  { containers: { id: string; type: Container }[] },
   { state: RootState }
->('mining/stopNode', async ({ node }, thunkApi) => {
+>('mining/stopNode', async ({ containers }, thunkApi) => {
   try {
-    switch (node) {
-      case 'tari':
-        await thunkApi
-          .dispatch(containersActions.stop(Container.SHA3Miner))
-          .unwrap()
-        break
-      case 'merged':
-        try {
-          await thunkApi
-            .dispatch(containersActions.stop(Container.MMProxy))
-            .unwrap()
-          await thunkApi
-            .dispatch(containersActions.stop(Container.XMrig))
-            .unwrap()
-        } catch (err) {
-          /**
-           * @TODO do we need to handle the rejections here?
-           */
-        }
-        break
-      default:
-        break
-    }
+    const promises = containers.map(async c => {
+      await thunkApi.dispatch(containersActions.stop(c.id)).unwrap()
+    })
+    await Promise.all(promises)
   } catch (e) {
     return thunkApi.rejectWithValue(e)
   }

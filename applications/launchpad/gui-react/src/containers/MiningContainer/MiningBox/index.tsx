@@ -33,28 +33,34 @@ const parseLastSessionToCoins = (lastSession: MiningSession | undefined) => {
 }
 
 /**
- * Generic component providing NodeBox-based UI, reading from global state
- * and handling basic actions.
+ * Generic component providing NodeBox-based UI for mining containers.
  *
- * The `node` param determines which record in the global mining state
- * will be observed. The component will try automatically cast the found data
- * to the UI.
+ * The box can be in one of few states: paused, running, error, setup_required or custom.
+ * It is evaluated from the 'containersState' based on the running, error, pending etc. fields.
+ * It also provides generic start and pause actions that dispatch the mining's start/stop actions.
  *
- * The container handles `MiningNodesStatus` states automatically, but specific states
- * should be overwritten with two params:
- * - `statuses` - customi UI for a given node status
- * - `children` - override the content of the node box. Use this for statuses like `SETUP_REQUIRED` to provide
- *                details and steps how to resolve this status.
+ * The component tries to resolve the state and what need to be rendered by itself, but in some cases,
+ * some customisation may be required, ie. when the node has to be configured, or we want style it differently.
+ * In such case, you can:
+ * a) provide 'children' (React component) and it will replace the generic content of the box.
+ * b) statuses - changes the styling of the box and its sub-components
+ * c) currentStatus - when more advanced logic needs to be applied.
  *
  * The general approach is:
  * 1. Create parent container for specific node (ie. Tari Mining)
- * 2. Import and render this MiningBox Container with minimal config (ie. `{ node: 'tari' }`)
+ * 2. Import and render this MiningBox Container with minimal config
  * 3. Add in parent container any custom logic that will evaluate the correct status. If it's needed to provide
  *    custom component and logic for a given status, push children component (it will override generic component and behaviour).
  *
  * @param {MiningNodeType} node - ie. tari, merged
- * @param {Record<keyof MiningNodesStatus, NodeBoxStatusConfig>} [statuses] - the optional config overriding specific states.
- * @param {ReactNode} [children] - component overriding the generic one composed by this container for a given status./
+ * @param {Partial<{[key in MiningBoxStatus]: NodeBoxStatusConfig}>} [statuses] - the optional config overriding specific states.
+ * @param {MiningBoxStatus} [currentStatus] - overrides the current status (ie. force setup_required)
+ * @param {ReactNode[]} [icons] - right-side icons
+ * @param {string} [testId] - custom test id
+ * @param {MiningNodeState} [nodeState] - the node state from Redux's mining
+ * @param {MiningContainersState} [containersState] - the containers from Redux's mining
+ * @param {{ id: string; type: Container }[]} [containersToStopOnPause] - list of containers that need to be stopped when user clicks on pause button.
+ * @param {ReactNode} [children] - component overriding the generic one composed by this container for a given status.
  */
 const MiningBox = ({
   node,
@@ -65,6 +71,7 @@ const MiningBox = ({
   testId = 'mining-box-cmp',
   nodeState,
   containersState,
+  containersToStopOnPause,
 }: MiningBoxProps) => {
   const dispatch = useAppDispatch()
   const theme = useTheme()
@@ -160,9 +167,11 @@ const MiningBox = ({
     () =>
       deepmerge.all([
         defaultConfig,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         theCurrentStatus ? defaultStates[theCurrentStatus]! : {},
         theCurrentStatus && statuses && statuses[theCurrentStatus]
-          ? statuses[theCurrentStatus]!
+          ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            statuses[theCurrentStatus]!
           : {},
       ]) as NodeBoxStatusConfig,
     [theCurrentStatus, nodeState],
@@ -221,7 +230,13 @@ const MiningBox = ({
             ) : null}
             <Button
               variant='primary'
-              onClick={() => dispatch(actions.stopMiningNode({ node: node }))}
+              onClick={() =>
+                dispatch(
+                  actions.stopMiningNode({
+                    containers: containersToStopOnPause,
+                  }),
+                )
+              }
               disabled={disableActions}
               loading={disableActions}
               testId={`${node}-pause-btn`}
