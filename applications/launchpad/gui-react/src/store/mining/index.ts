@@ -14,12 +14,14 @@ export const initialState: MiningState = {
     sessions: [
       {
         startedAt: undefined,
+        pending: false,
         total: {
           xtr: '1000',
         },
       },
       {
         startedAt: undefined,
+        pending: false,
         total: {
           xtr: '2000',
         },
@@ -31,6 +33,7 @@ export const initialState: MiningState = {
     sessions: [
       {
         startedAt: undefined,
+        pending: false,
         total: {
           xtr: '1000',
           xmr: '1001',
@@ -38,6 +41,7 @@ export const initialState: MiningState = {
       },
       {
         startedAt: undefined,
+        pending: false,
         total: {
           xtr: '2000',
           xmr: '2001',
@@ -101,6 +105,27 @@ const miningSlice = createSlice({
 
       if (session) {
         session.finishedAt = Number(Date.now()).toString()
+      }
+    },
+    setPendingInSession(
+      state,
+      action: PayloadAction<{
+        node: 'tari' | 'merged'
+        sessionId?: string
+        active: boolean
+      }>,
+    ) {
+      const { node, sessionId, active } = action.payload
+
+      console.log('set pending', node, sessionId, active)
+      if (!state[node].sessions || !sessionId) {
+        return
+      }
+
+      const session = state[node].sessions?.find(s => s.id === sessionId)
+
+      if (session) {
+        session.pending = active
       }
     },
   },

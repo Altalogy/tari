@@ -25,8 +25,8 @@ const parseLastSessionToCoins = (lastSession: MiningSession | undefined) => {
         lastSession.total && lastSession.total[coin]
           ? lastSession.total[coin]
           : '0',
-      loading: true,
-      suffixText: t.mining.minedInLastSession,
+      loading: lastSession.pending,
+      suffixText: lastSession.finishedAt ? t.mining.minedInLastSession : '',
     }))
   }
 

@@ -25,6 +25,7 @@ export interface MiningSession {
   finishedAt?: string
   id?: string // uuid (?)
   total?: Record<string, string> // i,e { xtr: 1000 bignumber (?) }
+  pending?: boolean
   history?: {
     timestamp?: string // UTC timestamp
     amount?: string // bignumber (?)
