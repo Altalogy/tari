@@ -45,7 +45,7 @@ const useMiningSimulator = () => {
 
   useEffect(() => {
     const timer = setInterval(async () => {
-      const sessions = store.getState().mining.tari.sessions
+      const sessions = store.getState().mining.merged.sessions
       if (!sessions || sessions[sessions.length - 1].finishedAt) {
         return
       }
@@ -66,7 +66,7 @@ const useMiningSimulator = () => {
           sessionId,
         }),
       )
-    }, 15e3)
+    }, 7e3)
     return () => clearInterval(timer)
   }, [])
 }

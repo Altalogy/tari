@@ -14,6 +14,7 @@ export const initialState: MiningState = {
     sessions: [
       {
         startedAt: undefined,
+        finishedAt: Number(Date.now()).toString(),
         pending: false,
         total: {
           xtr: '1000',
@@ -21,6 +22,7 @@ export const initialState: MiningState = {
       },
       {
         startedAt: undefined,
+        finishedAt: Number(Date.now()).toString(),
         pending: false,
         total: {
           xtr: '2000',
@@ -29,10 +31,13 @@ export const initialState: MiningState = {
     ],
   },
   merged: {
-    addresses: [],
+    threads: 1,
+    address: undefined,
+    urls: [],
     sessions: [
       {
         startedAt: undefined,
+        finishedAt: Number(Date.now()).toString(),
         pending: false,
         total: {
           xtr: '1000',
@@ -41,6 +46,7 @@ export const initialState: MiningState = {
       },
       {
         startedAt: undefined,
+        finishedAt: Number(Date.now()).toString(),
         pending: false,
         total: {
           xtr: '2000',
@@ -117,7 +123,6 @@ const miningSlice = createSlice({
     ) {
       const { node, sessionId, active } = action.payload
 
-      console.log('set pending', node, sessionId, active)
       if (!state[node].sessions || !sessionId) {
         return
       }
@@ -127,6 +132,10 @@ const miningSlice = createSlice({
       if (session) {
         session.pending = active
       }
+    },
+    setMergedAddress(state, action: PayloadAction<{ address: string }>) {
+      const { address } = action.payload
+      state.merged.address = address
     },
   },
 })

@@ -10,7 +10,7 @@ export enum TariMiningSetupRequired {
 
 export enum MergedMiningSetupRequired {
   MissingWalletAddress = 'missing_wallet_address',
-  MissingMoneroAddresses = 'missing_monero_addresses',
+  MissingMoneroAddress = 'missing_monero_address',
 }
 
 export interface MiningDependencyState {
@@ -39,10 +39,9 @@ export interface MiningNodeState {
 }
 
 export interface MergedMiningNodeState extends MiningNodeState {
-  addresses?: {
-    threads: number
-    url: string
-  }[]
+  address?: string
+  threads?: number
+  urls?: string[]
 }
 
 export interface MiningState {

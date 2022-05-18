@@ -55,8 +55,8 @@ export const selectTariSetupRequired = createSelector(
  * ============== MERGED ===================
  */
 export const selectMergedMiningState = (r: RootState) => r.mining.merged
-export const selectMergedMiningAddresses = (r: RootState) =>
-  r.mining.merged.addresses
+export const selectMergedMiningAddress = (r: RootState) =>
+  r.mining.merged.address
 
 export const selectMergedContainers = createSelector(
   selectContainerWithMemo(Container.Tor),
@@ -90,14 +90,14 @@ export const selectMergedContainers = createSelector(
 
 export const selectMergedSetupRequired = createSelector(
   selectWalletSetupRequired,
-  selectMergedMiningAddresses,
-  (walletSetupRequired, mergedAddresses) => {
+  selectMergedMiningAddress,
+  (walletSetupRequired, mergedAddress) => {
     if (walletSetupRequired) {
       return MergedMiningSetupRequired.MissingWalletAddress
     }
 
-    if (!mergedAddresses || mergedAddresses.length < 1) {
-      return MergedMiningSetupRequired.MissingMoneroAddresses
+    if (!mergedAddress || mergedAddress.length < 1) {
+      return MergedMiningSetupRequired.MissingMoneroAddress
     }
 
     return
