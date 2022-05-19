@@ -25,16 +25,9 @@ export const miningWithSessions: MiningState = {
     ],
   },
   merged: {
-    addresses: [
-      {
-        threads: 1,
-        url: 'firstAddress',
-      },
-      {
-        threads: 2,
-        url: 'secondAddress',
-      },
-    ],
+    threads: 1,
+    urls: ['firstAddress'],
+    address: 'address',
     sessions: [
       {
         total: {
