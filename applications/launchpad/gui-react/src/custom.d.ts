@@ -48,6 +48,8 @@ declare module 'styled-components' {
     warning: string
     warningText: string
     warningDark: string
+    success: string
+    error: string
     expert: string
     expertText: string
     lightTag: string
@@ -78,6 +80,8 @@ declare module 'styled-components' {
       warning: string
       warningText: string
       warningDark: string
+      success: string
+      error: string
       expert: string
       expertText: string
       lightTag: string
