@@ -26,7 +26,7 @@ describe('PasswordInput', () => {
       </ThemeProvider>,
     )
 
-    const passwordIcon = screen.getByTestId('icon-test')
+    const passwordIcon = screen.getByTestId('reveal-icon-test')
     expect(passwordIcon).toBeInTheDocument()
 
     fireEvent.click(passwordIcon)

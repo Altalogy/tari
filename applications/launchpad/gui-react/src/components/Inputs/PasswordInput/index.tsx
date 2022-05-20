@@ -33,7 +33,10 @@ const PasswordInput = ({ ...props }: PasswordInputProps) => {
           {showPassword ? (
             <Eye onClick={() => setShowPassword(false)} />
           ) : (
-            <EyeSlash onClick={() => setShowPassword(true)} />
+            <EyeSlash
+              onClick={() => setShowPassword(true)}
+              data-testid='reveal-icon-test'
+            />
           )}
         </ClickableInputIcon>
       ) : null}
