@@ -141,10 +141,6 @@ const MiningBox = ({
       tag: {
         text: t.common.phrases.startHere,
       },
-      boxStyle: {
-        boxShadow: theme.shadow40,
-        borderColor: 'transparent',
-      },
     },
     [MiningBoxStatus.Paused]: {
       tag: {
