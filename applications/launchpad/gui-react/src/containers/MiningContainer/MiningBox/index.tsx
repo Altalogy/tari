@@ -4,6 +4,7 @@ import deepmerge from 'deepmerge'
 import Button from '../../../components/Button'
 import CoinsList from '../../../components/CoinsList'
 import NodeBox, { NodeBoxContentPlaceholder } from '../../../components/NodeBox'
+import Text from '../../../components/Text'
 
 import { useAppDispatch } from '../../../store/hooks'
 
@@ -24,6 +25,7 @@ import RunningButton from '../../../components/RunningButton'
 
 const parseLastSessionToCoins = (
   lastSession: MiningSession | undefined,
+  theCurrentStatus: MiningBoxStatus,
   icons?: MiningCoinIconProp[],
 ) => {
   if (lastSession && lastSession.total) {
@@ -36,7 +38,7 @@ const parseLastSessionToCoins = (
         lastSession.total && lastSession.total[coin]
           ? lastSession.total[coin]
           : '0',
-      loading: !anyNonZeroCoin,
+      loading: !anyNonZeroCoin && theCurrentStatus === MiningBoxStatus.Running,
       suffixText: lastSession.finishedAt ? t.mining.minedInLastSession : '',
       icon: icons?.find(i => i.coin === coin)?.component,
     }))
@@ -91,6 +93,8 @@ const MiningBox = ({
 
   let theCurrentStatus = currentStatus
 
+  const lastSession = nodeState.session
+
   if (!theCurrentStatus) {
     if (
       containersState.error ||
@@ -99,16 +103,14 @@ const MiningBox = ({
       theCurrentStatus = MiningBoxStatus.Error
     } else if (containersState.running) {
       theCurrentStatus = MiningBoxStatus.Running
+    } else if (!lastSession) {
+      theCurrentStatus = MiningBoxStatus.PausedNoSession
     } else {
       theCurrentStatus = MiningBoxStatus.Paused
     }
   }
 
-  const lastSession = nodeState.sessions
-    ? nodeState.sessions[nodeState.sessions.length - 1]
-    : undefined
-
-  const coins = parseLastSessionToCoins(lastSession, icons)
+  const coins = parseLastSessionToCoins(lastSession, theCurrentStatus, icons)
 
   // Is there any outgoing action, so the buttons should be disabled?
   const disableActions = containersState.pending
@@ -150,6 +152,11 @@ const MiningBox = ({
         type: 'light',
       },
     },
+    [MiningBoxStatus.PausedNoSession]: {
+      tag: {
+        text: t.common.phrases.startHere,
+      },
+    },
     [MiningBoxStatus.Running]: {
       tag: {
         text: t.common.adjectives.running,
@@ -176,19 +183,20 @@ const MiningBox = ({
     },
   }
 
-  const currentState = useMemo(
-    () =>
-      deepmerge.all([
-        defaultConfig,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        theCurrentStatus ? defaultStates[theCurrentStatus]! : {},
-        theCurrentStatus && statuses && statuses[theCurrentStatus]
-          ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            statuses[theCurrentStatus]!
-          : {},
-      ]) as NodeBoxStatusConfig,
-    [theCurrentStatus, nodeState],
-  )
+  const currentState = useMemo(() => {
+    const fromDefaultState = theCurrentStatus
+      ? defaultStates[theCurrentStatus]
+      : {}
+    const fromProps =
+      theCurrentStatus && statuses && statuses[theCurrentStatus]
+        ? statuses[theCurrentStatus]
+        : {}
+    return deepmerge.all([
+      defaultConfig,
+      fromDefaultState || {},
+      fromProps || {},
+    ]) as NodeBoxStatusConfig
+  }, [theCurrentStatus, nodeState, statuses])
 
   const componentForCurrentStatus = () => {
     if (children) {
@@ -220,6 +228,20 @@ const MiningBox = ({
               <div>{t.mining.placeholders.statusError}</div>
             </MiningBoxContent>
           </NodeBoxContentPlaceholder>
+        )
+      case MiningBoxStatus.PausedNoSession:
+        return (
+          <MiningBoxContent data-testid='mining-box-paused-content'>
+            <Text>{t.mining.readyToMiningText}</Text>
+            <Button
+              onClick={() => dispatch(actions.startMiningNode({ node: node }))}
+              disabled={disableActions}
+              loading={disableActions}
+              testId={`${node}-run-btn`}
+            >
+              {t.mining.actions.startMining}
+            </Button>
+          </MiningBoxContent>
         )
       case MiningBoxStatus.Paused:
         return (

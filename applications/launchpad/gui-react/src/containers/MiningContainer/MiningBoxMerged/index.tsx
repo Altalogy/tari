@@ -12,11 +12,30 @@ import MiningBox from '../MiningBox'
 import { MiningBoxStatus } from '../MiningBox/types'
 
 import { Container } from '../../../store/containers/types'
+
+import t from '../../../locales'
+
 // import SetupMerged from './SetupMerged'
 import SetupMergedWithForm from './SetupMergedWithForm'
+import {
+  BestChoiceTagIcon,
+  BestChoiceTagText,
+  StyledBestChoiceTag,
+} from './styles'
+
+const BestChoiceTag = () => {
+  return (
+    <StyledBestChoiceTag>
+      <BestChoiceTagText>{t.common.phrases.bestChoice} </BestChoiceTagText>
+      <BestChoiceTagIcon>💪</BestChoiceTagIcon>
+    </StyledBestChoiceTag>
+  )
+}
 
 const MiningBoxMerged = () => {
   const theme = useTheme()
+
+  const [bestChoiceTag, setBestChoiceTag] = useState(false)
 
   let boxContent: ReactNode | undefined
   let currentStatus: MiningBoxStatus | undefined
@@ -56,6 +75,16 @@ const MiningBoxMerged = () => {
   }, [containersState])
 
   const statuses = {
+    [MiningBoxStatus.SetupRequired]: {
+      tag: {
+        text: bestChoiceTag ? <BestChoiceTag /> : t.common.phrases.readyToSet,
+      },
+    },
+    [MiningBoxStatus.PausedNoSession]: {
+      tag: {
+        text: t.common.phrases.readyToGo,
+      },
+    },
     [MiningBoxStatus.Running]: {
       boxStyle: {
         background: theme.mergedGradient,
@@ -73,7 +102,10 @@ const MiningBoxMerged = () => {
      */
     // boxContent = <SetupMerged mergedSetupRequired={mergedSetupRequired} />
     boxContent = (
-      <SetupMergedWithForm mergedSetupRequired={mergedSetupRequired} />
+      <SetupMergedWithForm
+        mergedSetupRequired={mergedSetupRequired}
+        changeTag={() => setBestChoiceTag(true)}
+      />
     )
   }
 
