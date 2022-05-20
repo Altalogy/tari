@@ -10,3 +10,13 @@ export const InputIcons = styled.div`
     margin-right: 2px;
   }
 `
+
+export const ClickableInputIcon = styled.div`
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+`
+
+export const StyledStrengthMeter = styled.span`
+  transform: rotate(-90deg);
+`

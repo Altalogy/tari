@@ -5,7 +5,7 @@ import Eye from '../../../styles/Icons/Eye'
 import EyeSlash from '../../../styles/Icons/EyeSlash'
 
 import { PasswordInputProps } from './types'
-import { InputIcons } from './styles'
+import { ClickableInputIcon, InputIcons } from './styles'
 import StrengthMeter from './StrengthMeter'
 
 /**
@@ -28,7 +28,15 @@ const PasswordInput = ({ ...props }: PasswordInputProps) => {
   const inputIcons = (
     <InputIcons>
       {useStrengthMeter ? <StrengthMeter password={props.value} /> : null}
-      {useReveal ? showPassword ? <Eye /> : <EyeSlash /> : null}
+      {useReveal ? (
+        <ClickableInputIcon>
+          {showPassword ? (
+            <Eye onClick={() => setShowPassword(false)} />
+          ) : (
+            <EyeSlash onClick={() => setShowPassword(true)} />
+          )}
+        </ClickableInputIcon>
+      ) : null}
     </InputIcons>
   )
 
@@ -37,7 +45,6 @@ const PasswordInput = ({ ...props }: PasswordInputProps) => {
       type={showPassword ? 'text' : 'password'}
       {...props}
       inputIcon={inputIcons}
-      onIconClick={() => setShowPassword(show => !show)}
     />
   )
 }

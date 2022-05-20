@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useSpring, animated } from 'react-spring'
 import { useTheme } from 'styled-components'
 import zxcvbn from 'zxcvbn'
+import { StyledStrengthMeter } from './styles'
 
 /**
  * Calculate the password strength with zxcvbn and render circle meter.
@@ -50,39 +51,41 @@ const StrengthMeter = ({ password }: { password?: string }) => {
   })
 
   return (
-    <svg
-      viewBox='0 0 22 22'
-      height='22px'
-      width='22px'
-      data-testid='strength-meter'
-      data-strength={strength}
-    >
-      {strength === 0 ? (
-        <animated.circle
-          strokeDashoffset={offset}
-          strokeDasharray={offset}
-          strokeWidth='2'
-          cx='11'
-          cy='11'
-          r='9'
-          stroke='transparent'
-          fill='none'
-          ref={pathRef}
-        />
-      ) : (
-        <animated.circle
-          strokeDashoffset={progress}
-          strokeDasharray={offset}
-          strokeWidth='2'
-          cx='11'
-          cy='11'
-          r='9'
-          stroke={color}
-          fill='none'
-          ref={pathRef}
-        />
-      )}
-    </svg>
+    <StyledStrengthMeter>
+      <svg
+        viewBox='0 0 22 22'
+        height='22px'
+        width='22px'
+        data-testid='strength-meter'
+        data-strength={strength}
+      >
+        {strength === 0 ? (
+          <animated.circle
+            strokeDashoffset={offset}
+            strokeDasharray={offset}
+            strokeWidth='2'
+            cx='11'
+            cy='11'
+            r='9'
+            stroke='transparent'
+            fill='none'
+            ref={pathRef}
+          />
+        ) : (
+          <animated.circle
+            strokeDashoffset={progress}
+            strokeDasharray={offset}
+            strokeWidth='2'
+            cx='11'
+            cy='11'
+            r='9'
+            stroke={color}
+            fill='none'
+            ref={pathRef}
+          />
+        )}
+      </svg>
+    </StyledStrengthMeter>
   )
 }
 
