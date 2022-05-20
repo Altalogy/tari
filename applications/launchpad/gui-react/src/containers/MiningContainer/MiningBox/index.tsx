@@ -27,13 +27,16 @@ const parseLastSessionToCoins = (
   icons?: MiningCoinIconProp[],
 ) => {
   if (lastSession && lastSession.total) {
+    const anyNonZeroCoin = Object.entries(lastSession.total).some(
+      c => Number(c[1]) !== 0,
+    )
     return Object.keys(lastSession.total).map(coin => ({
       unit: coin,
       amount:
         lastSession.total && lastSession.total[coin]
           ? lastSession.total[coin]
           : '0',
-      loading: lastSession.pending,
+      loading: !anyNonZeroCoin,
       suffixText: lastSession.finishedAt ? t.mining.minedInLastSession : '',
       icon: icons?.find(i => i.coin === coin)?.component,
     }))

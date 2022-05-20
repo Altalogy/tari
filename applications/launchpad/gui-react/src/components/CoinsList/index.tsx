@@ -4,6 +4,17 @@ import Text from '../Text'
 import { CoinsListItem, IconWrapper, StyledCoinsList } from './styles'
 import { CoinsListProps } from './types'
 
+const formatAmount = (amount: string) => {
+  if (Number(amount) === 0) {
+    return '00 000'
+  } else {
+    // Add spaces to number
+    const splitted = amount.toString().split('.')
+    splitted[0] = splitted[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
+    return splitted.join('.')
+  }
+}
+
 /**
  * Render the list of coins with amount.
  * @param {CoinProps[]} coins - the list of coins
@@ -29,7 +40,7 @@ const CoinsList = ({ coins, color, showSymbols }: CoinsListProps) => {
             <IconWrapper>{c.icon}</IconWrapper>
           ) : null}
 
-          <Text type='subheader'>{c.amount}</Text>
+          <Text type='subheader'>{formatAmount(c.amount)}</Text>
           <Text
             as='span'
             type='smallMedium'
