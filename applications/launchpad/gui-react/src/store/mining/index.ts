@@ -6,7 +6,7 @@ import { MiningState } from './types'
 
 const currencies: Record<'tari' | 'merged', string[]> = {
   tari: ['xtr'],
-  merged: ['xmr', 'xtr'],
+  merged: ['xtr', 'xmr'],
 }
 
 export const initialState: MiningState = {

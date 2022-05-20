@@ -74,6 +74,7 @@ const SetupMergedWithForm = ({
                 <Input
                   placeholder={t.mining.setup.addressPlaceholder}
                   testId='address-input'
+                  autoFocus
                   {...field}
                 />
               )}
