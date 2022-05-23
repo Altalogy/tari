@@ -19,7 +19,7 @@ export enum MiningBoxStatus {
 export interface NodeBoxStatusConfig {
   title?: string
   tag?: {
-    text: string | ReactNode
+    content: string | ReactNode
     type?: TagType
   }
   boxStyle?: CSSProperties

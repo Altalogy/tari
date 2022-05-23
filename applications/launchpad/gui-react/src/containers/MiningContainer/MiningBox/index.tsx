@@ -139,23 +139,23 @@ const MiningBox = ({
   }> = {
     [MiningBoxStatus.SetupRequired]: {
       tag: {
-        text: t.common.phrases.startHere,
+        content: t.common.phrases.startHere,
       },
     },
     [MiningBoxStatus.Paused]: {
       tag: {
-        text: t.common.adjectives.paused,
+        content: t.common.adjectives.paused,
         type: 'light',
       },
     },
     [MiningBoxStatus.PausedNoSession]: {
       tag: {
-        text: t.common.phrases.startHere,
+        content: t.common.phrases.startHere,
       },
     },
     [MiningBoxStatus.Running]: {
       tag: {
-        text: t.common.adjectives.running,
+        content: t.common.adjectives.running,
         type: 'running',
       },
       boxStyle: {
@@ -173,7 +173,7 @@ const MiningBox = ({
     },
     [MiningBoxStatus.Error]: {
       tag: {
-        text: t.common.nouns.problem,
+        content: t.common.nouns.problem,
         type: 'warning',
       },
     },

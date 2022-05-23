@@ -77,12 +77,16 @@ const MiningBoxMerged = () => {
   const statuses = {
     [MiningBoxStatus.SetupRequired]: {
       tag: {
-        text: bestChoiceTag ? <BestChoiceTag /> : t.common.phrases.readyToSet,
+        content: bestChoiceTag ? (
+          <BestChoiceTag />
+        ) : (
+          t.common.phrases.readyToSet
+        ),
       },
     },
     [MiningBoxStatus.PausedNoSession]: {
       tag: {
-        text: t.common.phrases.readyToGo,
+        content: t.common.phrases.readyToGo,
       },
     },
     [MiningBoxStatus.Running]: {
