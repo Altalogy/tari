@@ -9,7 +9,7 @@ const formatAmount = (amount: string) => {
     return '00,000'
   } else {
     try {
-      return Number(amount).toLocaleString()
+      return Number(amount).toLocaleString([], { maximumFractionDigits: 2 })
     } catch (err) {
       return '-'
     }
