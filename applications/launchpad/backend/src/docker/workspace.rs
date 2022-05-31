@@ -392,6 +392,10 @@ impl TariWorkspace {
                 mounts: Some(mounts),
                 ..Default::default()
             }),
+            labels: Some(HashMap::from([
+                (String::from("tari"), String::from("yes")),
+                (String::from("tari_service"), String::from(image.image_name())),
+            ])),
             networking_config: Some(NetworkingConfig {
                 endpoints_config: endpoints,
             }),

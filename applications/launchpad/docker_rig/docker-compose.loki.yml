@@ -1,0 +1,25 @@
+version: "3.9"
+services:
+  loki:
+    image: grafana/loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+
+  logspout:
+    image: bekt/logspout-logstash
+    restart: on-failure
+    environment:
+      - ROUTE_URIS=logstash://logstash:5000?filter.labels=tari:yes # this filters logspout to only listen to containers with label tari with value yes
+      - ALLOW_TTY=true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - logstash
+
+  logstash:
+    image: grafana/logstash-output-loki
+    restart: on-failure
+    volumes:
+      - ./logstash/:/usr/share/logstash/config
+    command: -f /usr/share/logstash/config/loki.conf
