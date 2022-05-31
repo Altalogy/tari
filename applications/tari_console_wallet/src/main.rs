@@ -19,11 +19,14 @@
 //  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
 //  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 //  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#[macro_use]
+extern crate lazy_static;
 
 use std::{env, process};
 
 use clap::Parser;
 use cli::Cli;
+use crossbeam::channel::{Receiver, Sender};
 use init::{
     boot,
     change_password,
@@ -50,7 +53,19 @@ use tari_shutdown::Shutdown;
 use tracing_subscriber::{layer::SubscriberExt, Registry};
 use wallet_modes::{command_mode, grpc_mode, recovery_mode, script_mode, tui_mode, WalletMode};
 
-use crate::{config::ApplicationConfig, init::wallet_mode, recovery::get_seed_from_seed_words};
+use crate::{
+    config::ApplicationConfig,
+    init::wallet_mode,
+    notifier::WalletEventMessage,
+    recovery::get_seed_from_seed_words,
+};
+
+lazy_static! {
+    static ref WALLET_EVENT_LISTENER: WalletEventListener = {
+        let (sender, receiver) = crossbeam::channel::unbounded::<WalletEventMessage>();
+        WalletEventListener::new(sender, receiver)
+    };
+}
 
 pub const LOG_TARGET: &str = "wallet::console_wallet::main";
 
@@ -66,6 +81,18 @@ mod utils;
 mod wallet_modes;
 
 /// Application entry point
+
+pub struct WalletEventListener {
+    sender: Sender<WalletEventMessage>,
+    receiver: Receiver<WalletEventMessage>,
+}
+
+impl WalletEventListener {
+    pub fn new(sender: Sender<WalletEventMessage>, receiver: Receiver<WalletEventMessage>) -> Self {
+        WalletEventListener { sender, receiver }
+    }
+}
+
 fn main() {
     // Uncomment to enable tokio tracing via tokio-console
     // console_subscriber::init();

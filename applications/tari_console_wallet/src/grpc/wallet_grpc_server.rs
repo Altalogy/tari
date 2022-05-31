@@ -20,7 +20,10 @@
 //  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 //  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::convert::{TryFrom, TryInto};
+use std::{
+    convert::{TryFrom, TryInto},
+    time::Duration,
+};
 
 use futures::{channel::mpsc, future, SinkExt};
 use log::*;
@@ -71,6 +74,9 @@ use tari_app_grpc::{
         SetBaseNodeRequest,
         SetBaseNodeResponse,
         TransactionDirection,
+        TransactionEvent,
+        TransactionEventRequest,
+        TransactionEventResponse,
         TransactionInfo,
         TransactionStatus,
         TransferRequest,
@@ -97,6 +103,8 @@ use tari_wallet::{
 };
 use tokio::task;
 use tonic::{Request, Response, Status};
+
+use crate::WALLET_EVENT_LISTENER;
 
 const LOG_TARGET: &str = "wallet::ui::grpc";
 
@@ -125,6 +133,7 @@ impl WalletGrpcServer {
 #[tonic::async_trait]
 impl wallet_server::Wallet for WalletGrpcServer {
     type GetCompletedTransactionsStream = mpsc::Receiver<Result<GetCompletedTransactionsResponse, Status>>;
+    type StreamTransactionEventsStream = mpsc::Receiver<Result<TransactionEventResponse, Status>>;
 
     async fn get_version(&self, _: Request<GetVersionRequest>) -> Result<Response<GetVersionResponse>, Status> {
         Ok(Response::new(GetVersionResponse {
@@ -540,6 +549,41 @@ impl wallet_server::Wallet for WalletGrpcServer {
             .collect();
 
         Ok(Response::new(GetTransactionInfoResponse { transactions }))
+    }
+
+    async fn stream_transaction_events(
+        &self,
+        _request: tonic::Request<TransactionEventRequest>,
+    ) -> Result<Response<Self::StreamTransactionEventsStream>, Status> {
+        let (mut sender, receiver) = mpsc::channel(100);
+        task::spawn(async move {
+            let event_listener = &WALLET_EVENT_LISTENER.receiver;
+            loop {
+                let transaction_event = match event_listener.recv_timeout(Duration::from_secs(1)) {
+                    Ok(source) => TransactionEvent::try_from(source),
+                    Err(_) => continue,
+                };
+                if transaction_event.is_ok() {
+                    let response = TransactionEventResponse {
+                        transaction: Some(transaction_event.unwrap()),
+                    };
+                    match sender.send(Ok(response)).await {
+                        Ok(_) => (),
+                        Err(err) => {
+                            warn!(target: LOG_TARGET, "Error sending transaction via GRPC:  {}", err);
+                            match sender.send(Err(Status::unknown("Error sending data"))).await {
+                                Ok(_) => (),
+                                Err(send_err) => {
+                                    warn!(target: LOG_TARGET, "Error sending error to GRPC client: {}", send_err)
+                                },
+                            }
+                            return;
+                        },
+                    }
+                }
+            }
+        });
+        Ok(Response::new(receiver))
     }
 
     async fn get_completed_transactions(

@@ -40,6 +40,8 @@ use tari_wallet::{
 };
 use tokio::runtime::Handle;
 
+use crate::WALLET_EVENT_LISTENER;
+
 pub const LOG_TARGET: &str = "wallet::notifier";
 const RECEIVED: &str = "received";
 const SENT: &str = "sent";
@@ -48,6 +50,13 @@ const CONFIRMATION: &str = "confirmation";
 const MINED: &str = "mined";
 const CANCELLED: &str = "cancelled";
 
+#[derive(Clone)]
+pub enum WalletEventMessage {
+    Completed((String, CompletedTransaction)),
+    Outbound((String, OutboundTransaction)),
+    Inbound((String, InboundTransaction)),
+    None,
+}
 #[derive(Clone)]
 pub struct Notifier {
     path: Option<PathBuf>,
@@ -66,12 +75,13 @@ impl Notifier {
 
         if let Some(program) = self.path.clone() {
             let mut transaction_service = self.wallet.transaction_service.clone();
-
             self.handle.spawn(async move {
+                let sender = &WALLET_EVENT_LISTENER.sender.clone();
                 match transaction_service.get_completed_transaction(tx_id).await {
                     Ok(tx) => {
                         let args = args_from_complete(&tx, RECEIVED, None);
                         let result = Command::new(program).args(&args).output();
+                        let _ = sender.send(WalletEventMessage::Completed((RECEIVED.to_string(), tx.clone())));
                         log(result);
                     },
                     Err(e) => error!(target: LOG_TARGET, "Transaction service error: {}", e),
@@ -90,10 +100,13 @@ impl Notifier {
             let mut transaction_service = self.wallet.transaction_service.clone();
 
             self.handle.spawn(async move {
+                let sender = &WALLET_EVENT_LISTENER.sender.clone();
                 match transaction_service.get_completed_transaction(tx_id).await {
                     Ok(tx) => {
                         let args = args_from_complete(&tx, CONFIRMATION, Some(confirmations));
                         let result = Command::new(program).args(&args).output();
+                        let message = WalletEventMessage::Completed((CONFIRMATION.to_string(), tx));
+                        let _ = sender.send(message);
                         log(result);
                     },
                     Err(e) => error!(target: LOG_TARGET, "Transaction service error: {}", e),
@@ -112,6 +125,7 @@ impl Notifier {
             let mut transaction_service = self.wallet.transaction_service.clone();
 
             self.handle.spawn(async move {
+                let sender = &WALLET_EVENT_LISTENER.sender.clone();
                 match transaction_service.get_completed_transaction(tx_id).await {
                     Ok(tx) => {
                         let confirmations = match transaction_service.get_num_confirmations_required().await {
@@ -121,8 +135,11 @@ impl Notifier {
                                 None
                             },
                         };
+
                         let args = args_from_complete(&tx, MINED, confirmations);
                         let result = Command::new(program).args(&args).output();
+                        let message = WalletEventMessage::Completed((MINED.to_string(), tx));
+                        let _ = sender.send(message);
                         log(result);
                     },
                     Err(e) => error!(target: LOG_TARGET, "Transaction service error: {}", e),
@@ -150,11 +167,15 @@ impl Notifier {
             let mut transaction_service = self.wallet.transaction_service.clone();
 
             self.handle.spawn(async move {
+                let sender = &WALLET_EVENT_LISTENER.sender.clone();
                 match transaction_service.get_pending_outbound_transactions().await {
                     Ok(txs) => {
                         if let Some(tx) = txs.get(&tx_id) {
                             let args = args_from_outbound(tx, event);
                             let result = Command::new(program).args(&args).output();
+                            let message = WalletEventMessage::Outbound((event.to_string(), tx.clone()));
+                            let _ = sender.send(message);
+
                             log(result);
                         } else {
                             error!(target: LOG_TARGET, "Not found in pending outbound set tx_id: {}", tx_id);
@@ -176,13 +197,27 @@ impl Notifier {
             let mut transaction_service = self.wallet.transaction_service.clone();
 
             self.handle.spawn(async move {
+                let sender = &WALLET_EVENT_LISTENER.sender.clone();
                 match transaction_service.get_any_transaction(tx_id).await {
                     Ok(Some(wallet_tx)) => {
                         let args = match wallet_tx {
-                            WalletTransaction::Completed(tx) => args_from_complete(&tx, CANCELLED, None),
-                            WalletTransaction::PendingInbound(tx) => args_from_inbound(&tx, CANCELLED),
-                            WalletTransaction::PendingOutbound(tx) => args_from_outbound(&tx, CANCELLED),
+                            WalletTransaction::Completed(tx) => {
+                                let message = WalletEventMessage::Completed((CANCELLED.to_string(), tx.clone()));
+                                let _ = sender.send(message);
+                                args_from_complete(&tx, CANCELLED, None)
+                            },
+                            WalletTransaction::PendingInbound(tx) => {
+                                let message = WalletEventMessage::Inbound((CANCELLED.to_string(), tx.clone()));
+                                let _ = sender.send(message);
+                                args_from_inbound(&tx, CANCELLED)
+                            },
+                            WalletTransaction::PendingOutbound(tx) => {
+                                let message = WalletEventMessage::Outbound((CANCELLED.to_string(), tx.clone()));
+                                let _ = sender.send(message);
+                                args_from_outbound(&tx, CANCELLED)
+                            },
                         };
+                        // c
                         let result = Command::new(program).args(&args).output();
                         log(result);
                     },
