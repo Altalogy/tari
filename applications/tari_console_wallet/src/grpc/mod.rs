@@ -16,7 +16,7 @@ impl TryFrom<WalletEventMessage> for TransactionEvent {
 
     fn try_from(value: WalletEventMessage) -> Result<Self, Self::Error> {
         match value {
-            WalletEventMessage::Completed((event, tx)) => Ok(TransactionEvent {
+            WalletEventMessage::Completed{ event, transaction: tx} => Ok(TransactionEvent {
                 event,
                 tx_id: tx.tx_id.to_string(),
                 source_pk: tx.source_public_key.to_hex().into_bytes(),
@@ -26,7 +26,7 @@ impl TryFrom<WalletEventMessage> for TransactionEvent {
                 amount: tx.amount.as_u64(),
                 message: tx.message,
             }),
-            WalletEventMessage::Outbound((event, outbound)) => Ok(TransactionEvent {
+            WalletEventMessage::Outbound{ event,  transaction: outbound} => Ok(TransactionEvent {
                 event,
                 tx_id: outbound.tx_id.to_string(),
                 source_pk: vec![],
@@ -36,7 +36,7 @@ impl TryFrom<WalletEventMessage> for TransactionEvent {
                 amount: outbound.amount.as_u64(),
                 message: outbound.message,
             }),
-            WalletEventMessage::Inbound((event, inbound)) => Ok(TransactionEvent {
+            WalletEventMessage::Inbound{ event, transaction: inbound} => Ok(TransactionEvent {
                 event,
                 tx_id: inbound.tx_id.to_string(),
                 source_pk: inbound.source_public_key.clone().to_hex().into_bytes(),
@@ -45,8 +45,7 @@ impl TryFrom<WalletEventMessage> for TransactionEvent {
                 direction: "inbound".to_string(),
                 amount: inbound.amount.as_u64(),
                 message: inbound.message,
-            }),
-            _ => Err("unsupported wallet event".to_string()),
+            })
         }
     }
 }

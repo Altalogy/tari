@@ -19,6 +19,7 @@
 // SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
 // WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 use std::{fs, io::Stdout, path::PathBuf};
 
 use log::*;
@@ -29,6 +30,7 @@ use tari_wallet::{WalletConfig, WalletSqlite};
 use tokio::runtime::Handle;
 use tonic::transport::Server;
 use tui::backend::CrosstermBackend;
+use tokio::sync::broadcast;
 
 use crate::{
     automation::{command_parser::parse_command, commands::command_runner},
@@ -40,6 +42,7 @@ use crate::{
     ui::App,
     utils::db::get_custom_base_node_peer_from_db,
 };
+use crate::notifier::WalletEventMessage;
 
 pub const LOG_TARGET: &str = "wallet::app::main";
 
@@ -243,12 +246,14 @@ pub fn tui_mode(
     base_node_config: &PeerConfig,
     mut wallet: WalletSqlite,
 ) -> Result<(), ExitError> {
+    let (events_broadcaster, events_listener) = broadcast::channel(100);
     if let Some(ref grpc_address) = config.grpc_address {
-        let grpc = WalletGrpcServer::new(wallet.clone());
+        let grpc = WalletGrpcServer::new(wallet.clone(), events_listener);
         handle.spawn(run_grpc(grpc, grpc_address.clone()));
     }
 
-    let notifier = Notifier::new(config.notify_file.clone(), handle.clone(), wallet.clone());
+
+    let notifier = Notifier::new(config.notify_file.clone(), handle.clone(), wallet.clone(), events_broadcaster);
 
     let base_node_selected;
     if let Some(peer) = base_node_config.base_node_custom.clone() {
@@ -336,9 +341,10 @@ pub fn recovery_mode(
 }
 
 pub fn grpc_mode(handle: Handle, config: &WalletConfig, wallet: WalletSqlite) -> Result<(), ExitError> {
+    let (events_broadcaster, events_listener) = broadcast::channel(100);
     info!(target: LOG_TARGET, "Starting grpc server");
     if let Some(grpc_address) = &config.grpc_address {
-        let grpc = WalletGrpcServer::new(wallet);
+        let grpc = WalletGrpcServer::new(wallet,events_listener);
         handle
             .block_on(run_grpc(grpc, grpc_address.clone()))
             .map_err(|e| ExitError::new(ExitCode::GrpcError, e))?;

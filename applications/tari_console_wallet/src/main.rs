@@ -60,12 +60,12 @@ use crate::{
     recovery::get_seed_from_seed_words,
 };
 
-lazy_static! {
-    static ref WALLET_EVENT_LISTENER: WalletEventListener = {
-        let (sender, receiver) = crossbeam::channel::unbounded::<WalletEventMessage>();
-        WalletEventListener::new(sender, receiver)
-    };
-}
+// lazy_static! {
+//     static ref WALLET_EVENT_LISTENER: WalletEventListener = {
+//         let (sender, receiver) = crossbeam::channel::unbounded::<WalletEventMessage>();
+//         WalletEventListener::new(sender, receiver)
+//     };
+// }
 
 pub const LOG_TARGET: &str = "wallet::console_wallet::main";
 
@@ -80,18 +80,18 @@ mod ui;
 mod utils;
 mod wallet_modes;
 
-/// Application entry point
-
-pub struct WalletEventListener {
-    sender: Sender<WalletEventMessage>,
-    receiver: Receiver<WalletEventMessage>,
-}
-
-impl WalletEventListener {
-    pub fn new(sender: Sender<WalletEventMessage>, receiver: Receiver<WalletEventMessage>) -> Self {
-        WalletEventListener { sender, receiver }
-    }
-}
+// /// Application entry point
+//
+// pub struct WalletEventListener {
+//     sender: Sender<WalletEventMessage>,
+//     receiver: Receiver<WalletEventMessage>,
+// }
+//
+// impl WalletEventListener {
+//     pub fn new(sender: Sender<WalletEventMessage>, receiver: Receiver<WalletEventMessage>) -> Self {
+//         WalletEventListener { sender, receiver }
+//     }
+// }
 
 fn main() {
     // Uncomment to enable tokio tracing via tokio-console

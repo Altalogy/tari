@@ -103,18 +103,20 @@ use tari_wallet::{
 };
 use tokio::task;
 use tonic::{Request, Response, Status};
-
-use crate::WALLET_EVENT_LISTENER;
+use crate::notifier::WalletEventMessage;
+use tokio::sync::broadcast::Receiver;
+use tokio::sync::broadcast;
 
 const LOG_TARGET: &str = "wallet::ui::grpc";
 
 pub struct WalletGrpcServer {
     wallet: WalletSqlite,
+    events_channel: Receiver<WalletEventMessage>
 }
 
 impl WalletGrpcServer {
-    pub fn new(wallet: WalletSqlite) -> Self {
-        Self { wallet }
+    pub fn new(wallet: WalletSqlite, events_channel: Receiver<WalletEventMessage>) -> Self {
+        Self { wallet, events_channel }
     }
 
     fn get_transaction_service(&self) -> TransactionServiceHandle {
@@ -556,33 +558,89 @@ impl wallet_server::Wallet for WalletGrpcServer {
         _request: tonic::Request<TransactionEventRequest>,
     ) -> Result<Response<Self::StreamTransactionEventsStream>, Status> {
         let (mut sender, receiver) = mpsc::channel(100);
+
+        // let event_listener = self.events_channel.clone();
+
+        // let mut shutdown_signal = self.wallet;
+        let mut transaction_service_events = self.wallet.transaction_service.get_event_stream();
+
         task::spawn(async move {
-            let event_listener = &WALLET_EVENT_LISTENER.receiver;
             loop {
-                let transaction_event = match event_listener.recv_timeout(Duration::from_secs(1)) {
-                    Ok(source) => TransactionEvent::try_from(source),
-                    Err(_) => continue,
-                };
-                if transaction_event.is_ok() {
-                    let response = TransactionEventResponse {
-                        transaction: Some(transaction_event.unwrap()),
-                    };
-                    match sender.send(Ok(response)).await {
-                        Ok(_) => (),
-                        Err(err) => {
-                            warn!(target: LOG_TARGET, "Error sending transaction via GRPC:  {}", err);
-                            match sender.send(Err(Status::unknown("Error sending data"))).await {
-                                Ok(_) => (),
-                                Err(send_err) => {
-                                    warn!(target: LOG_TARGET, "Error sending error to GRPC client: {}", send_err)
+                tokio::select! {
+                result = transaction_service_events.recv() => {
+                    match result {
+                        Ok(msg) => {
+                            match (*msg).clone() {
+                                TransactionEvent::ReceivedFinalizedTransaction(tx_id) => {
+                                    todo!()
                                 },
+                                TransactionEvent::TransactionMinedUnconfirmed{tx_id, num_confirmations, is_valid: _}  |
+                                TransactionEvent::FauxTransactionUnconfirmed{tx_id, num_confirmations, is_valid: _}=> {
+                                    todo!()
+                                },
+                                TransactionEvent::TransactionMined{tx_id, is_valid: _} |
+                                TransactionEvent::FauxTransactionConfirmed{tx_id, is_valid: _}=> {
+                                    todo!()
+                                },
+                                TransactionEvent::TransactionCancelled(tx_id, _) => {
+                                    todo!()
+                                },
+                                TransactionEvent::ReceivedTransaction(tx_id) => {
+                                    todo!()
+                                },
+                                TransactionEvent::ReceivedTransactionReply(tx_id) => {
+                                    // self.trigger_tx_state_refresh(tx_id).await;
+                                    // self.trigger_balance_refresh();
+                                    // self.add_notification(
+                                    //     format!("Transaction Reply Received - TxId: {}", tx_id)
+                                    // ).await;
+                                    todo!()
+                                },
+                                TransactionEvent::TransactionBroadcast(tx_id) => {
+                                    // self.trigger_tx_state_refresh(tx_id).await;
+                                    // self.trigger_balance_refresh();
+                                    // self.add_notification(
+                                    //     format!("Transaction Broadcast to Mempool - TxId: {}", tx_id)
+                                    // ).await;
+                                    todo!()
+                                },
+                                TransactionEvent::TransactionMinedRequestTimedOut(tx_id) |
+                                TransactionEvent::TransactionImported(tx_id)  => {
+                                    // self.trigger_tx_state_refresh(tx_id).await;
+                                    // self.trigger_balance_refresh();
+                                },
+                                TransactionEvent::TransactionCompletedImmediately(tx_id) => {
+                                    // self.trigger_tx_state_refresh(tx_id).await;
+                                    // self.trigger_balance_refresh();
+                                    // notifier.transaction_sent_or_queued(tx_id, true);
+                                    todo!()
+                                },
+                                TransactionEvent::TransactionSendResult(tx_id, status) => {
+                                    // self.trigger_tx_state_refresh(tx_id).await;
+                                    // self.trigger_balance_refresh();
+                                    // notifier.transaction_sent_or_queued(tx_id, status.direct_send_result || status.store_and_forward_send_result);
+                                    todo!()
+                                },
+                                TransactionEvent::TransactionValidationStateChanged(_) => {
+                                    // self.trigger_full_tx_state_refresh().await;
+                                    // self.trigger_balance_refresh();
+                                    todo!()
+                                },
+                                // Only the above variants trigger state refresh
+                                _ => (),
                             }
-                            return;
                         },
+                        Err(broadcast::error::RecvError::Lagged(n)) => {
+                            warn!(target: LOG_TARGET, "Missed {} from Transaction events", n);
+                        }
+                        Err(broadcast::error::RecvError::Closed) => {}
                     }
-                }
+        }
             }
-        });
+
+            }
+        }
+        );
         Ok(Response::new(receiver))
     }
 

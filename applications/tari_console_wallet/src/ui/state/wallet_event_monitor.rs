@@ -39,7 +39,7 @@ use crate::{
     ui::state::{AppStateInner, EventListItem},
 };
 
-const LOG_TARGET: &str = "wallet::console_wallet::wallet_event_monitor";
+const LOG_TARGET: &str = "wallet::console_wallet::ui::state::wallet_event_monitor";
 
 pub struct WalletEventMonitor {
     app_state_inner: Arc<RwLock<AppStateInner>>,
