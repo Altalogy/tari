@@ -58,11 +58,11 @@ jobs:
         run: |
           cd applications/launchpad/gui-react
           yarn test:ci
-      - name: yarn tauri build
+      - name: gui-react build
         run: |
-          cd applications/launchpad
+          cd applications/launchpad/gui-react
           yarn install
-          yarn tauri build
+          yarn build
       - name: Upload the test coverage
         uses: actions/upload-artifact@v2
         with:
