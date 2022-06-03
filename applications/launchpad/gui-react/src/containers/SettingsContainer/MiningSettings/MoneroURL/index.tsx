@@ -39,6 +39,7 @@ const MoneroURL = ({
             variant='button-in-text'
             rightIcon={<SvgTrash2 color={theme.warningDark} />}
             onClick={() => remove(index)}
+            testId={`mining-url-remove-${index}`}
           />
         </div>
       </HeaderRow>
@@ -53,7 +54,7 @@ const MoneroURL = ({
         }}
         render={({ field, fieldState }) => (
           <Input
-            placeholder={t.mining.setup.addressPlaceholder}
+            placeholder={t.mining.settings.moneroUrlPlaceholder}
             testId={`mining-url-input-${index}`}
             onChange={value => field.onChange(value)}
             value={field.value}

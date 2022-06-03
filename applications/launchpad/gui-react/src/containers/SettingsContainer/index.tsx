@@ -47,6 +47,7 @@ const SettingsContainer = () => {
     })
   }, [])
 
+  // console.log('\n\n\n fst', getValues())
   const onSubmit: SubmitHandler<SettingsInputs> = async data => {
     await dispatch(saveSettings({ newSettings: data }))
     reset(data)

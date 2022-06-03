@@ -76,6 +76,7 @@ const translations = {
     moneroUrlLabel: 'Monero node URL',
     addNextUrl: 'Add next URL',
     wrongUrlFormat: 'Oops! This is not a valid URL',
+    moneroUrlPlaceholder: 'Set URL address',
   },
 }
 

@@ -50,7 +50,7 @@ const SettingsComponent = ({
 }: SettingsComponentProps) => {
   return (
     <Modal open={open} onClose={onClose}>
-      <MainContainer>
+      <MainContainer data-testid='settings-modal-container'>
         <MainContentContainer>
           <Sidebar>
             {Object.values(Settings)
@@ -113,6 +113,7 @@ const SettingsComponent = ({
               }
               onClick={() => onSubmit()}
               loading={formState.isSubmitting}
+              testId='settings-submit-btn'
             >
               {t.common.phrases.saveChanges}
             </Button>

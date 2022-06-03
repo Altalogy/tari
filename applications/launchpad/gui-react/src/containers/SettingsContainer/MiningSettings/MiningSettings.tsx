@@ -57,7 +57,6 @@ const MiningSettings = ({ control }: { control: Control<SettingsInputs> }) => {
           rules={{ required: true, minLength: 1 }}
           render={({ field }) => (
             <Input
-              placeholder={t.mining.setup.addressPlaceholder}
               testId='mining-merged-threads-input'
               onChange={value => {
                 // convert string into number

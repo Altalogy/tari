@@ -19,7 +19,7 @@ const MoneroURLs = ({ control }: { control: Control<SettingsInputs> }) => {
     <UrlList>
       {fields.map((field, index) => (
         <MoneroURL
-          key={`${index}-m-url`}
+          key={field.id}
           url={field.url}
           useAuth={field.useAuth}
           username={field.username}
@@ -31,7 +31,11 @@ const MoneroURLs = ({ control }: { control: Control<SettingsInputs> }) => {
       ))}
       {fields.length < MiningConfig.maxMoneroUrls && (
         <ActionsContainer>
-          <Button variant='button-in-text' onClick={() => append({ url: '' })}>
+          <Button
+            variant='button-in-text'
+            onClick={() => append({ url: '' })}
+            testId='add-new-monero-url-btn'
+          >
             {t.mining.settings.addNextUrl}
           </Button>
         </ActionsContainer>
