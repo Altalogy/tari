@@ -178,13 +178,6 @@ export const restart = createAsyncThunk<void, void, { state: RootState }>(
 
       await Promise.all(stopPromises)
 
-      /**
-       * @TODO Revisit this
-       * It seems that Docker stops and starts containers properly.
-       * However, in the app, we get kind of "container name conflict" errors.
-       * Even adding the large sleep/delay (10sec) it still produces errors.
-       */
-
       // Start containers:
       const startPromises = runningContainers.map(c => {
         return dispatch(start(c))

@@ -36,18 +36,19 @@ const SettingsContainer = () => {
   })
 
   useEffect(() => {
-    reset({
-      mining: {
-        merged: {
-          address: miningMerged.address,
-          threads: miningMerged.threads,
-          urls: miningMerged.urls,
+    if (settingsOpen === true) {
+      reset({
+        mining: {
+          merged: {
+            address: miningMerged.address,
+            threads: miningMerged.threads,
+            urls: miningMerged.urls,
+          },
         },
-      },
-    })
-  }, [])
+      })
+    }
+  }, [settingsOpen])
 
-  // console.log('\n\n\n fst', getValues())
   const onSubmit: SubmitHandler<SettingsInputs> = async data => {
     await dispatch(saveSettings({ newSettings: data }))
     reset(data)
