@@ -68,19 +68,21 @@ pub async fn wallet_events(app: AppHandle<Wry>) -> Result<(), String> {
     let app_clone = app.clone();
     tauri::async_runtime::spawn(async move {
         while let Some(response) = stream.next().await {
-            let value = response.transaction.unwrap();
-            let wt = WalletTransaction {
-                event: value.event,
-                tx_id: value.tx_id,
-                source_pk: value.source_pk,
-                dest_pk: value.dest_pk,
-                status: value.status,
-                direction: value.direction,
-                amount: value.amount,
-                message: value.message,
-            };
-            if let Err(err) = app_clone.emit_all("wallet_event", wt.clone()) {
-                warn!("Could not emit event to front-end, {:?}", err);
+            if let Some(value) = response.transaction {
+                let wt = WalletTransaction {
+                    event: value.event,
+                    tx_id: value.tx_id,
+                    source_pk: value.source_pk,
+                    dest_pk: value.dest_pk,
+                    status: value.status,
+                    direction: value.direction,
+                    amount: value.amount,
+                    message: value.message,
+                };
+                
+                if let Err(err) = app_clone.emit_all("wallet_event", wt.clone()) {
+                    warn!("Could not emit event to front-end, {:?}", err);
+                }
             }
         }
         info!("Event stream has closed.");
