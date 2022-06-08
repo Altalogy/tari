@@ -61,10 +61,9 @@ const MiningSettings = ({ control }: { control: Control<SettingsInputs> }) => {
               onChange={value => {
                 // convert string into number
                 const stripped = value.replace(/\D/g, '')
-                let val =
-                  !stripped || stripped === ''
-                    ? ''
-                    : Math.abs(Math.round(parseInt(stripped)))
+                let val = !stripped
+                  ? ''
+                  : Math.abs(Math.round(parseInt(stripped)))
 
                 // limit the number of threads to maxThreads
                 if (val > MiningConfig.maxThreads) {

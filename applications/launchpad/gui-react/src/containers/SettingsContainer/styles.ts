@@ -1,5 +1,8 @@
 import styled from 'styled-components'
 
+// Preserve the space in the modal for the bottom bar with buttons.
+const SettingsBottomBarHeight = '70px'
+
 export const MainContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -9,7 +12,7 @@ export const MainContainer = styled.div`
 export const MainContentContainer = styled.div`
   display: flex;
   flex-grow: 1;
-  max-height: calc(100% - 70px);
+  max-height: calc(100% - ${SettingsBottomBarHeight});
 `
 
 export const Sidebar = styled.aside`

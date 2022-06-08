@@ -111,7 +111,7 @@ const SettingsComponent = ({
                 formState.isSubmitting ||
                 !formState.isValid
               }
-              onClick={() => onSubmit()}
+              onClick={onSubmit}
               loading={formState.isSubmitting}
               testId='settings-submit-btn'
             >
