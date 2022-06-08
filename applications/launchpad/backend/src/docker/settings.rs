@@ -48,7 +48,7 @@ pub struct BaseNodeConfig {
     pub delay: Duration,
 }
 
-#[derive(Default, Derivative, Serialize, Deserialize, Clone)]
+#[derive(Default, Derivative, Serialize, Deserialize)]
 #[derivative(Debug)]
 pub struct WalletConfig {
     /// The time delay before starting the container and running the wallet executable
@@ -59,7 +59,7 @@ pub struct WalletConfig {
     pub password: String,
 }
 
-#[derive(Default, Debug, Serialize, Deserialize, Clone)]
+#[derive(Default, Debug, Serialize, Deserialize)]
 pub struct XmRigConfig {
     /// The time delay before starting the container and running the monero miner executable
     pub delay: Duration,
@@ -67,7 +67,7 @@ pub struct XmRigConfig {
     pub monero_mining_address: String,
 }
 
-#[derive(Default, Debug, Serialize, Deserialize, Clone)]
+#[derive(Default, Debug, Serialize, Deserialize)]
 pub struct Sha3MinerConfig {
     /// The time delay before starting the container and running the SHA3 CPU miner executable
     pub delay: Duration,
@@ -75,7 +75,7 @@ pub struct Sha3MinerConfig {
     pub num_mining_threads: usize,
 }
 
-#[derive(Derivative, Serialize, Deserialize, Clone)]
+#[derive(Derivative, Serialize, Deserialize)]
 #[derivative(Debug)]
 pub struct MmProxyConfig {
     /// The time delay before starting the container and running the proxy executable
@@ -116,7 +116,7 @@ impl MmProxyConfig {
 
 /// Tari Launchpad configuration struct. This will generally be populated from some front-end or persistent storage
 /// file and is used to generate the environment variables needed to configure and run the various docker containers.
-#[derive(Default, Debug, Serialize, Deserialize, Clone)]
+#[derive(Default, Debug, Serialize, Deserialize)]
 pub struct LaunchpadConfig {
     /// The directory to use for config, id files and logs
     pub data_directory: PathBuf,

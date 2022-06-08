@@ -63,19 +63,15 @@ lazy_static! {
     pub static ref CONTAINERS: RwLock<HashMap<String, ContainerState>> = RwLock::new(HashMap::new());
 }
 
-pub fn tari_blockchain_volume_name(tari_workspace: &str, tari_network: TariNetwork) -> String {
+fn tari_blockchain_volume_name(tari_workspace: String, tari_network: TariNetwork) -> String {
     format!("{}_{}_volume", tari_workspace, tari_network.lower_case())
-}
-
-pub fn network_name(tari_workspace: &str) -> String {
-    format!("{}_network", tari_workspace)
 }
 
 pub async fn try_create_container(
     image: ImageType,
     fully_qualified_image_name: String,
-    tari_workspace: &str,
-    config: LaunchpadConfig,
+    tari_workspace: String,
+    config: &LaunchpadConfig,
     docker: Docker,
 ) -> Result<ContainerCreateResponse, DockerWrapperError> {
     debug!("{} has configuration object: {:#?}", fully_qualified_image_name, config);
@@ -84,13 +80,16 @@ pub async fn try_create_container(
     let volumes = config.volumes(image);
     let ports = config.ports(image);
     let port_map = config.port_map(image);
-    let mounts = config.mounts(image, tari_blockchain_volume_name(tari_workspace, config.tari_network));
+    let mounts = config.mounts(
+        image,
+        tari_blockchain_volume_name(tari_workspace.clone(), config.tari_network),
+    );
     let mut endpoints = HashMap::new();
     let endpoint = EndpointSettings {
         aliases: Some(vec![image.container_name().to_string()]),
         ..Default::default()
     };
-    endpoints.insert(network_name(tari_workspace), endpoint);
+    endpoints.insert(format!("{}_network", tari_workspace), endpoint);
     let options = Some(CreateContainerOptions {
         name: format!("{}_{}", tari_workspace, image.image_name()),
     });

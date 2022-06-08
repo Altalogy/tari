@@ -360,8 +360,8 @@ impl TariWorkspace {
         let container = try_create_container(
             image,
             fully_qualified_image_name.clone(),
-            self.name(),
-            self.config.clone(),
+            self.name().to_string(),
+            &self.config,
             docker.clone(),
         )
         .await?;
