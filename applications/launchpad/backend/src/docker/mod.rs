@@ -134,17 +134,18 @@ pub async fn try_destroy_container(image_name: &str, docker: Docker) -> Result<(
         .await?;
 
     for c_id in containers.iter() {
-        let id = c_id.clone().id.unwrap();
-        debug!("Removing countainer {}", id);
-        docker
-            .remove_container(
-                id.as_str(),
-                Some(RemoveContainerOptions {
-                    force: true,
-                    ..Default::default()
-                }),
-            )
-            .await?;
+        if let Some(id) = c_id.id.clone() {
+            debug!("Removing countainer {}", id);
+            docker
+                .remove_container(
+                    id.as_str(),
+                    Some(RemoveContainerOptions {
+                        force: true,
+                        ..Default::default()
+                    }),
+                )
+                .await?;
+        }
     }
     Ok(())
 }
