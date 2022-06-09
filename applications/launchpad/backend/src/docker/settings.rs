@@ -42,7 +42,10 @@ http://monero-stagenet.exan.tech:38081,\
 http://xmr-lux.boldsuck.org:38081,\
 http://singapore.node.xmr.pm:38081";
 
-#[derive(Default, Debug, Serialize, Deserialize, Clone)]
+
+pub const WALLET_GRPC_ADDRESS_URL: &str = "http://127.0.0.1:18143";
+pub const BASE_NODE_GRPC_ADDRESS_URL: &str = "http://127.0.0.1:18142";
+#[derive(Default, Debug, Serialize, Deserialize)]
 pub struct BaseNodeConfig {
     /// The time delay before starting the container and running the base node executable
     pub delay: Duration,
