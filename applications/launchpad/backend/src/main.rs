@@ -7,7 +7,7 @@
 #![cfg_attr(all(not(debug_assertions), target_os = "windows"), windows_subsystem = "windows")]
 #[macro_use]
 extern crate lazy_static;
-use std::thread;
+use std::{thread::{self, sleep}, time::Duration};
 
 use futures::StreamExt;
 use log::*;
@@ -42,9 +42,9 @@ use crate::{
         shutdown,
         start_service,
         stop_service,
-        AppState,
+        AppState, status,
     },
-    grpc::GrpcWalletClient,
+    grpc::{GrpcWalletClient, WalletIdentity}, docker::ImageType,
 };
 
 #[tokio::main]
@@ -95,7 +95,6 @@ async fn main() {
     // TODO - Load workspace definitions from persistent storage here
     let workspaces = Workspaces::default();
     info!("Using Docker version: {}", docker.version());
-    tokio::spawn(subscribe());
     tauri::Builder::default()
         .manage(AppState::new(docker, workspaces, package_info))
         .menu(menu)
@@ -140,6 +139,28 @@ async fn subscribe() {
         },
         Err(e) => error!("Failed to connect to wallet grpc server: {}", e),
     };
+}
+
+async fn check_identity() {
+    info!("Try reading wallet identity....");
+    loop {
+        sleep(Duration::from_secs(5));
+        let status = status(ImageType::Wallet).await;
+        if "running" == status.to_lowercase() {
+            let mut wallet_client = GrpcWalletClient::new();
+            match wallet_client.identity().await.map_err(|e| e.to_string()){
+                Ok(id) => {
+                    info!("Identity: {:?}", WalletIdentity::from(id));
+                    break
+                },
+                Err(err) => error!("Failed to read identity: {}", err),
+            };
+            
+        } else {
+            error!("Wallet is down");
+            continue
+        }
+    }
 }
 
 fn handle_cli_options(cli_config: &CliConfig, pkg_info: &PackageInfo) {
