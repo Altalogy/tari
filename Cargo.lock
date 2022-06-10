@@ -6841,8 +6841,8 @@ dependencies = [
  "tauri",
  "tauri-build",
  "thiserror",
- "tonic",
  "tokio 1.19.2",
+ "tonic",
  "tor-hash-passwd",
 ]
 
