@@ -49,10 +49,15 @@ use crate::{
 
 use tauri_plugin_sql::{Migration, MigrationKind, TauriSql};
 
+#[tokio::main]
+async fn spawn_grpc() {
+    tokio::spawn(subscribe());
+}
+
 fn main() {
     env_logger::init();
 
-    // spawn_grpc_thread();
+    spawn_grpc();
 
     let context = tauri::generate_context!();
     let cli_config = context.config().tauri.cli.clone().unwrap();
@@ -126,24 +131,6 @@ fn main() {
         ])
         .run(context)
         .expect("error starting");
-    // .build(context)
-    // .expect("error while running Launchpad");
-
-    // app.run(|app, event| {
-    //     if let RunEvent::Exit = event {
-    //         info!("Received Exit event");
-    //         block_on(async move {
-    //             let state = app.state();
-    //             let _message = shutdown(state).await;
-    //         });
-    //     }
-    // });
-}
-
-#[tokio::main]
-async fn spawn_grpc_thread() {
-    tokio::spawn(subscribe());
-    tauri::async_runtime::set(tokio::runtime::Handle::current());
 }
 
 async fn subscribe() {
