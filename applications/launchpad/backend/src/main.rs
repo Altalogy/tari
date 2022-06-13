@@ -44,20 +44,12 @@ use crate::{
         stop_service,
         AppState,
     },
-    grpc::GrpcWalletClient,
 };
 
 use tauri_plugin_sql::{Migration, MigrationKind, TauriSql};
 
-#[tokio::main]
-async fn spawn_grpc() {
-    tokio::spawn(subscribe());
-}
-
 fn main() {
     env_logger::init();
-
-    spawn_grpc();
 
     let context = tauri::generate_context!();
     let cli_config = context.config().tauri.cli.clone().unwrap();
@@ -131,21 +123,6 @@ fn main() {
         ])
         .run(context)
         .expect("error starting");
-}
-
-async fn subscribe() {
-    debug!("Subscribing to wallet grpc server...");
-    let mut wallet_client = GrpcWalletClient::new();
-    match wallet_client.stream().await.map_err(|e| e.chained_message()) {
-        Ok(mut stream) => {
-            debug!("Successfully subscribed to wallet grpc server.");
-            while let Some(response) = stream.next().await {
-                debug!("response: {:?}", response.transaction);
-            }
-            info!("Event stream is closed.");
-        },
-        Err(e) => error!("Failed to connect to wallet grpc server: {}", e),
-    };
 }
 
 fn handle_cli_options(cli_config: &CliConfig, pkg_info: &PackageInfo) {
