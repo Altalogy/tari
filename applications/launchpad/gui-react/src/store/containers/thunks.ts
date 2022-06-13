@@ -34,6 +34,7 @@ export const persistStats = createAsyncThunk<
 
   const repository = getStatsRepository()
   await repository.add(configuredNetwork, service, timestamp, stats)
+  await repository.add(configuredNetwork, service, timestamp, stats)
 })
 
 export const addStats = createAsyncThunk<

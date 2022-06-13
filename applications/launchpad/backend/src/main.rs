@@ -47,9 +47,13 @@ use crate::{
     grpc::GrpcWalletClient,
 };
 
-#[tokio::main]
-async fn main() {
+use tauri_plugin_sql::{Migration, MigrationKind, TauriSql};
+
+fn main() {
     env_logger::init();
+
+    // spawn_grpc_thread();
+
     let context = tauri::generate_context!();
     let cli_config = context.config().tauri.cli.clone().unwrap();
 
@@ -95,8 +99,17 @@ async fn main() {
     // TODO - Load workspace definitions from persistent storage here
     let workspaces = Workspaces::default();
     info!("Using Docker version: {}", docker.version());
-    tokio::spawn(subscribe());
+
     tauri::Builder::default()
+        .plugin(TauriSql::default().add_migrations(
+          "sqlite:launchpad.db",
+          vec![Migration {
+            version: 1,
+            description: "create stats table",
+            sql: include_str!("../migrations/2022-06-13.create-stats-table.sql"),
+            kind: MigrationKind::Up,
+          }],
+        ))
         .manage(AppState::new(docker, workspaces, package_info))
         .menu(menu)
         .invoke_handler(tauri::generate_handler![
@@ -125,6 +138,12 @@ async fn main() {
     //         });
     //     }
     // });
+}
+
+#[tokio::main]
+async fn spawn_grpc_thread() {
+    tokio::spawn(subscribe());
+    tauri::async_runtime::set(tokio::runtime::Handle::current());
 }
 
 async fn subscribe() {
