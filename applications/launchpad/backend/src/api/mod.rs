@@ -26,14 +26,14 @@ use std::{convert::TryFrom, fmt::format};
 
 use config::Config;
 use futures::StreamExt;
-use log::{debug, info, warn, error};
+use log::{debug, error, info, warn};
 use tari_app_grpc::tari_rpc::wallet_client;
 use tauri::{http::status, AppHandle, Manager, Wry};
 
 use crate::{
     commands::{status, AppState, DEFAULT_IMAGES},
     docker::{ContainerState, ImageType, TariNetwork},
-    grpc::{GrpcWalletClient, WalletTransaction, WalletIdentity},
+    grpc::{GrpcWalletClient, WalletIdentity, WalletTransaction},
 };
 
 pub const RECEIVED: &str = "received";
@@ -63,10 +63,7 @@ pub fn image_list() -> Vec<String> {
 }
 
 pub fn event_list() -> Vec<String> {
-    TRANSACTION_EVENTS
-        .iter()
-        .map(|&s|s.into())
-        .collect()
+    TRANSACTION_EVENTS.iter().map(|&s| s.into()).collect()
 }
 
 #[tauri::command]
@@ -76,5 +73,3 @@ pub async fn health_check(image: &str) -> String {
         Err(_err) => format!("image {} not found", image),
     }
 }
-
-
