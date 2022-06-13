@@ -15,23 +15,30 @@ import {
   ModalFooter,
 } from './styles'
 
+/**
+ * The Authentication form (username & password) dedicated to the Monero URL authentication.
+ *
+ * @param {AuthenticationInputs} [defaultValues] - initial values of `username` and `password`
+ * @param {(data: AuthenticationInputs) => void} onSubmit - it is being called on the form submit
+ * @param {(value: boolean) => void} close - cancel the form
+ */
 const MoneroAuthentication = ({
   defaultValues,
-  setData,
-  setOpenMiningAuthForm,
+  onSubmit,
+  close,
 }: {
   defaultValues?: AuthenticationInputs
-  setData: (data: AuthenticationInputs) => void
-  setOpenMiningAuthForm: (value: boolean) => void
+  onSubmit: (data: AuthenticationInputs) => void
+  close: () => void
 }) => {
   const { control, handleSubmit } = useForm<AuthenticationInputs>({
     mode: 'onChange',
-    defaultValues: defaultValues,
+    defaultValues,
   })
 
-  const onSubmit: SubmitHandler<AuthenticationInputs> = async data => {
-    setData(data)
-    setOpenMiningAuthForm(false)
+  const onSubmitForm: SubmitHandler<AuthenticationInputs> = async data => {
+    onSubmit(data)
+    close()
   }
 
   return (
@@ -82,14 +89,14 @@ const MoneroAuthentication = ({
         <Button
           variant='secondary'
           size='small'
-          onClick={() => setOpenMiningAuthForm(false)}
+          onClick={() => close()}
           testId='monero-auth-close-btn'
         >
           {t.common.verbs.cancel}
         </Button>
         <Button
           size='small'
-          onClick={() => handleSubmit(onSubmit)()}
+          onClick={() => handleSubmit(onSubmitForm)()}
           testId='monero-auth-submit-btn'
         >
           {t.common.verbs.submit}

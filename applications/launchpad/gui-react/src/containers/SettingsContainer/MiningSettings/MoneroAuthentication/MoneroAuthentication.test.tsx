@@ -8,14 +8,14 @@ import MoneroAuthentication from '.'
 describe('MoneroAuthentication', () => {
   it('should pass username and password on form submit', async () => {
     const closeFn = jest.fn()
-    const setValueFn = jest.fn()
+    const onSubmitFn = jest.fn()
 
     render(
       <ThemeProvider theme={themes.light}>
         <MoneroAuthentication
           defaultValues={undefined}
-          setData={setValueFn}
-          setOpenMiningAuthForm={closeFn}
+          onSubmit={onSubmitFn}
+          close={closeFn}
         />
       </ThemeProvider>,
     )
@@ -33,8 +33,8 @@ describe('MoneroAuthentication', () => {
       fireEvent.click(cancelBtn)
     })
 
-    expect(setValueFn).toBeCalledTimes(1)
-    expect(setValueFn).toHaveBeenCalledWith({
+    expect(onSubmitFn).toBeCalledTimes(1)
+    expect(onSubmitFn).toHaveBeenCalledWith({
       username: 'test-username-123',
       password: 'test-password-123',
     })
@@ -42,14 +42,14 @@ describe('MoneroAuthentication', () => {
 
   it('should call close function when cancel button is clicked', async () => {
     const closeFn = jest.fn()
-    const setValueFn = jest.fn()
+    const onSubmitFn = jest.fn()
 
     render(
       <ThemeProvider theme={themes.light}>
         <MoneroAuthentication
           defaultValues={undefined}
-          setData={setValueFn}
-          setOpenMiningAuthForm={closeFn}
+          onSubmit={onSubmitFn}
+          close={closeFn}
         />
       </ThemeProvider>,
     )

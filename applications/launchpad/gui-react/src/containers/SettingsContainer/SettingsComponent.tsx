@@ -75,10 +75,10 @@ const SettingsComponent = ({
               | AuthenticationInputs
               | undefined
           }
-          setData={val =>
+          onSubmit={val =>
             setValue('mining.merged.authentication', val, { shouldDirty: true })
           }
-          setOpenMiningAuthForm={setOpenMiningAuthForm}
+          close={() => setOpenMiningAuthForm(false)}
         />
       </Modal>
     )
