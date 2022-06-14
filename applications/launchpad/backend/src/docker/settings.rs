@@ -162,7 +162,9 @@ impl LaunchpadConfig {
             ImageType::MmProxy => self.mm_proxy_environment(),
             ImageType::Tor => self.tor_environment(),
             ImageType::Monerod => self.monerod_environment(),
-            ImageType::Frontail => self.common_envars(),
+            ImageType::Loki => self.grafana_environment(),
+            ImageType::Promtail => self.grafana_environment(),
+            ImageType::Grafana => self.grafana_environment(),
         }
     }
 
@@ -176,7 +178,9 @@ impl LaunchpadConfig {
             ImageType::MmProxy => self.build_volumes(true, false),
             ImageType::Tor => self.build_volumes(false, false),
             ImageType::Monerod => self.build_volumes(false, false),
-            ImageType::Frontail => self.build_volumes(true, false),
+            ImageType::Loki => self.build_grafana_volumes(),
+            ImageType::Promtail => self.build_grafana_volumes(),
+            ImageType::Grafana => self.build_grafana_volumes(),
         }
     }
 
@@ -190,63 +194,15 @@ impl LaunchpadConfig {
             ImageType::MmProxy => self.build_mounts(false, true, volume_name),
             ImageType::Tor => self.build_mounts(false, false, volume_name),
             ImageType::Monerod => self.build_mounts(false, false, volume_name),
-            ImageType::Frontail => self.build_mounts(false, true, volume_name),
+            ImageType::Loki => self.build_mounts(false, true, volume_name),
+            ImageType::Promtail => self.build_mounts(false, true, volume_name),
+            ImageType::Grafana => self.build_mounts(false, true, volume_name),
         }
     }
 
-    fn build_mounts(&self, blockchain: bool, general: bool, volume_name: String) -> Vec<Mount> {
-        let mut mounts = Vec::with_capacity(2);
-        if general {
-            #[cfg(target_os = "windows")]
-            let host = format!(
-                "//{}",
-                self.data_directory
-                    .iter()
-                    .filter_map(|part| {
-                        use std::{ffi::OsStr, path};
 
-                        use regex::Regex;
 
-                        if part == OsStr::new(&path::MAIN_SEPARATOR.to_string()) {
-                            None
-                        } else {
-                            let drive = Regex::new(r"(?P<letter>[A-Za-z]):").unwrap();
-                            let part = part.to_string_lossy().to_string();
-                            if drive.is_match(part.as_str()) {
-                                Some(drive.replace(part.as_str(), "$letter").to_lowercase())
-                            } else {
-                                Some(part)
-                            }
-                        }
-                    })
-                    .collect::<Vec<String>>()
-                    .join("/")
-            );
-            #[cfg(target_os = "macos")]
-            let host = format!("/host_mnt{}", self.data_directory.to_string_lossy());
-            #[cfg(target_os = "linux")]
-            let host = self.data_directory.to_string_lossy().to_string();
-            let mount = Mount {
-                target: Some("/var/tari".to_string()),
-                source: Some(host),
-                typ: Some(MountTypeEnum::BIND),
-                bind_options: None,
-                ..Default::default()
-            };
-            mounts.push(mount);
-        }
-        if blockchain {
-            let mount = Mount {
-                target: Some("/blockchain".to_string()),
-                source: Some(volume_name),
-                typ: Some(MountTypeEnum::VOLUME),
-                volume_options: None,
-                ..Default::default()
-            };
-            mounts.push(mount);
-        }
-        mounts
-    }
+
 
     /// Returns a map of ports to expose to the host system. TODO - remove the hardcoding so that multiple workspaces
     /// don't have colliding exposed ports.
@@ -259,7 +215,9 @@ impl LaunchpadConfig {
             ImageType::MmProxy => create_port_map(&[]),
             ImageType::Tor => create_port_map(&[]),
             ImageType::Monerod => create_port_map(&[]),
-            ImageType::Frontail => create_port_map(&["18130"]),
+            ImageType::Loki => create_port_map(&["18310"]),
+            ImageType::Promtail => create_port_map(&["18980"]),
+            ImageType::Grafana => create_port_map(&["18300"]),
         }
     }
 
@@ -288,7 +246,9 @@ impl LaunchpadConfig {
             ImageType::MmProxy => self.mm_proxy_cmd(),
             ImageType::Tor => self.tor_cmd(),
             ImageType::Monerod => self.monerod_cmd(),
-            ImageType::Frontail => self.frontail_cmd(),
+            ImageType::Loki => self.loki_cmd(),
+            ImageType::Promtail => self.promtail_cmd(),
+            ImageType::Grafana => self.grafana_cmd(),
         }
     }
 
@@ -305,18 +265,6 @@ impl LaunchpadConfig {
             ),
             _ => None,
         }
-    }
-
-    fn frontail_cmd(&self) -> Vec<String> {
-        let args = vec![
-            "-p",
-            "18130",
-            "base_node/log/core.log",
-            "wallet/log/core.log",
-            "sha3_miner/log/core.log",
-            "mm_proxy/log/core.log",
-        ];
-        args.into_iter().map(String::from).collect()
     }
 
     fn base_node_cmd(&self) -> Vec<String> {
@@ -390,6 +338,20 @@ impl LaunchpadConfig {
         args.into_iter().map(String::from).collect()
     }
 
+    fn loki_cmd(&self) -> Vec<String> {
+        let args = vec!["-config.file=/etc/loki/local-config.yaml"];
+        args.into_iter().map(String::from).collect()
+    }
+
+    fn promtail_cmd(&self) -> Vec<String> {
+        let args = vec!["-config.file=/etc/promtail/config.yml"];
+        args.into_iter().map(String::from).collect()
+    }
+
+    fn grafana_cmd(&self) -> Vec<String> {
+        vec![]
+    }
+
     /// Returns the bollard configuration map. You can specify any/all of the host-mounted data folder, of the
     /// blockchain folder to map.
     pub fn build_volumes(&self, general: bool, tari_blockchain: bool) -> HashMap<String, HashMap<(), ()>> {
@@ -400,6 +362,12 @@ impl LaunchpadConfig {
         if tari_blockchain {
             volumes.insert("/blockchain".to_string(), HashMap::new());
         }
+        volumes
+    }
+
+    pub fn build_grafana_volumes(&self) -> HashMap<String, HashMap<(), ()>> {
+        let mut volumes = self.build_volumes(true, false);
+        volumes.insert("/var/grafana".to_string(), HashMap::new());
         volumes
     }
 
@@ -513,6 +481,10 @@ impl LaunchpadConfig {
     }
 
     fn tor_environment(&self) -> Vec<String> {
+        self.common_envars()
+    }
+
+    fn grafana_environment(&self) -> Vec<String> {
         self.common_envars()
     }
 
