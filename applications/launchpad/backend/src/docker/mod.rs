@@ -29,6 +29,7 @@ mod settings;
 mod workspace;
 mod wrapper;
 
+use sha3::Digest;
 pub mod helpers;
 use std::{collections::HashMap, sync::RwLock};
 
@@ -150,4 +151,28 @@ pub async fn try_destroy_container(image_name: &str, docker: Docker) -> Result<(
         }
     }
     Ok(())
+}
+
+pub fn random_password() -> String {
+    use rand::Rng;
+        const CHARSET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ\
+                            abcdefghijklmnopqrstuvwxyz\
+                            0123456789)(*&^%$#@!~";
+    const PASSWORD_LEN: usize = 30;
+    let mut rng = rand::thread_rng();
+
+    (0..PASSWORD_LEN)
+        .map(|_| {
+            let idx = rng.gen_range(0..CHARSET.len());
+            CHARSET[idx] as char
+        })
+        .collect()
+}
+
+pub fn sha3_256_encoded_password(pwd: String) -> String { 
+    let mut hasher = sha3::Sha3_256::new();
+    hasher.update(pwd.as_bytes());
+    // read hash digest
+    let result = hasher.finalize();
+    hex::encode(result)
 }

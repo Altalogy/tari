@@ -24,6 +24,7 @@ use std::{fs, io::Stdout, path::PathBuf};
 
 use log::*;
 use rand::{rngs::OsRng, seq::SliceRandom};
+use sha3::Digest;
 use tari_common::exit_codes::{ExitCode, ExitError};
 use tari_comms::{multiaddr::Multiaddr, peer_manager::Peer, utils::multiaddr::multiaddr_to_socketaddr};
 use tari_wallet::{WalletConfig, WalletSqlite};
@@ -386,14 +387,27 @@ async fn run_grpc(grpc: WalletGrpcServer, grpc_console_wallet_address: Multiaddr
 fn password_auth(req: Request<()>, password: Option<String>) -> Result<Request<()>, Status> {
     
     match password {
-        Some(password) => {
+        Some(sever_password) => {
             match req.metadata().get("authorization") {
-                Some(t) if password.as_bytes() == t.as_bytes() =>   
-                    Ok(req),
-                _ => Err(Status::unauthenticated("Invalid gRpc password")),
+                Some(provided_pwd)  =>  {
+                    if sha3_256_encoded_password(sever_password).as_bytes() == provided_pwd.as_bytes() {
+                        Ok(req)
+                    } else {
+                        Err(Status::unauthenticated("Invalid password"))   
+                    }
+                },
+                _ => Err(Status::unauthenticated("Unauthorized")),
             }
         },
         None => Ok(req),
     }
     
+}
+
+fn sha3_256_encoded_password(pwd: String) -> String { 
+    let mut hasher = sha3::Sha3_256::new();
+    hasher.update(pwd.as_bytes());
+    // read hash digest
+    let result = hasher.finalize();
+    hex::encode(result)
 }

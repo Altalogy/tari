@@ -48,7 +48,7 @@ use crate::{
         WalletConfig,
         XmRigConfig,
         DEFAULT_MINING_ADDRESS,
-        DEFAULT_MONEROD_URL,
+        DEFAULT_MONEROD_URL, random_password, sha3_256_encoded_password,
     },
     error::LauncherError,
 };
@@ -118,6 +118,7 @@ impl TryFrom<ServiceSettings> for LaunchpadConfig {
             xmrig: Some(xmrig),
             registry: settings.docker_registry,
             tag: settings.docker_tag,
+            grpc_password: Some(sha3_256_encoded_password(random_password())),
         })
     }
 }

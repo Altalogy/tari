@@ -101,12 +101,6 @@ fn main_inner() -> Result<(), ExitError> {
 
     let mut config = ApplicationConfig::load_from(&cfg)?;
     config.wallet.network = cli.network.parse()?;
-    if let Some(ref grpc_password) = cli.grpc_password {
-        println!("GRPC password: {}", grpc_password);
-    } else {
-        println!("GRPC password is NOT FOUND");
-    }
-
     let runtime = tokio::runtime::Builder::new_multi_thread()
         .enable_all()
         .build()

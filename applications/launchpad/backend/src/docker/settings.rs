@@ -21,7 +21,7 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-use std::{collections::HashMap, path::PathBuf, time::Duration};
+use std::{collections::HashMap, path::PathBuf, time::Duration, fmt::format};
 
 use bollard::models::{Mount, MountTypeEnum, PortBinding, PortMap};
 use config::ConfigError;
@@ -31,6 +31,8 @@ use thiserror::Error;
 use tor_hash_passwd::EncryptedKey;
 
 use crate::docker::{models::ImageType, TariNetwork};
+
+use super::random_password;
 
 // TODO get a proper mining address for each network
 pub const DEFAULT_MINING_ADDRESS: &str =
@@ -45,6 +47,8 @@ http://singapore.node.xmr.pm:38081";
 
 pub const WALLET_GRPC_ADDRESS_URL: &str = "http://127.0.0.1:18143";
 pub const BASE_NODE_GRPC_ADDRESS_URL: &str = "http://127.0.0.1:18142";
+
+
 #[derive(Default, Debug, Serialize, Deserialize)]
 pub struct BaseNodeConfig {
     /// The time delay before starting the container and running the base node executable
@@ -144,6 +148,8 @@ pub struct LaunchpadConfig {
     pub registry: Option<String>,
     /// The docker tag to use. By default, we use 'latest'
     pub tag: Option<String>,
+    /// Random generated session password
+    pub grpc_password: Option<String>,
 }
 
 impl LaunchpadConfig {
@@ -326,8 +332,14 @@ impl LaunchpadConfig {
     }
 
     fn wallet_cmd(&self) -> Vec<String> {
-        let args = vec!["--log-config=/var/tari/config/log4rs.yml"];
-        args.into_iter().map(String::from).collect()
+        
+        match  &self.grpc_password {
+            Some(pwd) => {
+                let password = format!("--grpc-password={}", pwd.clone());
+                vec!["--log-config=/var/tari/config/log4rs.yml".to_string(), password]
+            },
+            None => vec!["--log-config=/var/tari/config/log4rs.yml".to_string()],
+        }
     }
 
     fn miner_cmd(&self) -> Vec<String> {

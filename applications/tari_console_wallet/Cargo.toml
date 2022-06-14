@@ -33,6 +33,7 @@ config = "0.13.0"
 chrono = { version = "0.4.19", default-features = false }
 bitflags = "1.2.1"
 futures = { version = "^0.3.16", default-features = false, features = ["alloc"] }
+hex = "0.4.3"
 crossterm = { version = "0.17" }
 rand = "0.8"
 unicode-width = "0.1"
@@ -42,6 +43,7 @@ qrcode = { version = "0.12" }
 regex = "1.5.4"
 rpassword = "5.0"
 rustyline = "9.0"
+sha3 = "0.10.1"
 strum = "0.22"
 strum_macros = "0.22"
 thiserror = "1.0.26"

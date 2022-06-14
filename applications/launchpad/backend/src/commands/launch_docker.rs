@@ -41,7 +41,7 @@ use crate::{
         TariWorkspace,
         WalletConfig,
         XmRigConfig,
-        DEFAULT_MINING_ADDRESS,
+        DEFAULT_MINING_ADDRESS, random_password, sha3_256_encoded_password,
     },
     error::LauncherError,
 };
@@ -150,6 +150,7 @@ impl TryFrom<WorkspaceLaunchOptions> for LaunchpadConfig {
             xmrig,
             registry: options.docker_registry,
             tag: options.docker_tag,
+            grpc_password: Some(sha3_256_encoded_password(random_password())),
         })
     }
 }
