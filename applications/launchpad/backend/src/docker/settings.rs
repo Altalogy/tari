@@ -31,6 +31,7 @@ use thiserror::Error;
 use tor_hash_passwd::EncryptedKey;
 
 use crate::docker::{models::ImageType, TariNetwork};
+use crate::docker::mounts::Mounts;
 
 // TODO get a proper mining address for each network
 pub const DEFAULT_MINING_ADDRESS: &str =
@@ -186,18 +187,20 @@ impl LaunchpadConfig {
 
     /// Similar to [`volumes`], provides a bollard configuration for mounting volumes.
     pub fn mounts(&self, image_type: ImageType, volume_name: String) -> Vec<Mount> {
+        let mut mounts = Mounts::new();
         match image_type {
-            ImageType::BaseNode => self.build_mounts(true, true, volume_name),
-            ImageType::Wallet => self.build_mounts(true, true, volume_name),
-            ImageType::XmRig => self.build_mounts(false, true, volume_name),
-            ImageType::Sha3Miner => self.build_mounts(false, true, volume_name),
-            ImageType::MmProxy => self.build_mounts(false, true, volume_name),
-            ImageType::Tor => self.build_mounts(false, false, volume_name),
-            ImageType::Monerod => self.build_mounts(false, false, volume_name),
-            ImageType::Loki => self.build_mounts(false, true, volume_name),
-            ImageType::Promtail => self.build_mounts(false, true, volume_name),
-            ImageType::Grafana => self.build_mounts(false, true, volume_name),
-        }
+            ImageType::BaseNode => mounts.with_blockchain(volume_name).with_general(&self.data_directory),
+            ImageType::Wallet => mounts.with_blockchain(volume_name).with_general(&self.data_directory),
+            ImageType::XmRig => mounts.with_general(&self.data_directory),
+            ImageType::Sha3Miner => mounts.with_general(&self.data_directory),
+            ImageType::MmProxy => mounts.with_general(&self.data_directory),
+            ImageType::Tor => &mut mounts,
+            ImageType::Monerod => &mut mounts,
+            ImageType::Loki => mounts.with_general(&self.data_directory),
+            ImageType::Promtail => mounts.with_general(&self.data_directory),
+            ImageType::Grafana => mounts.with_general(&self.data_directory),
+        };
+        mounts.to_docker_mounts()
     }
 
 

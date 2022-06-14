@@ -13,6 +13,10 @@ impl Mounts {
         Self { mounts: Vec::new() }
     }
 
+    pub fn to_docker_mounts(self) -> Vec<Mount> {
+        self.mounts
+    }
+
     pub fn with_blockchain(&mut self, volume_name: String) -> &mut Self {
         let mount = Mount {
             target: Some("/blockchain".to_string()),
@@ -26,7 +30,7 @@ impl Mounts {
     }
 
     pub fn bind<P: AsRef<Path>>(&mut self, source: P, target: &str) -> &mut Self {
-        let source = canonicalize(source).expect("Invalid source bind path");
+        let source = canonicalize(source);
         let mount = Mount {
             target: Some(target.to_string()),
             source: Some(source),
@@ -46,31 +50,33 @@ impl Mounts {
 // FIXME: This might be replaceable by std::fs::canonicalize, but I don't have a windows machine to check
 fn canonicalize<P: AsRef<Path>>(path: P) -> String {
     #[cfg(target_os = "windows")]
-    format!(
-        "//{}",
-        path
-            .iter()
-            .filter_map(|part| {
-                use std::{ffi::OsStr, path};
-                use regex::Regex;
+        let path =
+        format!(
+            "//{}",
+            path.as_ref()
+                .iter()
+                .filter_map(|part| {
+                    use std::{ffi::OsStr, path};
+                    use regex::Regex;
 
-                if part == OsStr::new(&path::MAIN_SEPARATOR.to_string()) {
-                    None
-                } else {
-                    let drive = Regex::new(r"(?P<letter>[A-Za-z]):").unwrap();
-                    let part = part.to_string_lossy().to_string();
-                    if drive.is_match(part.as_str()) {
-                        Some(drive.replace(part.as_str(), "$letter").to_lowercase())
+                    if part == OsStr::new(&path::MAIN_SEPARATOR.to_string()) {
+                        None
                     } else {
-                        Some(part)
+                        let drive = Regex::new(r"(?P<letter>[A-Za-z]):").unwrap();
+                        let part = part.to_string_lossy().to_string();
+                        if drive.is_match(part.as_str()) {
+                            Some(drive.replace(part.as_str(), "$letter").to_lowercase())
+                        } else {
+                            Some(part)
+                        }
                     }
-                }
-            })
-            .collect::<Vec<String>>()
-            .join("/")
-    )
+                })
+                .collect::<Vec<String>>()
+                .join("/")
+        );
     #[cfg(target_os = "macos")]
-    format!("/host_mnt{}", path.to_string_lossy())
+        let path = format!("/host_mnt{}", path.as_ref().to_string_lossy());
     #[cfg(target_os = "linux")]
-    path.to_string_lossy().to_string()
+        let path = path.as_ref().to_string_lossy().to_string();
+    path
 }
