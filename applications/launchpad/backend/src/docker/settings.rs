@@ -21,7 +21,7 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-use std::{collections::HashMap, path::PathBuf, time::Duration, fmt::format};
+use std::{collections::HashMap, fmt::format, path::PathBuf, time::Duration};
 
 use bollard::models::{Mount, MountTypeEnum, PortBinding, PortMap};
 use config::ConfigError;
@@ -30,9 +30,8 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use tor_hash_passwd::EncryptedKey;
 
-use crate::docker::{models::ImageType, TariNetwork};
-
 use super::random_password;
+use crate::docker::{models::ImageType, TariNetwork};
 
 // TODO get a proper mining address for each network
 pub const DEFAULT_MINING_ADDRESS: &str =
@@ -44,10 +43,8 @@ http://monero-stagenet.exan.tech:38081,\
 http://xmr-lux.boldsuck.org:38081,\
 http://singapore.node.xmr.pm:38081";
 
-
 pub const WALLET_GRPC_ADDRESS_URL: &str = "http://127.0.0.1:18143";
 pub const BASE_NODE_GRPC_ADDRESS_URL: &str = "http://127.0.0.1:18142";
-
 
 #[derive(Default, Debug, Serialize, Deserialize)]
 pub struct BaseNodeConfig {
@@ -332,8 +329,7 @@ impl LaunchpadConfig {
     }
 
     fn wallet_cmd(&self) -> Vec<String> {
-        
-        match  &self.grpc_password {
+        match &self.grpc_password {
             Some(pwd) => {
                 let password = format!("--grpc-password={}", pwd.clone());
                 vec!["--log-config=/var/tari/config/log4rs.yml".to_string(), password]

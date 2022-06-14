@@ -29,7 +29,7 @@ use tari_common::exit_codes::{ExitCode, ExitError};
 use tari_comms::{multiaddr::Multiaddr, peer_manager::Peer, utils::multiaddr::multiaddr_to_socketaddr};
 use tari_wallet::{WalletConfig, WalletSqlite};
 use tokio::{runtime::Handle, sync::broadcast};
-use tonic::{transport::Server, Request, Status,};
+use tonic::{transport::Server, Request, Status};
 use tui::backend::CrosstermBackend;
 
 use crate::{
@@ -43,7 +43,6 @@ use crate::{
     utils::db::get_custom_base_node_peer_from_db,
 };
 pub const LOG_TARGET: &str = "wallet::app::main";
-
 
 #[derive(Debug, Clone)]
 pub enum WalletMode {
@@ -244,7 +243,7 @@ pub fn tui_mode(
     config: &WalletConfig,
     base_node_config: &PeerConfig,
     mut wallet: WalletSqlite,
-    grpc_password: Option<String>
+    grpc_password: Option<String>,
 ) -> Result<(), ExitError> {
     let (events_broadcaster, _events_listener) = broadcast::channel(100);
     if let Some(ref grpc_address) = config.grpc_address {
@@ -305,7 +304,7 @@ pub fn recovery_mode(
     wallet_config: &WalletConfig,
     wallet_mode: WalletMode,
     wallet: WalletSqlite,
-    grpc_password: Option<String>
+    grpc_password: Option<String>,
 ) -> Result<(), ExitError> {
     // Do not remove this println!
     const CUCUMBER_TEST_MARKER_A: &str = "Tari Console Wallet running... (Recovery mode started)";
@@ -345,7 +344,12 @@ pub fn recovery_mode(
     }
 }
 
-pub fn grpc_mode(handle: Handle, config: &WalletConfig, wallet: WalletSqlite, password: Option<String>) -> Result<(), ExitError> {
+pub fn grpc_mode(
+    handle: Handle,
+    config: &WalletConfig,
+    wallet: WalletSqlite,
+    password: Option<String>,
+) -> Result<(), ExitError> {
     info!(target: LOG_TARGET, "Starting grpc server");
     if let Some(grpc_address) = &config.grpc_address {
         let grpc = WalletGrpcServer::new(wallet);
@@ -359,7 +363,11 @@ pub fn grpc_mode(handle: Handle, config: &WalletConfig, wallet: WalletSqlite, pa
     Ok(())
 }
 
-async fn run_grpc(grpc: WalletGrpcServer, grpc_console_wallet_address: Multiaddr, grpc_password: Option<String>) -> Result<(), String> {
+async fn run_grpc(
+    grpc: WalletGrpcServer,
+    grpc_console_wallet_address: Multiaddr,
+    grpc_password: Option<String>,
+) -> Result<(), String> {
     // Do not remove this println!
     const CUCUMBER_TEST_MARKER_A: &str = "Tari Console Wallet running... (gRPC mode started)";
     println!("{}", CUCUMBER_TEST_MARKER_A);
@@ -383,28 +391,23 @@ async fn run_grpc(grpc: WalletGrpcServer, grpc_console_wallet_address: Multiaddr
     Ok(())
 }
 
-
 fn password_auth(req: Request<()>, password: Option<String>) -> Result<Request<()>, Status> {
-    
     match password {
-        Some(sever_password) => {
-            match req.metadata().get("authorization") {
-                Some(provided_pwd)  =>  {
-                    if sha3_256_encoded_password(sever_password).as_bytes() == provided_pwd.as_bytes() {
-                        Ok(req)
-                    } else {
-                        Err(Status::unauthenticated("Invalid password"))   
-                    }
-                },
-                _ => Err(Status::unauthenticated("Unauthorized")),
-            }
+        Some(sever_password) => match req.metadata().get("authorization") {
+            Some(provided_pwd) => {
+                if sha3_256_encoded_password(sever_password).as_bytes() == provided_pwd.as_bytes() {
+                    Ok(req)
+                } else {
+                    Err(Status::unauthenticated("Invalid password"))
+                }
+            },
+            _ => Err(Status::unauthenticated("Unauthorized")),
         },
         None => Ok(req),
     }
-    
 }
 
-fn sha3_256_encoded_password(pwd: String) -> String { 
+fn sha3_256_encoded_password(pwd: String) -> String {
     let mut hasher = sha3::Sha3_256::new();
     hasher.update(pwd.as_bytes());
     // read hash digest

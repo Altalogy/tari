@@ -155,7 +155,7 @@ pub async fn try_destroy_container(image_name: &str, docker: Docker) -> Result<(
 
 pub fn random_password() -> String {
     use rand::Rng;
-        const CHARSET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ\
+    const CHARSET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ\
                             abcdefghijklmnopqrstuvwxyz\
                             0123456789)(*&^%$#@!~";
     const PASSWORD_LEN: usize = 30;
@@ -169,7 +169,7 @@ pub fn random_password() -> String {
         .collect()
 }
 
-pub fn sha3_256_encoded_password(pwd: String) -> String { 
+pub fn sha3_256_encoded_password(pwd: String) -> String {
     let mut hasher = sha3::Sha3_256::new();
     hasher.update(pwd.as_bytes());
     // read hash digest

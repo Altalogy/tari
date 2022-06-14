@@ -32,6 +32,8 @@ use crate::{
     commands::AppState,
     docker::{
         helpers::create_password,
+        random_password,
+        sha3_256_encoded_password,
         BaseNodeConfig,
         DockerWrapperError,
         LaunchpadConfig,
@@ -41,7 +43,7 @@ use crate::{
         TariWorkspace,
         WalletConfig,
         XmRigConfig,
-        DEFAULT_MINING_ADDRESS, random_password, sha3_256_encoded_password,
+        DEFAULT_MINING_ADDRESS,
     },
     error::LauncherError,
 };

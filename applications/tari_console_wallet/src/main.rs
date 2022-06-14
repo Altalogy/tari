@@ -185,15 +185,26 @@ fn main_inner() -> Result<(), ExitError> {
     let handle = runtime.handle().clone();
 
     let result = match wallet_mode {
-        WalletMode::Tui => tui_mode(handle, &config.wallet, &base_node_config, wallet.clone(), cli.grpc_password),
+        WalletMode::Tui => tui_mode(
+            handle,
+            &config.wallet,
+            &base_node_config,
+            wallet.clone(),
+            cli.grpc_password,
+        ),
         WalletMode::Grpc => grpc_mode(handle, &config.wallet, wallet.clone(), cli.grpc_password),
         WalletMode::Script(path) => script_mode(handle, &cli, &config.wallet, &base_node_config, wallet.clone(), path),
         WalletMode::Command(command) => {
             command_mode(handle, &cli, &config.wallet, &base_node_config, wallet.clone(), command)
         },
-        WalletMode::RecoveryDaemon | WalletMode::RecoveryTui => {
-            recovery_mode(handle, &base_node_config, &config.wallet, wallet_mode, wallet.clone(), cli.grpc_password)
-        },
+        WalletMode::RecoveryDaemon | WalletMode::RecoveryTui => recovery_mode(
+            handle,
+            &base_node_config,
+            &config.wallet,
+            wallet_mode,
+            wallet.clone(),
+            cli.grpc_password,
+        ),
         WalletMode::Invalid => Err(ExitError::new(
             ExitCode::InputError,
             "Invalid wallet mode - are you trying too many command options at once?",

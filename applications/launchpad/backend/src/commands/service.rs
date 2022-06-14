@@ -36,6 +36,8 @@ use crate::{
         container_state,
         create_workspace_folders,
         helpers::create_password,
+        random_password,
+        sha3_256_encoded_password,
         BaseNodeConfig,
         ContainerId,
         DockerWrapperError,
@@ -48,7 +50,7 @@ use crate::{
         WalletConfig,
         XmRigConfig,
         DEFAULT_MINING_ADDRESS,
-        DEFAULT_MONEROD_URL, random_password, sha3_256_encoded_password,
+        DEFAULT_MONEROD_URL,
     },
     error::LauncherError,
 };
@@ -232,7 +234,6 @@ async fn start_service_impl(
     if !workspace.network_exists(&docker).await? {
         workspace.create_network(&docker).await?;
     }
-    //
     // Launch the container
     let image = ImageType::try_from(service_name.as_str())?;
     let container_name = workspace.start_service(image, docker.clone()).await?;
