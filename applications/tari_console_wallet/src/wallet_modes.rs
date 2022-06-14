@@ -28,7 +28,7 @@ use tari_common::exit_codes::{ExitCode, ExitError};
 use tari_comms::{multiaddr::Multiaddr, peer_manager::Peer, utils::multiaddr::multiaddr_to_socketaddr};
 use tari_wallet::{WalletConfig, WalletSqlite};
 use tokio::{runtime::Handle, sync::broadcast};
-use tonic::transport::Server;
+use tonic::{transport::Server, Request, Status,};
 use tui::backend::CrosstermBackend;
 
 use crate::{
@@ -42,6 +42,7 @@ use crate::{
     utils::db::get_custom_base_node_peer_from_db,
 };
 pub const LOG_TARGET: &str = "wallet::app::main";
+
 
 #[derive(Debug, Clone)]
 pub enum WalletMode {
@@ -215,7 +216,7 @@ fn wallet_or_exit(
 
     if cli.non_interactive_mode {
         info!(target: LOG_TARGET, "Starting GRPC server.");
-        grpc_mode(handle, config, wallet)
+        grpc_mode(handle, config, wallet, cli.grpc_password.clone())
     } else {
         debug!(target: LOG_TARGET, "Prompting for run or exit key.");
         println!("\nPress Enter to continue to the wallet, or type q (or quit) followed by Enter.");
@@ -231,7 +232,7 @@ fn wallet_or_exit(
             },
             _ => {
                 info!(target: LOG_TARGET, "Starting TUI.");
-                tui_mode(handle, config, base_node_config, wallet)
+                tui_mode(handle, config, base_node_config, wallet, cli.grpc_password.clone())
             },
         }
     }
@@ -242,11 +243,12 @@ pub fn tui_mode(
     config: &WalletConfig,
     base_node_config: &PeerConfig,
     mut wallet: WalletSqlite,
+    grpc_password: Option<String>
 ) -> Result<(), ExitError> {
     let (events_broadcaster, _events_listener) = broadcast::channel(100);
     if let Some(ref grpc_address) = config.grpc_address {
         let grpc = WalletGrpcServer::new(wallet.clone());
-        handle.spawn(run_grpc(grpc, grpc_address.clone()));
+        handle.spawn(run_grpc(grpc, grpc_address.clone(), grpc_password));
     }
 
     let notifier = Notifier::new(
@@ -302,6 +304,7 @@ pub fn recovery_mode(
     wallet_config: &WalletConfig,
     wallet_mode: WalletMode,
     wallet: WalletSqlite,
+    grpc_password: Option<String>
 ) -> Result<(), ExitError> {
     // Do not remove this println!
     const CUCUMBER_TEST_MARKER_A: &str = "Tari Console Wallet running... (Recovery mode started)";
@@ -332,8 +335,8 @@ pub fn recovery_mode(
     println!("Starting TUI.");
 
     match wallet_mode {
-        WalletMode::RecoveryDaemon => grpc_mode(handle, wallet_config, wallet),
-        WalletMode::RecoveryTui => tui_mode(handle, wallet_config, base_node_config, wallet),
+        WalletMode::RecoveryDaemon => grpc_mode(handle, wallet_config, wallet, grpc_password),
+        WalletMode::RecoveryTui => tui_mode(handle, wallet_config, base_node_config, wallet, grpc_password),
         _ => Err(ExitError::new(
             ExitCode::RecoveryError,
             &"Unsupported post recovery mode",
@@ -341,12 +344,12 @@ pub fn recovery_mode(
     }
 }
 
-pub fn grpc_mode(handle: Handle, config: &WalletConfig, wallet: WalletSqlite) -> Result<(), ExitError> {
+pub fn grpc_mode(handle: Handle, config: &WalletConfig, wallet: WalletSqlite, password: Option<String>) -> Result<(), ExitError> {
     info!(target: LOG_TARGET, "Starting grpc server");
     if let Some(grpc_address) = &config.grpc_address {
         let grpc = WalletGrpcServer::new(wallet);
         handle
-            .block_on(run_grpc(grpc, grpc_address.clone()))
+            .block_on(run_grpc(grpc, grpc_address.clone(), password))
             .map_err(|e| ExitError::new(ExitCode::GrpcError, e))?;
     } else {
         println!("No grpc address specified");
@@ -355,15 +358,18 @@ pub fn grpc_mode(handle: Handle, config: &WalletConfig, wallet: WalletSqlite) ->
     Ok(())
 }
 
-async fn run_grpc(grpc: WalletGrpcServer, grpc_console_wallet_address: Multiaddr) -> Result<(), String> {
+async fn run_grpc(grpc: WalletGrpcServer, grpc_console_wallet_address: Multiaddr, grpc_password: Option<String>) -> Result<(), String> {
     // Do not remove this println!
     const CUCUMBER_TEST_MARKER_A: &str = "Tari Console Wallet running... (gRPC mode started)";
     println!("{}", CUCUMBER_TEST_MARKER_A);
 
     info!(target: LOG_TARGET, "Starting GRPC on {}", grpc_console_wallet_address);
     let address = multiaddr_to_socketaddr(&grpc_console_wallet_address).map_err(|e| e.to_string())?;
+    let cloned = grpc_password.clone();
+    let authentication = move |req| password_auth(req, cloned.clone());
+    let service = tari_app_grpc::tari_rpc::wallet_server::WalletServer::with_interceptor(grpc, authentication);
     Server::builder()
-        .add_service(tari_app_grpc::tari_rpc::wallet_server::WalletServer::new(grpc))
+        .add_service(service)
         .serve(address)
         .await
         .map_err(|e| format!("GRPC server returned error:{}", e))?;
@@ -374,4 +380,20 @@ async fn run_grpc(grpc: WalletGrpcServer, grpc_console_wallet_address: Multiaddr
 
     info!(target: LOG_TARGET, "Stopping GRPC");
     Ok(())
+}
+
+
+fn password_auth(req: Request<()>, password: Option<String>) -> Result<Request<()>, Status> {
+    
+    match password {
+        Some(password) => {
+            match req.metadata().get("authorization") {
+                Some(t) if password.as_bytes() == t.as_bytes() =>   
+                    Ok(req),
+                _ => Err(Status::unauthenticated("Invalid gRpc password")),
+            }
+        },
+        None => Ok(req),
+    }
+    
 }

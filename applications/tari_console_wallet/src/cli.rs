@@ -42,6 +42,11 @@ pub(crate) struct Cli {
     /// possible.
     #[clap(long, env = "TARI_WALLET_PASSWORD", hide_env_values = true)]
     pub password: Option<String>,
+    /// Supply the password for the grpc wallet server. It's very bad security practice to provide the password on the
+    /// command line, since it's visible using `ps ax` from anywhere on the system, so always use the env var where
+    /// possible.
+    #[clap(long, env = "TARI_WALLET_GRPC_PASSWORD", hide_env_values = true)]
+    pub grpc_password: Option<String>,
     /// Change the password for the console wallet
     #[clap(long, alias = "update-password")]
     pub change_password: bool,
