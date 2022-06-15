@@ -17,13 +17,11 @@ import { SettingsInputs } from '../types'
 import MoneroURLs from './MoneroURLs'
 import { AddressDescription, NarrowInlineInput } from './styles'
 
-const isAuthenticationApplied = (values: SettingsInputs) => {
+const isAuthenticationApplied = (values: SettingsInputs): boolean => {
   const { authentication } = values.mining.merged
 
-  return (
-    authentication &&
-    ((authentication.username && authentication.username !== '') ||
-      (authentication.password && authentication.password !== ''))
+  return Boolean(
+    authentication && (authentication.username || authentication.password),
   )
 }
 

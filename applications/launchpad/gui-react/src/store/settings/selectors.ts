@@ -4,10 +4,7 @@ import { RootState } from '../'
 import { selectMoneroUrls } from '../mining/selectors'
 
 const isAuthActive = (auth?: { username?: string; password?: string }) => {
-  return !!(
-    (auth?.username && auth?.username !== '') ||
-    (auth?.password && auth?.password !== '')
-  )
+  return Boolean(auth?.username || auth?.password)
 }
 
 export const selectSettingsOpen = (state: RootState) => state.settings.open

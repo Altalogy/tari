@@ -36,7 +36,7 @@ const MoneroAuthentication = ({
     defaultValues,
   })
 
-  const onSubmitForm: SubmitHandler<AuthenticationInputs> = async data => {
+  const onSubmitForm: SubmitHandler<AuthenticationInputs> = data => {
     onSubmit(data)
     close()
   }
@@ -89,14 +89,14 @@ const MoneroAuthentication = ({
         <Button
           variant='secondary'
           size='small'
-          onClick={() => close()}
+          onClick={close}
           testId='monero-auth-close-btn'
         >
           {t.common.verbs.cancel}
         </Button>
         <Button
           size='small'
-          onClick={() => handleSubmit(onSubmitForm)()}
+          onClick={handleSubmit(onSubmitForm)}
           testId='monero-auth-submit-btn'
         >
           {t.common.verbs.submit}
