@@ -28,6 +28,7 @@ mod models;
 mod settings;
 mod workspace;
 mod wrapper;
+mod mounts;
 
 pub mod helpers;
 use std::{collections::HashMap, sync::RwLock};
