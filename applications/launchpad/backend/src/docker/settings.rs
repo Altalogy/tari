@@ -30,8 +30,7 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use tor_hash_passwd::EncryptedKey;
 
-use crate::docker::{models::ImageType, TariNetwork};
-use crate::docker::mounts::Mounts;
+use crate::docker::{models::ImageType, mounts::Mounts, TariNetwork};
 
 // TODO get a proper mining address for each network
 pub const DEFAULT_MINING_ADDRESS: &str =
@@ -195,10 +194,6 @@ impl LaunchpadConfig {
         };
         mounts.to_docker_mounts()
     }
-
-
-
-
 
     /// Returns a map of ports to expose to the host system. TODO - remove the hardcoding so that multiple workspaces
     /// don't have colliding exposed ports.
