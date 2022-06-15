@@ -78,4 +78,11 @@ impl GrpcWalletClient {
         let identity = inner.identify(request).await?;
         Ok(identity.into_inner())
     }
+
+    pub async fn balance(&mut self) -> Result<GetBalanceResponse, GrpcError> {
+        let inner = self.connection().await?;
+        let request = GetBalanceRequest {};
+        let identity = inner.get_balance(request).await?;
+        Ok(identity.into_inner())
+    }
 }
