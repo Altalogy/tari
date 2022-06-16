@@ -31,9 +31,8 @@ use bollard::{container::LogOutput, models::ContainerCreateResponse};
 use serde::{Deserialize, Serialize};
 use strum_macros::EnumIter;
 
-use crate::docker::DockerWrapperError;
-
 use super::TariWorkspace;
+use crate::docker::DockerWrapperError;
 
 //-------------------------------------------     ContainerId      ----------------------------------------------
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
