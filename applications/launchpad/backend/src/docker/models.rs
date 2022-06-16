@@ -33,6 +33,8 @@ use strum_macros::EnumIter;
 
 use crate::docker::DockerWrapperError;
 
+use super::TariWorkspace;
+
 //-------------------------------------------     ContainerId      ----------------------------------------------
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ContainerId(pub String);
@@ -213,6 +215,19 @@ impl ImageType {
             Self::MmProxy => "tari_mm_proxy",
             Self::Monerod => "monerod",
             Self::Frontail => "frontail",
+        }
+    }
+
+    pub fn display_name(&self) -> &str {
+        match self {
+            Self::Tor => "Tor",
+            Self::BaseNode => "Base Node",
+            Self::Wallet => "Wallet",
+            Self::XmRig => "Xmrig",
+            Self::Sha3Miner => "SHA3 miner",
+            Self::MmProxy => "MM proxy",
+            Self::Monerod => "Monerod",
+            Self::Frontail => "Frontail",
         }
     }
 
