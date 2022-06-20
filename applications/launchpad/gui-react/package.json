@@ -14,6 +14,7 @@
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
     "apexcharts": "^3.35.3",
+    "bignumber.js": "^9.0.2",
     "deepmerge": "^4.2.2",
     "lodash.groupby": "^4.6.0",
     "lottie-web": "^5.9.4",

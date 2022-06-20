@@ -8,8 +8,10 @@ import {
   startMiningNode,
   stopMiningNode,
   notifyUserAboutMinedTariBlock,
+  addMinedTx,
 } from './thunks'
 import { MiningState, MiningActionReason, MoneroUrl } from './types'
+import BigNumber from 'bignumber.js'
 
 const currencies: Record<MiningNodeType, string[]> = {
   tari: ['xtr'],
@@ -35,21 +37,46 @@ const miningSlice = createSlice({
   initialState,
   reducers: {
     /**
-     * @TODO - mock that need to be removed later. It is used along with timers in App.tsx
-     * to increase the amount of mined Tari and Merged
+     * Add given amount of Tauri (T) to the current node's session.
+     * @param {string} action.payload.amount - amount in Tauri (T)
+     * @param {MiningNodeType} action.payload.node - node type, ie. 'tari'
+     * @param {string} action.payload.txId - the transaction ID
      */
-    addAmount(
+    addMined(
       state,
-      action: PayloadAction<{ amount: string; node: MiningNodeType }>,
+      action: PayloadAction<{
+        amount: string
+        node: MiningNodeType
+        txId: string
+      }>,
     ) {
       const node = action.payload.node
 
       if (state[node].session?.total) {
+        const session = state[node].session
+
+        // check if tx was already processed, so it won't add same funds twice
+        if (
+          !session ||
+          session.history.find(t => t.txId === action.payload.txId)
+        ) {
+          return
+        }
+
         const nodeSessionTotal = state[node].session?.total?.xtr
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        state[node].session!.total!.xtr = (
-          Number(nodeSessionTotal) + Number(action.payload.amount)
-        ).toString()
+
+        let total = session.total
+        if (!total) {
+          total = { xtr: '0' }
+        }
+        total.xtr = new BigNumber(nodeSessionTotal || 0)
+          .plus(new BigNumber(action.payload.amount))
+          .toString()
+
+        session.history.push({
+          txId: action.payload.txId,
+          amount: action.payload.amount,
+        })
       }
     },
     startNewSession(
@@ -72,6 +99,7 @@ const miningSlice = createSlice({
         total,
         reason,
         schedule,
+        history: [],
       }
     },
     stopSession(
@@ -124,6 +152,31 @@ const miningSlice = createSlice({
         state.notifications = [...state.notifications, newNotification]
       },
     )
+
+    builder.addCase(addMinedTx.fulfilled, (state, action) => {
+      const node = action.payload.node
+      const session = state[node].session
+
+      if (!session) {
+        return
+      }
+
+      const nodeSessionTotal = state[node].session?.total?.xtr
+
+      let total = session.total
+      if (!total) {
+        total = { xtr: '0' }
+      }
+
+      total.xtr = new BigNumber(nodeSessionTotal || 0)
+        .plus(new BigNumber(action.payload.amount))
+        .toString()
+
+      session.history.push({
+        txId: action.payload.txId,
+        amount: action.payload.amount,
+      })
+    })
   },
 })
 

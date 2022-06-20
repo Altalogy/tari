@@ -10,7 +10,7 @@ import { selectContainerStatus } from '../containers/selectors'
 import { actions as containersActions } from '../containers'
 import { Container } from '../containers/types'
 import t from '../../locales'
-import { RootState } from '..'
+import { AppDispatch, RootState } from '..'
 
 import { actions as miningActions } from '.'
 import { MiningActionReason } from './types'
@@ -204,4 +204,45 @@ export const notifyUserAboutMinedTariBlock = createAsyncThunk<
   notifyAndIgnorePromise()
 
   return notification
+})
+
+export const addMinedTx = createAsyncThunk<
+  {
+    amount: string
+    node: MiningNodeType
+    txId: MiningActionReason
+  },
+  {
+    amount: string
+    node: MiningNodeType
+    txId: MiningActionReason
+  },
+  { state: RootState }
+>('mining/addMinedTx', ({ amount, node, txId }, thunkApi) => {
+  const rootState: RootState = thunkApi.getState()
+
+  const session = rootState.mining[node].session
+
+  if (!session || session.history.find(t => t.txId === txId)) {
+    return thunkApi.rejectWithValue({ amount, node, txId })
+  }
+
+  /**
+   * @TODO amount to string or number
+   */
+  /**
+   * @TODO - replace hard-coded currency after the app handles both currencies.
+   */
+  thunkApi.dispatch(
+    notifyUserAboutMinedTariBlock({
+      amount: Number(amount),
+      currency: 'xtr',
+    }),
+  )
+
+  return {
+    amount,
+    node,
+    txId,
+  }
 })

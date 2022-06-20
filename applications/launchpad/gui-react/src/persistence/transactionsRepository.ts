@@ -32,23 +32,27 @@ const repositoryFactory: () => TransactionsRepository = () => ({
   add: async event => {
     const db = await getDb()
 
-    await db.execute(
-      `INSERT INTO
-        transactions(event, id, receivedAt, status, direction, amount, message, source, destination, isCoinbase)
-        values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
-      [
-        event.event,
-        event.tx_id,
-        new Date(),
-        event.status,
-        event.direction,
-        event.amount,
-        event.message,
-        event.source_pk,
-        event.dest_pk,
-        event.is_coinbase,
-      ],
-    )
+    try {
+      await db.execute(
+        `INSERT INTO
+          transactions(event, id, receivedAt, status, direction, amount, message, source, destination, isCoinbase)
+          values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+        [
+          event.event,
+          event.tx_id,
+          new Date(),
+          event.status,
+          event.direction,
+          event.amount,
+          event.message,
+          event.source_pk,
+          event.dest_pk,
+          event.is_coinbase,
+        ],
+      )
+    } catch (err) {
+      console.log('Err', err)
+    }
   },
   getMinedXtr: async (
     from,
