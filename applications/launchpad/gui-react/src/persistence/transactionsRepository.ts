@@ -34,8 +34,8 @@ const repositoryFactory: () => TransactionsRepository = () => ({
 
     await db.execute(
       `INSERT INTO
-          transactions(event, id, receivedAt, status, direction, amount, message, source, destination, isCoinbase)
-          values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+        transactions(event, id, receivedAt, status, direction, amount, message, source, destination, isCoinbase)
+        values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
       [
         event.event,
         event.tx_id,
