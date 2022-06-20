@@ -1,5 +1,3 @@
-import BigNumber from 'bignumber.js'
-
 export const dateTime = (d: Date): string =>
   `${d.toLocaleDateString()} ${d.toLocaleTimeString()}`
 
@@ -60,18 +58,18 @@ export const humanizeTime = (time: number): string => {
 
 /**
  * Convert Tauri to micro Tauri (uT) value
- * @param {string} amount amount in Tari
- * @returns {string}
+ * @param {number} amount amount in Tari
+ * @returns {number}
  */
-export const toMicroT = (amount: string): string => {
-  return new BigNumber(amount).multipliedBy(1000000).toString()
+export const toMicroT = (amount: number): number => {
+  return amount * 1000000
 }
 
 /**
  * Convert micro Tauri to Tauri value
- * @param {string} amount amount in micro Tari (uT)
- * @returns {string}
+ * @param {number} amount amount in micro Tari (uT)
+ * @returns {number}
  */
-export const toT = (amount: string): string => {
-  return new BigNumber(amount).dividedBy(1000000).toString()
+export const toT = (amount: number): number => {
+  return amount / 1000000
 }

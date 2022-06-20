@@ -42,10 +42,10 @@ describe('Format', () => {
   })
 
   it('converts Tauri (T) to Micro Tauri (uT)', () => {
-    expect(toT('123456789')).toBe('123.456789')
+    expect(toT(123456789)).toBe(123.456789)
   })
 
   it('converts Micro Tauri (uT) to Tauri (T)', () => {
-    expect(toMicroT('123.456789')).toBe('123456789')
+    expect(toMicroT(123.456789)).toBe(123456789)
   })
 })

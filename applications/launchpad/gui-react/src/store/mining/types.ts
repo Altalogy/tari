@@ -30,10 +30,10 @@ export interface MiningSession {
   startedAt?: string
   finishedAt?: string
   id?: string
-  total?: Record<string, string>
+  total?: Record<string, number>
   reason: MiningActionReason
   schedule?: ScheduleId
-  history: { txId: string; amount: string }[]
+  history: { txId: string; amount: number }[]
 }
 
 export interface MiningNodeState {

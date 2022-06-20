@@ -11,7 +11,6 @@ import {
   addMinedTx,
 } from './thunks'
 import { MiningState, MiningActionReason, MoneroUrl } from './types'
-import BigNumber from 'bignumber.js'
 
 const currencies: Record<MiningNodeType, string[]> = {
   tari: ['xtr'],
@@ -36,49 +35,6 @@ const miningSlice = createSlice({
   name: 'mining',
   initialState,
   reducers: {
-    /**
-     * Add given amount of Tauri (T) to the current node's session.
-     * @param {string} action.payload.amount - amount in Tauri (T)
-     * @param {MiningNodeType} action.payload.node - node type, ie. 'tari'
-     * @param {string} action.payload.txId - the transaction ID
-     */
-    addMined(
-      state,
-      action: PayloadAction<{
-        amount: string
-        node: MiningNodeType
-        txId: string
-      }>,
-    ) {
-      const node = action.payload.node
-
-      if (state[node].session?.total) {
-        const session = state[node].session
-
-        // check if tx was already processed, so it won't add same funds twice
-        if (
-          !session ||
-          session.history.find(t => t.txId === action.payload.txId)
-        ) {
-          return
-        }
-
-        const nodeSessionTotal = state[node].session?.total?.xtr
-
-        let total = session.total
-        if (!total) {
-          total = { xtr: '0' }
-        }
-        total.xtr = new BigNumber(nodeSessionTotal || 0)
-          .plus(new BigNumber(action.payload.amount))
-          .toString()
-
-        session.history.push({
-          txId: action.payload.txId,
-          amount: action.payload.amount,
-        })
-      }
-    },
     startNewSession(
       state,
       action: PayloadAction<{
@@ -88,9 +44,9 @@ const miningSlice = createSlice({
       }>,
     ) {
       const { node, reason, schedule } = action.payload
-      const total: Record<string, string> = {}
+      const total: Record<string, number> = {}
       currencies[node].forEach(c => {
-        total[c] = '0'
+        total[c] = 0
       })
 
       state[node].session = {
@@ -154,6 +110,7 @@ const miningSlice = createSlice({
     )
 
     builder.addCase(addMinedTx.fulfilled, (state, action) => {
+      console.log('flagA4 going into fulfilled addMinedTx')
       const node = action.payload.node
       const session = state[node].session
 
@@ -161,16 +118,14 @@ const miningSlice = createSlice({
         return
       }
 
-      const nodeSessionTotal = state[node].session?.total?.xtr
+      const nodeSessionTotal = state[node].session?.total?.xtr || 0
 
       let total = session.total
       if (!total) {
-        total = { xtr: '0' }
+        total = { xtr: 0 }
       }
 
-      total.xtr = new BigNumber(nodeSessionTotal || 0)
-        .plus(new BigNumber(action.payload.amount))
-        .toString()
+      total.xtr = nodeSessionTotal + action.payload.amount
 
       session.history.push({
         txId: action.payload.txId,
@@ -187,6 +142,7 @@ export const actions = {
   startMiningNode,
   stopMiningNode,
   notifyUserAboutMinedTariBlock,
+  addMinedTx,
 }
 
 export default miningSlice.reducer

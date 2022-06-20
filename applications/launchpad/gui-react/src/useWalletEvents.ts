@@ -61,20 +61,20 @@ export const useWalletEvents = ({
           event: string
           payload: WalletTransactionEvent
         }) => {
-          // console.log(
-          //   'flag 1 received event',
-          //   payload,
-          //   payload.amount,
-          //   toT(payload.amount.toString()),
-          // )
+          console.log(
+            'flag 1 received event',
+            payload,
+            payload.amount,
+            toT(payload.amount),
+          )
           // if (payload.is_coinbase && status.toLowerCase() === 'mined confirmed') {
 
           if (payload.is_coinbase) {
             console.log('IS COINBASE', payload.is_coinbase)
           }
           dispatch(
-            miningActions.addMined({
-              amount: toT(payload.amount.toString()),
+            miningActions.addMinedTx({
+              amount: toT(payload.amount),
               node: 'tari',
               txId: payload.tx_id,
             }),

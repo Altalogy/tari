@@ -10,7 +10,7 @@ import { selectContainerStatus } from '../containers/selectors'
 import { actions as containersActions } from '../containers'
 import { Container } from '../containers/types'
 import t from '../../locales'
-import { AppDispatch, RootState } from '..'
+import { RootState } from '..'
 
 import { actions as miningActions } from '.'
 import { MiningActionReason } from './types'
@@ -173,6 +173,7 @@ export const notifyUserAboutMinedTariBlock = createAsyncThunk<
   { message: string; header: string },
   { amount: number; currency: CoinType }
 >('mining/notifyUser', async () => {
+  console.log('flagA3 notify')
   const notification = {
     message:
       t.mining.notification.messages[
@@ -208,34 +209,38 @@ export const notifyUserAboutMinedTariBlock = createAsyncThunk<
 
 export const addMinedTx = createAsyncThunk<
   {
-    amount: string
+    amount: number
     node: MiningNodeType
-    txId: MiningActionReason
+    txId: string
   },
   {
-    amount: string
+    amount: number
     node: MiningNodeType
-    txId: MiningActionReason
+    txId: string
   },
   { state: RootState }
 >('mining/addMinedTx', ({ amount, node, txId }, thunkApi) => {
+  console.log('flagA1 thunks entered', thunkApi.getState())
   const rootState: RootState = thunkApi.getState()
 
   const session = rootState.mining[node].session
 
-  if (!session || session.history.find(t => t.txId === txId)) {
+  if (
+    !session ||
+    (Boolean(session.history) && session.history.find(t => t.txId === txId))
+  ) {
+    console.log('flagA2 already on the history', session)
     return thunkApi.rejectWithValue({ amount, node, txId })
   }
 
-  /**
-   * @TODO amount to string or number
-   */
+  console.log('flagA2 NOT on the history -- proceed', session)
+
   /**
    * @TODO - replace hard-coded currency after the app handles both currencies.
    */
   thunkApi.dispatch(
     notifyUserAboutMinedTariBlock({
-      amount: Number(amount),
+      amount,
       currency: 'xtr',
     }),
   )
