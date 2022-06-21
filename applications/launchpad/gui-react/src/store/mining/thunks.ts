@@ -173,7 +173,6 @@ export const notifyUserAboutMinedTariBlock = createAsyncThunk<
   { message: string; header: string },
   { amount: number; currency: CoinType }
 >('mining/notifyUser', async () => {
-  console.log('flagA3 notify')
   const notification = {
     message:
       t.mining.notification.messages[
@@ -220,7 +219,6 @@ export const addMinedTx = createAsyncThunk<
   },
   { state: RootState }
 >('mining/addMinedTx', ({ amount, node, txId }, thunkApi) => {
-  console.log('flagA1 thunks entered', thunkApi.getState())
   const rootState: RootState = thunkApi.getState()
 
   const session = rootState.mining[node].session
@@ -229,14 +227,11 @@ export const addMinedTx = createAsyncThunk<
     !session ||
     (Boolean(session.history) && session.history.find(t => t.txId === txId))
   ) {
-    console.log('flagA2 already on the history', session)
     return thunkApi.rejectWithValue({ amount, node, txId })
   }
 
-  console.log('flagA2 NOT on the history -- proceed', session)
-
   /**
-   * @TODO - replace hard-coded currency after the app handles both currencies.
+   * @TODO - replace hard-coded currency after the app handles both currencies. (#298)
    */
   thunkApi.dispatch(
     notifyUserAboutMinedTariBlock({

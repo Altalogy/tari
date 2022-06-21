@@ -110,7 +110,6 @@ const miningSlice = createSlice({
     )
 
     builder.addCase(addMinedTx.fulfilled, (state, action) => {
-      console.log('flagA4 going into fulfilled addMinedTx')
       const node = action.payload.node
       const session = state[node].session
 
