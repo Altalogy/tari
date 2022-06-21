@@ -13,14 +13,17 @@ use std::{
     time::Duration,
 };
 
+use api::wallet_identity;
 use futures::StreamExt;
+use grpc::GrpcWalletClient;
 use log::*;
 mod api;
 mod commands;
 mod docker;
 mod error;
 mod grpc;
-use docker::{shutdown_all_containers, DockerWrapper, Workspaces, DOCKER_INSTANCE};
+use docker::{shutdown_all_containers, DockerWrapper, ImageType, Workspaces, DOCKER_INSTANCE};
+use tari_app_grpc::tari_rpc::wallet_client;
 use tauri::{
     api::cli::get_matches,
     async_runtime::block_on,
@@ -50,7 +53,7 @@ use crate::{
         status,
         stop_service,
         AppState,
-    },
+    }, grpc::WalletTransaction,
 };
 
 fn main() {
@@ -63,6 +66,8 @@ fn main() {
     // Handle --help and --version. Exits after printing
     handle_cli_options(&cli_config, &package_info);
 
+    // thread::spawn(|| block_on(check_identity()));
+    // thread::spawn(|| block_on(stream_events()));
     let docker = match DockerWrapper::new() {
         Ok(docker) => docker,
         Err(err) => {
@@ -162,5 +167,49 @@ fn handle_cli_options(cli_config: &CliConfig, pkg_info: &PackageInfo) {
             error!("{}", e.to_string());
             std::process::exit(1);
         },
+    }
+}
+
+async fn check_identity() {
+    info!("======> IDENTITY CHECK");
+    loop {
+        match wallet_identity().await {
+            Ok(identity) => {
+                info!("Your wallet identity is: {:?}", identity);
+                break;
+            },
+            Err(_) => sleep(Duration::from_secs(5)),
+        }
+    }
+}
+
+async fn stream_events() {
+    info!("Waiting for a stream...");
+    loop {
+        if "running" == status(ImageType::Wallet).await.to_lowercase() {
+            break;
+        } else {
+            thread::sleep(Duration::from_secs(1))
+        }
+    }
+    let mut wallet_client = GrpcWalletClient::new();
+    let mut stream = wallet_client.stream().await.map_err(|e| e.chained_message()).unwrap();
+    while let Some(response) = stream.next().await {
+        if let Some(value) = response.transaction {
+            let wt = WalletTransaction {
+                event: value.event,
+                tx_id: value.tx_id,
+                source_pk: value.source_pk,
+                dest_pk: value.dest_pk,
+                status: value.status,
+                direction: value.direction,
+                amount: value.amount,
+                message: value.message,
+                is_coinbase: value.is_coinbase,
+            };
+            
+            info!("Wallet transaction: {:?}", wt);
+
+        }
     }
 }
