@@ -114,6 +114,7 @@ const MiningSettings = ({
               }}
               value={field?.value?.toString() || ''}
               containerStyle={{ maxWidth: 96 }}
+              withError={false}
             />
           )}
         />
