@@ -230,7 +230,9 @@ impl ImageType {
             Self::Sha3Miner => "SHA3 miner",
             Self::MmProxy => "MM proxy",
             Self::Monerod => "Monerod",
-            Self::Frontail => "Frontail",
+            Self::Loki => "loki",
+            Self::Promtail => "promtail",
+            Self::Grafana => "grafana",
         }
     }
 
