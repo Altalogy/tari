@@ -53,7 +53,8 @@ use crate::{
         status,
         stop_service,
         AppState,
-    }, grpc::WalletTransaction,
+    },
+    grpc::WalletTransaction,
 };
 
 fn main() {
@@ -207,9 +208,8 @@ async fn stream_events() {
                 message: value.message,
                 is_coinbase: value.is_coinbase,
             };
-            
-            info!("Wallet transaction: {:?}", wt);
 
+            info!("Wallet transaction: {:?}", wt);
         }
     }
 }
