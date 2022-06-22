@@ -163,7 +163,7 @@ fn on_event(evt: GlobalWindowEvent) {
                 &DOCKER_INSTANCE.clone(),
             ))
         });
-        let _ = task.join();
+        let _unused = task.join();
     }
 }
 

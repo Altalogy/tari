@@ -27,16 +27,13 @@ pub struct WalletTransaction {
 }
 
 #[derive(Debug, Clone, Serialize)]
-#[serde(rename_all = "camelCase")]
 pub struct WalletIdentity {
     public_key: Vec<u8>,
     public_address: String,
     node_id: Vec<u8>,
     emoji_id: String,
 }
-
 #[derive(Debug, Clone, Serialize)]
-#[serde(rename_all = "camelCase")]
 pub struct WalletBalance {
     available_balance: u64,
     pending_incoming_balance: u64,
@@ -71,7 +68,6 @@ impl TryFrom<GetIdentityResponse> for WalletIdentity {
         let hex_public_key = String::from_utf8(value.public_key.clone()).unwrap();
         let emoji_id = EmojiId::from_hex(&hex_public_key)
             .map_err(|e| format!("Failed to create an emoji: {}", e))?
-            .as_str()
             .to_string();
         Ok(WalletIdentity {
             public_key: value.public_key,
