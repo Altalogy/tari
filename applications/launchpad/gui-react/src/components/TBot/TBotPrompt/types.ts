@@ -1,7 +1,8 @@
 import { ReactNode } from 'react'
 
 export type TBotMessage = {
-  content: string | ReactNode | (() => JSX.Element)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  content: string | ReactNode | ((props?: any) => JSX.Element)
   wait?: number
   barFill?: number
   noSkip?: boolean
@@ -17,4 +18,6 @@ export interface TBotPromptProps {
   mode?: 'onboarding' | 'help'
   onDarkBg?: boolean
   withFadeOutSection?: 'no' | 'dynamic' | 'yes'
+  onMessageRender?: (index: number) => void
+  onSkip?: () => void
 }

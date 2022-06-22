@@ -25,6 +25,7 @@ import {
 const MainLayout = ({
   drawerViewWidth = '50%',
   ChildrenComponent,
+  ExpertViewComponent = ExpertView,
   titleBarProps,
 }: MainLayoutProps) => {
   const mainContainerRef = useRef(null)
@@ -115,7 +116,7 @@ const MainLayout = ({
             ...drawerContentStyle,
           }}
         >
-          <ExpertView />
+          <ExpertViewComponent />
         </ExpertViewDrawer>
       </MainLayoutContainer>
       <SettingsContainer />

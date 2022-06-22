@@ -82,11 +82,11 @@ export const FadeOutSection = styled(animated.div)<{
   ${({ $floating }) => ($floating ? '' : 'top: 0;')}
   width: ${({ $floating }) =>
     $floating
-      ? addPx(TBotContainerSizes.sm.messageWidth)
-      : addPx(TBotContainerSizes.md.messageWidth)};
+      ? addPx(TBotContainerSizes.sm.containerWidth)
+      : addPx(TBotContainerSizes.md.containerWidth)};
   max-width: 100%;
   top: 0;
-  left: 10px;
+  left: 0;
   z-index: 20;
   background-image: ${({ $floating, $onDarkBg }) => {
     const bgBase = $onDarkBg

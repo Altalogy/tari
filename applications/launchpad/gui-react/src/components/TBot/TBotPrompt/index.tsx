@@ -43,6 +43,13 @@ const WAIT_TIME = 2800
  * @prop {number} [currentIndex] -
  * @prop {boolean} [closeIcon] - controls rendering of close button
  * @prop {'help' | 'onboarding'} [mode] - usage mode for TBotPrompt
+ * @prop {boolean} [onDarkBg=false] - is TBot rendered over the dark background?
+ * @prop {'no' | 'yes'| 'dynamic'} [withFadeOutSection='dynamic'] - controls whether the top fading effect is rendered.
+ *      - 'no' - do not render at all
+ *      - 'yes' - render always
+ *      - 'dynamic' - will render if the prompt height is large enough
+ * @prop {(index: number) => void} [onMessageRender] - callback triggered after rendering of each message
+ * @prop {() => void} [onSkip] - on skip chatting button click
  */
 
 const TBotPrompt = ({
@@ -55,6 +62,8 @@ const TBotPrompt = ({
   mode = 'help',
   onDarkBg = false,
   withFadeOutSection = 'dynamic',
+  onMessageRender,
+  onSkip,
 }: TBotPromptProps) => {
   const dispatch = useAppDispatch()
 
@@ -212,6 +221,9 @@ const TBotPrompt = ({
     setTimeout(() => {
       if (lastMsgRef?.current) {
         lastMsgRef?.current.scrollIntoView({ block: 'start' })
+        if (onMessageRender) {
+          onMessageRender(count)
+        }
       }
     }, 500)
   }, [lastMsgRef, lastMsgRef?.current])
@@ -219,7 +231,7 @@ const TBotPrompt = ({
   // Build messages list
   const renderedMessages = useMemo(() => {
     return messages?.slice(0, count).map((msg, idx) => {
-      const counter = count < messages.length ? count - 1 : 0
+      const counter = count < messages.length ? count - 1 : messages.length - 1
       const progressBarFill = (messages[counter] as TBotMessage).barFill
       setProgressFill(progressBarFill)
       let skipButtonCheck
@@ -241,6 +253,7 @@ const TBotPrompt = ({
               animate={count === idx + 1}
               ref={count === idx + 1 ? lastMsgRef : null}
               skipButton={mode === 'onboarding' && skipButtonCheck}
+              onSkip={onSkip}
               floating={floating}
             >
               <FuncComponentMsg />
@@ -252,6 +265,7 @@ const TBotPrompt = ({
             animate={count === idx + 1}
             ref={count === idx + 1 ? lastMsgRef : null}
             skipButton={mode === 'onboarding' && skipButtonCheck}
+            onSkip={onSkip}
             floating={floating}
           >
             {'content' in msg ? (msg.content as ReactNode | string) : msg}
@@ -265,6 +279,7 @@ const TBotPrompt = ({
           animate={count === idx + 1}
           ref={count === idx + 1 ? lastMsgRef : null}
           skipButton={mode === 'onboarding' && skipButtonCheck}
+          onSkip={onSkip}
           floating={floating}
         >
           {msg}
