@@ -54,6 +54,7 @@ use crate::{
         stop_service,
         AppState,
     },
+    docker::DEFAULT_WORKSPACE_NAME,
     grpc::WalletTransaction,
 };
 
@@ -66,9 +67,6 @@ fn main() {
     let package_info = context.package_info().clone();
     // Handle --help and --version. Exits after printing
     handle_cli_options(&cli_config, &package_info);
-
-    // thread::spawn(|| block_on(check_identity()));
-    // thread::spawn(|| block_on(stream_events()));
     let docker = match DockerWrapper::new() {
         Ok(docker) => docker,
         Err(err) => {
@@ -76,7 +74,12 @@ fn main() {
             std::process::exit(-1);
         },
     };
-
+    thread::spawn(|| {
+        block_on(shutdown_all_containers(
+            DEFAULT_WORKSPACE_NAME.to_string(),
+            &DOCKER_INSTANCE,
+        ))
+    });
     let about_menu = Submenu::new(
         "App",
         Menu::new()
@@ -147,7 +150,12 @@ fn main() {
 fn on_event(evt: GlobalWindowEvent) {
     if let WindowEvent::Destroyed = evt.event() {
         info!("Stopping and destroying all tari containers");
-        thread::spawn(|| block_on(shutdown_all_containers("default".to_string(), &DOCKER_INSTANCE.clone())));
+        thread::spawn(|| {
+            block_on(shutdown_all_containers(
+                DEFAULT_WORKSPACE_NAME.to_string(),
+                &DOCKER_INSTANCE.clone(),
+            ))
+        });
         sleep(Duration::from_secs(5));
     }
 }
@@ -168,48 +176,5 @@ fn handle_cli_options(cli_config: &CliConfig, pkg_info: &PackageInfo) {
             error!("{}", e.to_string());
             std::process::exit(1);
         },
-    }
-}
-
-async fn check_identity() {
-    info!("======> IDENTITY CHECK");
-    loop {
-        match wallet_identity().await {
-            Ok(identity) => {
-                info!("Your wallet identity is: {:?}", identity);
-                break;
-            },
-            Err(_) => sleep(Duration::from_secs(5)),
-        }
-    }
-}
-
-async fn stream_events() {
-    info!("Waiting for a stream...");
-    loop {
-        if "running" == status(ImageType::Wallet).await.to_lowercase() {
-            break;
-        } else {
-            thread::sleep(Duration::from_secs(1))
-        }
-    }
-    let mut wallet_client = GrpcWalletClient::new();
-    let mut stream = wallet_client.stream().await.map_err(|e| e.chained_message()).unwrap();
-    while let Some(response) = stream.next().await {
-        if let Some(value) = response.transaction {
-            let wt = WalletTransaction {
-                event: value.event,
-                tx_id: value.tx_id,
-                source_pk: value.source_pk,
-                dest_pk: value.dest_pk,
-                status: value.status,
-                direction: value.direction,
-                amount: value.amount,
-                message: value.message,
-                is_coinbase: value.is_coinbase,
-            };
-
-            info!("Wallet transaction: {:?}", wt);
-        }
     }
 }
