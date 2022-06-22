@@ -2,7 +2,6 @@ import { useAppDispatch } from '../../../../store/hooks'
 import { tbotactions } from '../../../../store/tbot'
 import t from '../../../../locales'
 import Button from '../../../Button'
-import Text from '../../../Text'
 
 const GotItButton = () => {
   const dispatch = useAppDispatch()
