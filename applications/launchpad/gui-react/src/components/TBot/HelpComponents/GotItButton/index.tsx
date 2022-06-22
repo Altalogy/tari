@@ -2,6 +2,7 @@ import { useAppDispatch } from '../../../../store/hooks'
 import { tbotactions } from '../../../../store/tbot'
 import t from '../../../../locales'
 import Button from '../../../Button'
+import Text from '../../../Text'
 
 const GotItButton = () => {
   const dispatch = useAppDispatch()
@@ -19,7 +20,7 @@ const GotItButton = () => {
         size='medium'
         testId='gotitbutton-cmp'
       >
-        {t.common.phrases.gotIt}!
+        {`${t.common.phrases.gotIt}!`}
       </Button>
     </div>
   )
