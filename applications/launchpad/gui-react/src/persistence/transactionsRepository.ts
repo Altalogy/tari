@@ -1,7 +1,11 @@
+import { useMemo } from 'react'
 import groupby from 'lodash.groupby'
 
 import { WalletTransactionEvent, TransactionEvent } from '../useWalletEvents'
 import { Dictionary } from '../types/general'
+import { useAppSelector } from '../store/hooks'
+import { selectNetwork } from '../store/baseNode/selectors'
+import { toT } from '../utils/Format'
 
 import getDb from './db'
 
@@ -28,14 +32,23 @@ export interface TransactionsRepository {
   getMinedTransactionsDataSpan: () => Promise<{ from: Date; to: Date }>
 }
 
-const repositoryFactory: () => TransactionsRepository = () => ({
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type WithAmount = { amount: number } & any
+const toTariFromMicroTari = (result: WithAmount): WithAmount => ({
+  ...result,
+  amount: toT(result.amount),
+})
+
+const repositoryFactory: (
+  network: string,
+) => TransactionsRepository = network => ({
   add: async event => {
     const db = await getDb()
 
     await db.execute(
       `INSERT INTO
-        transactions(event, id, receivedAt, status, direction, amount, message, source, destination, isCoinbase)
-        values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+        transactions(event, id, receivedAt, status, direction, amount, message, source, destination, isCoinbase, network)
+        values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
       [
         event.event,
         event.tx_id,
@@ -47,6 +60,7 @@ const repositoryFactory: () => TransactionsRepository = () => ({
         event.source_pk,
         event.dest_pk,
         event.is_coinbase,
+        network,
       ],
     )
   },
@@ -81,7 +95,10 @@ const repositoryFactory: () => TransactionsRepository = () => ({
       [DataResolution.Yearly]: ({ receivedAt }: { receivedAt: string }) =>
         receivedAt.substring(0, 4),
     }
-    const grouped = groupby(results, grouping[resolution])
+    const grouped = groupby(
+      results.map(toTariFromMicroTari),
+      grouping[resolution],
+    )
 
     return Object.fromEntries(
       Object.entries(grouped).map(([when, entries]) => [
@@ -116,7 +133,9 @@ const repositoryFactory: () => TransactionsRepository = () => ({
       [TransactionEvent.Mined],
     )
 
-    return results.reduce((accu, current) => accu + current.amount, 0)
+    return results
+      .map(toTariFromMicroTari)
+      .reduce((accu, current) => accu + current.amount, 0)
   },
   getMinedTransactionsDataSpan: async () => {
     const db = await getDb()
@@ -152,4 +171,15 @@ const repositoryFactory: () => TransactionsRepository = () => ({
   },
 })
 
-export default repositoryFactory
+const useTransactionsRepository = () => {
+  const network = useAppSelector(selectNetwork)
+
+  const transactionsRepository = useMemo(
+    () => repositoryFactory(network),
+    [network],
+  )
+
+  return transactionsRepository
+}
+
+export default useTransactionsRepository

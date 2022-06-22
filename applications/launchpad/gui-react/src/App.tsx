@@ -2,7 +2,7 @@ import 'react-devtools' // @TODO: remove this import before final Production dep
 import styled, { ThemeProvider } from 'styled-components'
 
 import { useAppSelector, useAppDispatch } from './store/hooks'
-import getTransactionsRepository from './persistence/transactionsRepository'
+import useTransactionsRepository from './persistence/transactionsRepository'
 import {
   selectOnboardingComplete,
   selectThemeConfig,
@@ -14,7 +14,6 @@ import HomePage from './pages/home'
 import { loadDefaultServiceSettings } from './store/settings/thunks'
 import './styles/App.css'
 
-import useMiningSimulator from './useMiningSimulator'
 import useMiningScheduling from './useMiningScheduling'
 import TBotContainer from './containers/TBotContainer'
 import MiningNotifications from './containers/MiningNotifications'
@@ -28,8 +27,8 @@ const AppContainer = styled.div`
   border-radius: 10;
 `
 
-const transactionsRepository = getTransactionsRepository()
 const App = () => {
+  const transactionsRepository = useTransactionsRepository()
   const themeConfig = useAppSelector(selectThemeConfig)
   const dispatch = useAppDispatch()
   const onboardingComplete = useAppSelector(selectOnboardingComplete)
@@ -38,9 +37,7 @@ const App = () => {
 
   useSystemEvents({ dispatch })
 
-  useWalletEvents({ transactionsRepository })
-
-  useMiningSimulator()
+  useWalletEvents({ dispatch, transactionsRepository })
 
   useMiningScheduling()
 
