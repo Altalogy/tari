@@ -37,6 +37,9 @@ const messages = [
   </Text>,
 ]
 
+/**
+ * @TODO Fix view by ie. trying to embed the iframe - #23
+ */
 export const DockerInstallDocs = ({ onDone }: { onDone: () => void }) => {
   return (
     <div>

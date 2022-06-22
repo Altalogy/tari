@@ -8,7 +8,7 @@ import { setExpertView } from '../../../store/app'
 import { setExpertSwitchDisabled } from '../../../store/app'
 
 /**
- * @TODO - temporary components for Docker Images Download
+ * @TODO - temporary components for Docker Images Download - #309
  */
 
 export const DownloadImagesMessage = ({
