@@ -1,68 +1,122 @@
 import styled from 'styled-components'
 import { animated } from 'react-spring'
 
+export const promptHeightSpacing = 250
+
+export const TBotContainerSizes = {
+  sm: {
+    containerWidth: 476,
+    messageWidth: 426,
+    fadeOutHeight: 100,
+  },
+  md: {
+    containerWidth: 692,
+    messageWidth: 622,
+    fadeOutHeight: 250,
+  },
+}
+
+const addPx = (val: number) => {
+  return `${val}px`
+}
+
 export const PromptContainer = styled(animated.div)<{ $floating?: boolean }>`
   position: ${({ $floating }) => ($floating ? 'fixed' : 'static')};
   right: 40px;
   bottom: 40px;
   z-index: 1;
-  width: ${({ $floating }) => ($floating ? '476px' : '692px')};
-  height: fit-content;
+  width: ${({ $floating }) =>
+    $floating
+      ? addPx(TBotContainerSizes.sm.containerWidth)
+      : addPx(TBotContainerSizes.md.containerWidth)};
+  max-width: 100%;
+  height: ${({ $floating }) =>
+    $floating ? 'fit-content' : `calc(100vh - ${promptHeightSpacing}px)`};
+  max-width: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: ${({ $floating }) => ($floating ? 'center' : 'flex-end')};
 `
 
 export const ContentRow = styled(animated.div)<{ $floating?: boolean }>`
-  width: ${({ $floating }) => ($floating ? '417px' : '628px')};
+  position: relative;
+  width: ${({ $floating }) =>
+    $floating
+      ? addPx(TBotContainerSizes.sm.containerWidth)
+      : addPx(TBotContainerSizes.md.containerWidth)};
+  max-width: 100%;
+  ${({ $floating }) => ($floating ? '' : 'height: 100%;')}
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
+  align-items: flex-end;
+  background-blend-mode: screen;
+  height: fit-content;
 `
 
 export const ContentContainer = styled(animated.div)<{ $floating?: boolean }>`
   display: flex;
+  position: relative;
   justify-content: center;
   height: fit-content;
+  max-width: 100%;
   margin-right: 30px;
   border-radius: ${({ theme }) => theme.borderRadius(2)};
   /* hard-code required here */
   ${({ $floating }) => ($floating ? 'background-color: #20053d05;' : '')}
   backdrop-filter: blur(9px);
   padding-bottom: 12px;
+  overflow: hidden;
 `
 
-/**
- * @TODO: - wrong behaviour in non-$floating variant, open issue https://github.com/Altalogy/tari/issues/221
- */
-export const FadeOutSection = styled.div<{ $floating?: boolean }>`
+export const FadeOutSection = styled(animated.div)<{
+  $floating?: boolean
+  $onDarkBg?: boolean
+}>`
   pointer-events: none;
   position: absolute;
-  height: ${({ $floating }) => ($floating ? '100px' : '250px')};
-  ${({ $floating }) => ($floating ? '' : 'top: 0;')}
-  width: ${({ $floating }) => ($floating ? '417px' : '650px')};
-  z-index: 2;
-  border-radius: ${({ theme }) => theme.borderRadius(2)};
-  background-image: ${({ $floating }) =>
+  height: ${({ $floating }) =>
     $floating
-      ? 'linear-gradient(to bottom, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0.4))'
-      : 'linear-gradient(to bottom, rgba(250, 250, 250, 1), rgba(250, 250, 250, 0.4))'};
+      ? addPx(TBotContainerSizes.sm.fadeOutHeight)
+      : addPx(TBotContainerSizes.md.fadeOutHeight)};
+  ${({ $floating }) => ($floating ? '' : 'top: 0;')}
+  width: ${({ $floating }) =>
+    $floating
+      ? addPx(TBotContainerSizes.sm.messageWidth)
+      : addPx(TBotContainerSizes.md.messageWidth)};
+  max-width: 100%;
+  top: 0;
+  left: 10px;
+  z-index: 20;
+  background-image: ${({ $floating, $onDarkBg }) => {
+    const bgBase = $onDarkBg
+      ? '0, 0, 0'
+      : $floating
+      ? '255, 255, 255'
+      : '250, 250, 250'
+
+    return `linear-gradient(to bottom, rgba(${bgBase}, 1) 10%, rgba(${bgBase}, 0) 100%)`
+  }};
 `
 
 export const MessageContainer = styled(animated.div)<{ $floating?: boolean }>`
   padding-left: ${({ $floating }) => ($floating ? '0px' : '10px')};
   padding-right: ${({ $floating }) => ($floating ? '0px' : '10px')};
+  max-width: 100%;
+  box-sizing: border-box;
 `
 
 export const ScrollWrapper = styled.div`
-  max-height: calc(90vh - 250px);
+  max-height: calc(90vh - ${promptHeightSpacing}px);
   min-height: 50px;
+  max-width: 100%;
   overflow-y: scroll;
   transition: max-height 200ms;
   z-index: 1;
   position: relative;
   padding-bottom: 20px;
   padding-top: 20px;
+  padding-right: 8px;
 
   ::-webkit-scrollbar {
     width: 4px;
@@ -86,7 +140,7 @@ export const ScrollWrapper = styled.div`
 `
 
 export const MessageWrapper = styled.div`
-  padding-top: 20px;
+  // padding-top: 20px;
 `
 export const HeightAnimationWrapper = styled(animated.div)`
   max-height: 200px;
@@ -95,7 +149,8 @@ export const HeightAnimationWrapper = styled(animated.div)`
 
 export const TBotContainer = styled(animated.div)`
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
+  width: 80px;
 `
 
 export const StyledCloseContainer = styled.div`
@@ -103,16 +158,15 @@ export const StyledCloseContainer = styled.div`
   justify-content: flex-end;
   align-items: center;
   height: 72px;
+  top: -80px;
+  position: absolute;
+  right: 44px;
+  z-index: 3;
 `
 
 export const StyledCloseIcon = styled.div`
   color: ${({ theme }) => theme.secondary};
   cursor: pointer;
-  margin-right: 27px;
-  position: absolute;
-  right: 59px;
-  top: 24px;
-  z-index: 3;
 `
 
 export const StyledMessageBox = styled.div`
@@ -125,7 +179,12 @@ export const StyledMessage = styled(animated.div)<{
 }>`
   display: flex;
   flex-direction: column;
-  width: ${({ $floating }) => ($floating ? '307px' : '550px')};
+  width: ${({ $floating }) =>
+    $floating
+      ? addPx(TBotContainerSizes.sm.messageWidth)
+      : addPx(TBotContainerSizes.md.messageWidth)};
+  max-width: 100%;
+  box-sizing: border-box;
   height: fit-content;
   margin-bottom: ${({ theme, $skipButton }) =>
     $skipButton ? theme.spacingVertical(5) : theme.spacingVertical(0.6)};
@@ -162,4 +221,5 @@ export const TBotProgressContainer = styled.div<{ mode?: string }>`
   width: 100%;
   justify-content: ${({ mode }) =>
     mode === 'onboarding' ? 'space-between' : 'flex-end'};
+  height: 80px;
 `

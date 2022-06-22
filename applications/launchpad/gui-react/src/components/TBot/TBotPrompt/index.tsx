@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, ReactNode, useMemo } from 'react'
-
 import { config, useSpring } from 'react-spring'
+import { appWindow } from '@tauri-apps/api/window'
 
 import SvgClose from '../../../styles/Icons/Close'
 import TBot from '..'
@@ -22,6 +22,8 @@ import {
   ScrollWrapper,
   HeightAnimationWrapper,
   TBotProgressContainer,
+  promptHeightSpacing,
+  TBotContainerSizes,
 } from './styles'
 
 import ChatDots from '../DotsComponent'
@@ -51,6 +53,8 @@ const TBotPrompt = ({
   currentIndex = 1,
   closeIcon = true,
   mode = 'help',
+  onDarkBg = false,
+  withFadeOutSection = 'dynamic',
 }: TBotPromptProps) => {
   const dispatch = useAppDispatch()
 
@@ -63,7 +67,9 @@ const TBotPrompt = ({
   const [count, setCount] = useState(currentIndex || 0)
   const [height, setHeight] = useState(100)
   const [tickle, setTickle] = useState(true)
+  const [showFadeOut, setShowFadeOut] = useState(withFadeOutSection === 'yes')
   const [progressFill, setProgressFill] = useState<number | undefined>(0)
+  const [forceHeightCalculations, setForceHeightCalculations] = useState(false)
 
   const promptAnim = useSpring({
     from: {
@@ -78,6 +84,14 @@ const TBotPrompt = ({
     duration: 50,
   })
 
+  const fadeOutSectionAnim = useSpring({
+    opacity:
+      withFadeOutSection === 'yes' ||
+      (withFadeOutSection === 'dynamic' && showFadeOut)
+        ? 1
+        : 0,
+  })
+
   const scrollToBottom = () => {
     if (scrollRef.current !== null) {
       scrollRef.current.scrollTo({
@@ -90,6 +104,23 @@ const TBotPrompt = ({
   const close = () => {
     return dispatch(tbotactions.close())
   }
+
+  const needToShowFadeOutSection = async () => {
+    const size = await appWindow.innerSize()
+    const fadeHeight =
+      mode === 'help'
+        ? TBotContainerSizes.sm.fadeOutHeight
+        : TBotContainerSizes.md.fadeOutHeight
+    setShowFadeOut(
+      size.height * 0.9 - promptHeightSpacing - fadeHeight < height,
+    )
+  }
+
+  useEffect(() => {
+    if (withFadeOutSection === 'dynamic') {
+      needToShowFadeOutSection()
+    }
+  }, [height])
 
   useEffect(() => {
     // Update internal 'count' if parent changes the currentIndex
@@ -110,7 +141,9 @@ const TBotPrompt = ({
     let counter = count
     let timeout: NodeJS.Timeout
 
-    if (messages && counter >= messages.length) {
+    if (messages && (messages.length === 1 || counter >= messages.length)) {
+      setForceHeightCalculations(true)
+    } else if (messages && counter >= messages.length) {
       setMessageLoading(false)
     } else if (messages && messages.length > 0) {
       setMessageLoading(true)
@@ -150,6 +183,16 @@ const TBotPrompt = ({
     )
   }, [messageLoading, count])
 
+  useEffect(() => {
+    if (forceHeightCalculations) {
+      setTimeout(
+        () => setHeight(messageWrapperRef?.current?.offsetHeight || 100),
+        200,
+      )
+      setForceHeightCalculations(false)
+    }
+  }, [forceHeightCalculations])
+
   // Tickle tbot whenever the app shows new message
   useEffect(() => {
     if (messageLoading) {
@@ -176,7 +219,8 @@ const TBotPrompt = ({
   // Build messages list
   const renderedMessages = useMemo(() => {
     return messages?.slice(0, count).map((msg, idx) => {
-      const progressBarFill = (messages[count - 1] as TBotMessage).barFill
+      const counter = count < messages.length ? count - 1 : 0
+      const progressBarFill = (messages[counter] as TBotMessage).barFill
       setProgressFill(progressBarFill)
       let skipButtonCheck
       const msgTypeCheck =
@@ -240,15 +284,7 @@ const TBotPrompt = ({
       data-testid={testid || 'tbotprompt-cmp'}
     >
       <ContentRow>
-        <FadeOutSection $floating={floating} />
         <ContentContainer $floating={floating}>
-          {closeIcon && (
-            <StyledCloseContainer>
-              <StyledCloseIcon>
-                <SvgClose fontSize={20} onClick={close} />
-              </StyledCloseIcon>
-            </StyledCloseContainer>
-          )}
           <MessageContainer>
             <ScrollWrapper ref={scrollRef}>
               <HeightAnimationWrapper style={heightAnim}>
@@ -259,7 +295,19 @@ const TBotPrompt = ({
             </ScrollWrapper>
             {messageLoading && <ChatDots />}
           </MessageContainer>
+          <FadeOutSection
+            $floating={floating}
+            $onDarkBg={onDarkBg}
+            style={fadeOutSectionAnim}
+          />
         </ContentContainer>
+        {closeIcon && (
+          <StyledCloseContainer>
+            <StyledCloseIcon>
+              <SvgClose fontSize={20} onClick={close} />
+            </StyledCloseIcon>
+          </StyledCloseContainer>
+        )}
       </ContentRow>
       <TBotProgressContainer mode={mode}>
         {mode === 'onboarding' && (

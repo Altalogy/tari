@@ -7,7 +7,6 @@ import { setExpertSwitchDisabled } from '../../store/app'
 import { selectExpertView } from '../../store/app/selectors'
 import ExpertViewUtils from '../../utils/ExpertViewUtils'
 import TitleBar from '../../components/TitleBar'
-import DashboardContainer from '../../containers/Dashboard/DashboardContainer'
 import ExpertView from '../../containers/Dashboard/ExpertView'
 import SettingsContainer from '../../containers/SettingsContainer'
 
@@ -23,7 +22,11 @@ import {
 /**
  * Main Layout
  */
-const MainLayout = ({ drawerViewWidth = '50%' }: MainLayoutProps) => {
+const MainLayout = ({
+  drawerViewWidth = '50%',
+  ChildrenComponent,
+  titleBarProps,
+}: MainLayoutProps) => {
   const mainContainerRef = useRef(null)
   const theme = useTheme()
   const dispatch = useAppDispatch()
@@ -85,7 +88,7 @@ const MainLayout = ({ drawerViewWidth = '50%' }: MainLayoutProps) => {
 
   return (
     <ScreenContainer>
-      <TitleBar drawerViewWidth={drawerViewWidth} />
+      <TitleBar drawerViewWidth={drawerViewWidth} {...titleBarProps} />
 
       <MainLayoutContainer>
         <MainContainer
@@ -94,7 +97,7 @@ const MainLayout = ({ drawerViewWidth = '50%' }: MainLayoutProps) => {
             ...mainContainerStyle,
           }}
         >
-          <DashboardContainer style={{ ...dashboardContainerStyle }} />
+          <ChildrenComponent style={{ ...dashboardContainerStyle }} />
         </MainContainer>
 
         {/* Background overlay: */}

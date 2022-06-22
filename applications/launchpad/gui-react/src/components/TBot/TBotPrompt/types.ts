@@ -15,4 +15,6 @@ export interface TBotPromptProps {
   currentIndex?: number
   closeIcon?: boolean
   mode?: 'onboarding' | 'help'
+  onDarkBg?: boolean
+  withFadeOutSection?: 'no' | 'dynamic' | 'yes'
 }
