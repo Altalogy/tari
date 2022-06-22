@@ -157,13 +157,13 @@ fn main() {
 fn on_event(evt: GlobalWindowEvent) {
     if let WindowEvent::Destroyed = evt.event() {
         info!("Stopping and destroying all tari containers");
-        thread::spawn(|| {
+        let task = thread::spawn(|| {
             block_on(shutdown_all_containers(
                 DEFAULT_WORKSPACE_NAME.to_string(),
                 &DOCKER_INSTANCE.clone(),
             ))
         });
-        sleep(Duration::from_secs(5));
+        let _ = task.join();
     }
 }
 
