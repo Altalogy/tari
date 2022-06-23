@@ -65,13 +65,6 @@ pub async fn wallet_balance() -> Result<WalletBalance, String> {
 
 #[tauri::command]
 pub async fn wallet_events(app: AppHandle<Wry>) -> Result<(), String> {
-    loop {
-        if "running" == status(ImageType::Wallet).await.to_lowercase() {
-            break;
-        } else {
-            thread::sleep(Duration::from_secs(1))
-        }
-    }
     info!("Setting up event stream");
     let mut wallet_client = GrpcWalletClient::new();
     let mut stream = wallet_client.stream().await.map_err(|e| e.chained_message()).unwrap();
