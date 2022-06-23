@@ -1,13 +1,13 @@
 import styled from 'styled-components'
 import { animated } from 'react-spring'
 
-export const promptHeightSpacing = 250
+export const PROMPT_HEIGHT_SPACING = 250
 
 export const TBotContainerSizes = {
   sm: {
     containerWidth: 476,
     messageWidth: 426,
-    fadeOutHeight: 100,
+    fadeOutHeight: 80,
   },
   md: {
     containerWidth: 692,
@@ -31,7 +31,7 @@ export const PromptContainer = styled(animated.div)<{ $floating?: boolean }>`
       : addPx(TBotContainerSizes.md.containerWidth)};
   max-width: 100%;
   height: ${({ $floating }) =>
-    $floating ? 'fit-content' : `calc(100vh - ${promptHeightSpacing}px)`};
+    $floating ? 'fit-content' : `calc(100vh - ${PROMPT_HEIGHT_SPACING}px)`};
   max-width: 100%;
   display: flex;
   flex-direction: column;
@@ -67,6 +67,7 @@ export const ContentContainer = styled(animated.div)<{ $floating?: boolean }>`
   backdrop-filter: blur(9px);
   padding-bottom: 12px;
   overflow: hidden;
+  padding-top: 72px;
 `
 
 export const FadeOutSection = styled(animated.div)<{
@@ -82,17 +83,17 @@ export const FadeOutSection = styled(animated.div)<{
   ${({ $floating }) => ($floating ? '' : 'top: 0;')}
   width: ${({ $floating }) =>
     $floating
-      ? addPx(TBotContainerSizes.sm.containerWidth)
+      ? addPx(TBotContainerSizes.sm.containerWidth - 12)
       : addPx(TBotContainerSizes.md.containerWidth)};
   max-width: 100%;
-  top: 0;
+  top: ${({ $floating }) => ($floating ? '70px' : '0')};
   left: 0;
   z-index: 20;
   background-image: ${({ $floating, $onDarkBg }) => {
     const bgBase = $onDarkBg
       ? '0, 0, 0'
       : $floating
-      ? '255, 255, 255'
+      ? '250, 250, 250'
       : '250, 250, 250'
 
     return `linear-gradient(to bottom, rgba(${bgBase}, 1) 10%, rgba(${bgBase}, 0) 100%)`
@@ -107,7 +108,7 @@ export const MessageContainer = styled(animated.div)<{ $floating?: boolean }>`
 `
 
 export const ScrollWrapper = styled.div`
-  max-height: calc(90vh - ${promptHeightSpacing}px);
+  max-height: calc(90vh - ${PROMPT_HEIGHT_SPACING}px);
   min-height: 50px;
   max-width: 100%;
   overflow-y: scroll;
@@ -139,9 +140,8 @@ export const ScrollWrapper = styled.div`
   }
 `
 
-export const MessageWrapper = styled.div`
-  // padding-top: 20px;
-`
+export const MessageWrapper = styled.div``
+
 export const HeightAnimationWrapper = styled(animated.div)`
   max-height: 200px;
   min-height: 30px;
@@ -158,9 +158,9 @@ export const StyledCloseContainer = styled.div`
   justify-content: flex-end;
   align-items: center;
   height: 72px;
-  top: -80px;
+  top: 0;
   position: absolute;
-  right: 44px;
+  right: 48px;
   z-index: 3;
 `
 

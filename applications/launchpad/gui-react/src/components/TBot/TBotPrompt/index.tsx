@@ -22,7 +22,7 @@ import {
   ScrollWrapper,
   HeightAnimationWrapper,
   TBotProgressContainer,
-  promptHeightSpacing,
+  PROMPT_HEIGHT_SPACING,
   TBotContainerSizes,
 } from './styles'
 
@@ -121,7 +121,7 @@ const TBotPrompt = ({
         ? TBotContainerSizes.sm.fadeOutHeight
         : TBotContainerSizes.md.fadeOutHeight
     setShowFadeOut(
-      size.height * 0.9 - promptHeightSpacing - fadeHeight < height,
+      size.height * 0.9 - PROMPT_HEIGHT_SPACING - fadeHeight < height,
     )
   }
 
