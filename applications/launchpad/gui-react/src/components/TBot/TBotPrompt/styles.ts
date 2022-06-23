@@ -89,12 +89,8 @@ export const FadeOutSection = styled(animated.div)<{
   top: ${({ $floating }) => ($floating ? '70px' : '0')};
   left: 0;
   z-index: 20;
-  background-image: ${({ $floating, $onDarkBg }) => {
-    const bgBase = $onDarkBg
-      ? '0, 0, 0'
-      : $floating
-      ? '250, 250, 250'
-      : '250, 250, 250'
+  background-image: ${({ $onDarkBg }) => {
+    const bgBase = $onDarkBg ? '0, 0, 0' : '250, 250, 250'
 
     return `linear-gradient(to bottom, rgba(${bgBase}, 1) 10%, rgba(${bgBase}, 0) 100%)`
   }};
