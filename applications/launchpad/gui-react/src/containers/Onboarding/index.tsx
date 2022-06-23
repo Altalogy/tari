@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
+import { isDockerInstalled } from '../../commands'
+
 import Button from '../../components/Button'
 import TBotPrompt from '../../components/TBot/TBotPrompt'
 import { TBotMessage } from '../../components/TBot/TBotPrompt/types'
@@ -27,6 +29,15 @@ const OnboardingContainer = () => {
   const [current, setCurrent] = useState(1)
 
   messagesRef.current = messages
+
+  const checkDocker = async () => {
+    const dockerVer = await isDockerInstalled()
+    console.log('Check docker result:', dockerVer)
+  }
+
+  useEffect(() => {
+    checkDocker()
+  }, [])
 
   const pushMessages = (msgs: TBotMessage[]) => {
     if (!messagesRef.current) {
