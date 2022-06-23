@@ -140,7 +140,7 @@ const Button = ({
         onClick={onClick}
         style={style}
         target='_blank'
-        variant={'text'}
+        variant='text'
         data-testid={testId}
       >
         {btnContent}
