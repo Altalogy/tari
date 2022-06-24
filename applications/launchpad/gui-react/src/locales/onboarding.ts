@@ -54,7 +54,7 @@ const translations = {
         part1: 'Houston, we have a problem!',
         part2: 'It looks like a server error',
         part3: 'has occurred.',
-        part4: 'Don’t worry – it is very possible that this is a one-off situation. Trying again will allow you to pull the images successfully. If the problem persists, please contact Tari community on Dicord.',
+        part4: 'Don’t worry – it is very possible that this is a one-off situation. Trying again will allow you to pull the images successfully. If the problem persists, please contact Tari community on Discord.',
       }
     },
   },
