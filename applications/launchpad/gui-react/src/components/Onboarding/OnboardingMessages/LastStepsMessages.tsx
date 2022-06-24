@@ -112,7 +112,7 @@ export const BlockchainSyncStep = ({
 
   useEffect(() => {
     if (syncFinished) {
-      // dispatch(setOnboardingComplete(true))
+      dispatch(setOnboardingComplete(true))
     }
   }, [syncFinished])
 

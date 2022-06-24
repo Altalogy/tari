@@ -42,6 +42,26 @@ const OnboardedAppContainer = ({
   return children
 }
 
+const OnboardingAppContainer = ({ children }: { children: JSX.Element }) => {
+  const [initialized, setInitialized] = useState(false)
+  const dispatch = useAppDispatch()
+
+  useEffect(() => {
+    const init = async () => {
+      await dispatch(loadDefaultServiceSettings()).unwrap()
+      setInitialized(true)
+    }
+
+    init()
+  }, [])
+
+  if (!initialized) {
+    return null
+  }
+
+  return children
+}
+
 const App = () => {
   const dispatch = useAppDispatch()
   const themeConfig = useAppSelector(selectThemeConfig)
