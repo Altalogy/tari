@@ -1,6 +1,7 @@
 import styled from 'styled-components'
 
-export const CtaButtonContainer = styled.div`
+export const CtaButtonContainer = styled.div<{ $noMargin?: boolean }>`
   display: inline-flex;
-  margin-top: ${({ theme }) => theme.spacingVertical(1)};
+  ${({ theme, $noMargin }) =>
+    !$noMargin ? `margin-top: ${theme.spacingVertical(1)};` : ''}
 `

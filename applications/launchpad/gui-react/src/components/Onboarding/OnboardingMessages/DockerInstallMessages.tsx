@@ -12,6 +12,7 @@ import { isDockerInstalled } from '../../../commands'
 import { useAppDispatch } from '../../../store/hooks'
 import { setOnboardingCheckpoint } from '../../../store/app'
 import { OnboardingCheckpoints } from '../../../store/app/types'
+import SvgDocker from '../../../styles/Icons/Docker'
 
 const OS_NAMES = {
   Darwin: 'macOS',
@@ -113,11 +114,8 @@ export const DockerInstallDocs = ({ onDone }: { onDone: () => void }) => {
 
   return (
     <>
-      <Text as='span' type='defaultMedium'>
-        {t.onboarding.dockerInstall.message5.part1}
-      </Text>
-      <CtaButtonContainer>
-        <Button variant='primary' href={docsUrl}>
+      <CtaButtonContainer $noMargin>
+        <Button variant='primary' href={docsUrl} leftIcon={<SvgDocker />}>
           {t.onboarding.dockerInstall.message5.link}
         </Button>
       </CtaButtonContainer>
