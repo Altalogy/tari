@@ -55,6 +55,8 @@ const OnboardingAppContainer = ({ children }: { children: JSX.Element }) => {
     init()
   }, [])
 
+  useSystemEvents({ dispatch })
+
   if (!initialized) {
     return null
   }
