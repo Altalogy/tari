@@ -15,7 +15,7 @@ export const TBotContainerSizes = {
   md: {
     containerWidth: 692,
     messageWidth: 622,
-    fadeOutHeight: 150,
+    fadeOutHeight: 220,
   },
 }
 
@@ -92,14 +92,15 @@ export const FadeOutSection = styled(animated.div)<{
     $floating
       ? `${CLOSE_BTN_HEIGHT - 1}px`
       : `${
-          TITLE_BAR_HEIGHT + CLOSE_BTN_HEIGHT - TBOT_CONTAINER_TOP_PADDING * 1.2
+          TITLE_BAR_HEIGHT + CLOSE_BTN_HEIGHT - TBOT_CONTAINER_TOP_PADDING - 50
         }px`};
   left: 0;
   z-index: 2;
-  background-image: ${({ $onDarkBg }) => {
+  background-image: ${({ $onDarkBg, $floating }) => {
     const bgBase = $onDarkBg ? '0, 0, 0' : '250, 250, 250'
+    const firstStop = $floating ? '10%' : '20%'
 
-    return `linear-gradient(to bottom, rgba(${bgBase}, 1) 10%, rgba(${bgBase}, 0) 100%)`
+    return `linear-gradient(to bottom, rgba(${bgBase}, 1) ${firstStop}, rgba(${bgBase}, 0) 100%)`
   }};
 `
 
