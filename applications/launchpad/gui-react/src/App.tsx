@@ -19,6 +19,37 @@ import useMiningScheduling from './useMiningScheduling'
 import TBotContainer from './containers/TBotContainer'
 import MiningNotifications from './containers/MiningNotifications'
 import Onboarding from './pages/onboarding'
+import OnboardingContainer from './containers/Onboarding'
+import React from 'react'
+
+class ErrorBoundary extends React.Component<{ children: any }> {
+  constructor(props: any) {
+    super(props)
+    this.state = { hasError: '' }
+  }
+
+  static getDerivedStateFromError(error: any) {
+    // Zaktualizuj stan, aby następny render pokazał zastępcze UI.
+    return { hasError: error.toString() }
+  }
+
+  // componentDidCatch(error: any, errorInfo: any) {
+  //   return <p>Error</p>
+  // }
+
+  render() {
+    if ((this.state as { hasError: string }).hasError) {
+      // Możesz wyrenderować dowolny interfejs zastępczy.
+      return (
+        <h1>
+          Something went wrong. {(this.state as { hasError: string }).hasError}
+        </h1>
+      )
+    }
+
+    return this.props.children
+  }
+}
 
 const AppContainer = styled.div`
   background: ${({ theme }) => theme.background};
@@ -60,19 +91,21 @@ const App = () => {
   const onboardingComplete = useAppSelector(selectOnboardingComplete)
 
   return (
-    <ThemeProvider theme={themeConfig}>
-      <AppContainer>
-        {!onboardingComplete ? (
-          <Onboarding />
-        ) : (
-          <OnboardedAppContainer>
-            <HomePage />
-            <TBotContainer />
-            <MiningNotifications />
-          </OnboardedAppContainer>
-        )}
-      </AppContainer>
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider theme={themeConfig}>
+        <AppContainer>
+          {!onboardingComplete ? (
+            <OnboardingContainer />
+          ) : (
+            <OnboardedAppContainer>
+              <HomePage />
+              <TBotContainer />
+              <MiningNotifications />
+            </OnboardedAppContainer>
+          )}
+        </AppContainer>
+      </ThemeProvider>
+    </ErrorBoundary>
   )
 }
 
