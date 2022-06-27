@@ -53,6 +53,9 @@ pub struct ImageInfo {
     image_name: String,
     display_name: String,
     docker_image: String,
+    is_updated: bool,
+    tag: String,
+    created_on: String,
 }
 
 pub fn enum_to_list<T: Sized + ToString + Clone>(enums: &[T]) -> Vec<String> {
@@ -75,6 +78,9 @@ pub fn image_list(settings: ServiceSettings) -> Vec<ImageInfo> {
             image_name: value.image_name().to_string(),
             display_name: value.display_name().to_string(),
             docker_image: TariWorkspace::fully_qualified_image(*value, registry, tag),
+            tag: tag.unwrap().to_string(),
+            is_updated: false,
+            created_on: "2022-06-27 13:04:56".to_string(),
         })
         .collect();
     images
