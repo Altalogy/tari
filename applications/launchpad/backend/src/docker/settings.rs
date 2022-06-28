@@ -193,7 +193,10 @@ impl LaunchpadConfig {
             ImageType::XmRig => Mounts::with_general(&self.data_directory),
             ImageType::Sha3Miner => Mounts::with_general(&self.data_directory),
             ImageType::MmProxy => Mounts::with_general(&self.data_directory),
-            ImageType::Tor => Mounts::empty(),
+            ImageType::Tor => Mounts::with_general(&self.data_directory).bind(
+                self.data_directory.join("tor/torrc"),
+                "/etc/tor/torrc",
+            ),
             ImageType::Monerod => Mounts::empty(),
             ImageType::Loki => Mounts::with_general(&self.data_directory).bind(
                 self.data_directory.join("config").join("loki_config.yml"),
@@ -335,7 +338,6 @@ impl LaunchpadConfig {
     fn tor_cmd(&self) -> Vec<String> {
         let hashed_password = EncryptedKey::hash_password(self.tor_control_password.as_str()).to_string();
         let args = vec![
-            "/usr/bin/tor",
             "--SocksPort",
             "0.0.0.0:9050",
             "--ControlPort",
