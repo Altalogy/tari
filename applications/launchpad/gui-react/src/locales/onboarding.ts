@@ -61,7 +61,7 @@ const translations = {
   },
   lastSteps: {
     message1: 'Awesome, everything went smoothly. You are one step away from starting mining.',
-    message2: 'When the data synchronization is completed, the Tari Launchpad dashbord will start automatically. Do not close this window as this will pause the entire process.',
+    message2: 'When the data synchronization is completed, the Tari Launchpad dashboard will start automatically. Do not close this window as this will pause the entire process.',
     syncError: 'Ups! Something went wrong!',
     blockchainIsSyncing: 'Blockchain is synchronizing...',
   },

@@ -57,11 +57,32 @@ export const BlockchainSyncStep = ({
 
   const contentRef = useRef<HTMLDivElement | null>(null)
 
-  const [error, setError] = useState(false)
   const [syncStarted, setSyncStarted] = useState(false)
-  const [syncFinished, setSyncFinished] = useState(false)
   const [progress, setProgress] = useState(0)
   const [remainingTime, setRemainingTime] = useState('55 min')
+
+  const pushErrorMessage = () => {
+    pushMessages([
+      {
+        content: (
+          <>
+            <Text>{t.onboarding.lastSteps.syncError}</Text>
+            <CtaButtonContainer>
+              <Button
+                variant='secondary'
+                onClick={() => dispatch(setOnboardingComplete(true))}
+              >
+                {t.common.verbs.continue}
+              </Button>
+            </CtaButtonContainer>
+          </>
+        ),
+        barFill: 0.875,
+        noSkip: true,
+        wait: 200,
+      },
+    ])
+  }
 
   const startSync = async () => {
     setSyncStarted(true)
@@ -75,34 +96,9 @@ export const BlockchainSyncStep = ({
     try {
       await dispatch(baseNodeActions.startNode()).unwrap()
     } catch (e) {
-      setError(true)
+      pushErrorMessage()
     }
   }
-
-  useEffect(() => {
-    if (error) {
-      pushMessages([
-        {
-          content: (
-            <>
-              <Text>{t.onboarding.lastSteps.syncError}</Text>
-              <CtaButtonContainer>
-                <Button
-                  variant='secondary'
-                  onClick={() => dispatch(setOnboardingComplete(true))}
-                >
-                  {t.common.verbs.continue}
-                </Button>
-              </CtaButtonContainer>
-            </>
-          ),
-          barFill: 0.875,
-          noSkip: true,
-          wait: 200,
-        },
-      ])
-    }
-  }, [error])
 
   useEffect(() => {
     if (syncStarted && updateMessageBoxSize && contentRef.current) {
@@ -110,11 +106,9 @@ export const BlockchainSyncStep = ({
     }
   }, [syncStarted])
 
-  useEffect(() => {
-    if (syncFinished) {
-      dispatch(setOnboardingComplete(true))
-    }
-  }, [syncFinished])
+  const finishSyncing = () => {
+    dispatch(setOnboardingComplete(true))
+  }
 
   /** MOCK WAITING FOR BASE NODE EVENT ABOUT SYNC PROGRESS */
   const intervalRef = useRef<ReturnType<typeof setInterval> | undefined>()
@@ -125,11 +119,11 @@ export const BlockchainSyncStep = ({
       intervalRef.current = setInterval(async () => {
         setProgress(counter * 10)
         setRemainingTime(`${55 - counter * 5} min`)
-        if (counter > 6) {
-          setError(true)
+        if (counter === 6) {
+          pushErrorMessage()
         }
         if (counter > 10) {
-          setSyncFinished(true)
+          finishSyncing()
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           clearInterval(intervalRef.current!)
         }
