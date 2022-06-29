@@ -1,5 +1,6 @@
 /* eslint-disable react/jsx-key */
 import { useEffect, useRef, useState } from 'react'
+import { appWindow } from '@tauri-apps/api/window'
 
 import Text from '../../Text'
 import t from '../../../locales'
@@ -155,10 +156,7 @@ export const BlockchainSyncStep = ({
         <>
           <Progress progress={progress} time={remainingTime} />
           <CtaButtonContainer style={{ justifyContent: 'center' }}>
-            <Button
-              variant='secondary'
-              onClick={() => dispatch(setOnboardingComplete(true))}
-            >
+            <Button variant='secondary' onClick={() => appWindow.close()}>
               {t.common.verbs.cancel}
             </Button>
           </CtaButtonContainer>
