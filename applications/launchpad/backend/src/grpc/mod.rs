@@ -27,6 +27,7 @@ pub struct WalletTransaction {
 }
 
 #[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct WalletIdentity {
     public_key: Vec<u8>,
     public_address: String,
