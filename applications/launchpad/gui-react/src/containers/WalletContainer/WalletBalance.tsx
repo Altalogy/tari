@@ -10,6 +10,10 @@ import Chart from './Chart'
 import AvailableBalanceHelp from './AvailableBalanceHelp'
 
 import { TariSignet, TariAmountContainer } from './styles'
+import Button from '../../components/Button'
+import SvgArrowRight from '../../styles/Icons/ArrowRight'
+import SendModal from './Send/SendModal'
+import { useState } from 'react'
 
 const WalletBalance = ({
   balance,
@@ -21,6 +25,8 @@ const WalletBalance = ({
   pending: boolean
 }) => {
   const theme = useTheme()
+
+  const [showSendModal, setShowSendModal] = useState(false)
 
   return (
     <Box>
@@ -68,6 +74,31 @@ const WalletBalance = ({
         </div>
         <AvailableBalanceHelp />
       </div>
+
+      {available && available > 0 ? (
+        <Button
+          onClick={() => setShowSendModal(true)}
+          style={{
+            marginTop: theme.spacingVertical(0.5),
+          }}
+          disabled={pending}
+          rightIcon={
+            <SvgArrowRight
+              style={{
+                transform: 'rotate(-45deg)',
+              }}
+            />
+          }
+        >
+          {t.wallet.balance.sendCta}
+        </Button>
+      ) : null}
+
+      <SendModal
+        open={showSendModal}
+        onClose={() => setShowSendModal(false)}
+        available={available}
+      />
     </Box>
   )
 }
