@@ -53,10 +53,73 @@ pub struct ImageInfo {
     image_name: String,
     display_name: String,
     docker_image: String,
-    is_updated: bool,
-    tag: String,
-    created_on: String,
+    updated: bool,
+    pending: bool,
+    error: String,
+    progress: i32,
+    status: DockerImagePullStatus,
 }
+
+#[derive(Debug, Serialize)]
+enum DockerImagePullStatus {
+    Waiting,
+    Pulling,
+    Ready,
+}
+
+impl DockerImagePullStatus {
+    pub fn lower_case(self) -> &'static str {
+        match self {
+            Self::Pulling => "pulling",
+            Self::Ready => "ready",
+            Self::Waiting => "waiting",
+        }
+    }
+
+    pub fn upper_case(self) -> &'static str {
+        match self {
+            Self::Pulling => "PULLING",
+            Self::Ready => "READY",
+            Self::Waiting => "WAITING",
+        }
+    }
+}
+
+/// Default image status is Ready.
+impl Default for DockerImagePullStatus {
+    fn default() -> Self {
+        Self::Ready
+    }
+}
+
+impl Default for ImageInfo {
+    fn default() -> Self {
+        ImageInfo { 
+            image_name: String::default(), 
+            display_name: String::default(), 
+            docker_image: String::default(), 
+            updated: false, 
+            pending: false, 
+            error: String::default(), 
+            progress: 0, 
+            status: DockerImagePullStatus::default() 
+        }
+    }
+}
+
+impl TryFrom<&str> for DockerImagePullStatus {
+    type Error = String;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        match value {
+            "pulling" => Ok(DockerImagePullStatus::Pulling),
+            "ready" => Ok(DockerImagePullStatus::Ready),
+            "waiting" => Ok(DockerImagePullStatus::Waiting),
+            _ => Err("unsupported image status".to_string()),
+        }
+    }
+}
+
 
 pub fn enum_to_list<T: Sized + ToString + Clone>(enums: &[T]) -> Vec<String> {
     enums.iter().map(|enum_value| enum_value.to_string()).collect()
@@ -78,9 +141,7 @@ pub fn image_list(settings: ServiceSettings) -> Vec<ImageInfo> {
             image_name: value.image_name().to_string(),
             display_name: value.display_name().to_string(),
             docker_image: TariWorkspace::fully_qualified_image(*value, registry, tag),
-            tag: tag.unwrap().to_string(),
-            is_updated: false,
-            created_on: "2022-06-27 13:04:56".to_string(),
+            ..Default::default()
         })
         .collect();
     images
