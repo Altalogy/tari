@@ -13,6 +13,7 @@ const translations: { [key: string]: { [key: string]: string } } = {
     pause: 'Pause',
     continue: 'Continue',
     close: 'Close',
+    connect: 'Connect',
   },
   nouns: {
     expert: 'Expert',
@@ -53,6 +54,7 @@ const translations: { [key: string]: { [key: string]: string } } = {
     running: 'Running',
     paused: 'Paused',
     copied: 'Copied',
+    recommended: 'Recommended',
   },
   conjunctions: {
     or: 'or',

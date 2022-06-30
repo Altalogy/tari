@@ -51,6 +51,7 @@ pub static TARI_NETWORKS: [TariNetwork; 3] = [TariNetwork::Dibbler, TariNetwork:
 #[serde(rename_all = "camelCase")]
 pub struct ImageInfo {
     image_name: String,
+    container_name: String,
     display_name: String,
     docker_image: String,
     updated: bool,
@@ -94,15 +95,16 @@ impl Default for DockerImagePullStatus {
 
 impl Default for ImageInfo {
     fn default() -> Self {
-        ImageInfo { 
-            image_name: String::default(), 
-            display_name: String::default(), 
-            docker_image: String::default(), 
-            updated: false, 
-            pending: false, 
-            error: String::default(), 
-            progress: 0, 
-            status: DockerImagePullStatus::default() 
+        ImageInfo {
+            image_name: String::default(),
+            display_name: String::default(),
+            container_name: String::default(),
+            docker_image: String::default(),
+            updated: false,
+            pending: false,
+            error: String::default(),
+            progress: 0,
+            status: DockerImagePullStatus::default(),
         }
     }
 }
@@ -120,6 +122,12 @@ impl TryFrom<&str> for DockerImagePullStatus {
     }
 }
 
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ImageListDto {
+    image_info: Vec<ImageInfo>,
+    service_recipes: Vec<Vec<String>>,
+}
 
 pub fn enum_to_list<T: Sized + ToString + Clone>(enums: &[T]) -> Vec<String> {
     enums.iter().map(|enum_value| enum_value.to_string()).collect()
@@ -130,21 +138,58 @@ pub fn network_list() -> Vec<String> {
     enum_to_list::<TariNetwork>(&TARI_NETWORKS)
 }
 
-/// Provide a list of image names in the Tari "ecosystem"
+/// Provide information about docker images and service recipes in Tari "ecosystem"
 #[tauri::command]
-pub fn image_list(settings: ServiceSettings) -> Vec<ImageInfo> {
+pub fn image_info(settings: ServiceSettings) -> ImageListDto {
     let registry = settings.docker_registry.as_ref().map(String::as_str);
     let tag = settings.docker_tag.as_ref().map(String::as_str);
+
     let images: Vec<ImageInfo> = DEFAULT_IMAGES
         .iter()
         .map(|value| ImageInfo {
             image_name: value.image_name().to_string(),
+            container_name: value.container_name().to_string(),
             display_name: value.display_name().to_string(),
             docker_image: TariWorkspace::fully_qualified_image(*value, registry, tag),
             ..Default::default()
         })
         .collect();
-    images
+
+    let recipes: Vec<Vec<String>> = [
+        [ImageType::BaseNode, ImageType::Tor]
+            .iter()
+            .map(|image_type| image_type.container_name().to_string())
+            .collect(),
+        [ImageType::Wallet, ImageType::BaseNode, ImageType::Tor]
+            .iter()
+            .map(|image_type| image_type.container_name().to_string())
+            .collect(),
+        [
+            ImageType::Sha3Miner,
+            ImageType::Wallet,
+            ImageType::BaseNode,
+            ImageType::Tor,
+        ]
+        .iter()
+        .map(|image_type| image_type.container_name().to_string())
+        .collect(),
+        [
+            ImageType::MmProxy,
+            ImageType::XmRig,
+            ImageType::Wallet,
+            ImageType::BaseNode,
+            ImageType::Tor,
+        ]
+        .iter()
+        .map(|image_type| image_type.container_name().to_string())
+        .collect(),
+    ]
+    .to_vec();
+
+    ImageListDto {
+        image_info: images,
+        service_recipes: recipes,
+    }
 }
 
 pub fn event_list() -> Vec<String> {

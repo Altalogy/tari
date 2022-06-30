@@ -11,6 +11,7 @@ import {
   selectActiveSettings,
   selectServiceSettings,
 } from '../../store/settings/selectors'
+import { selectState as selectBaseNodeState } from '../../store/baseNode/selectors'
 import { saveSettings } from '../../store/settings/thunks'
 import { ThemeType } from '../../styles/themes/types'
 
@@ -24,10 +25,11 @@ const SettingsContainer = () => {
 
   const miningMerged = useAppSelector(selectMergedMiningState)
   const serviceSettings = useAppSelector(selectServiceSettings)
-
+  const baseNodeSettings = useAppSelector(selectBaseNodeState)
   const currentTheme = useAppSelector(selectTheme)
 
   const [openMiningAuthForm, setOpenMiningAuthForm] = useState(false)
+  const [openBaseNodeConnect, setOpenBaseNodeConnect] = useState(false)
   const [confirmCancel, setConfirmCancel] = useState(false)
 
   const defaultValues = useMemo(
@@ -43,6 +45,10 @@ const SettingsContainer = () => {
       docker: {
         tag: serviceSettings.dockerTag,
         registry: serviceSettings.dockerRegistry,
+      },
+      baseNode: {
+        rootFolder: baseNodeSettings.rootFolder,
+        network: baseNodeSettings.network,
       },
     }),
     [miningMerged, serviceSettings],
@@ -108,6 +114,8 @@ const SettingsContainer = () => {
       discardChanges={closeAndDiscard}
       openMiningAuthForm={openMiningAuthForm}
       setOpenMiningAuthForm={setOpenMiningAuthForm}
+      openBaseNodeConnect={openBaseNodeConnect}
+      setOpenBaseNodeConnect={setOpenBaseNodeConnect}
       currentTheme={currentTheme}
       changeTheme={changeTheme}
     />

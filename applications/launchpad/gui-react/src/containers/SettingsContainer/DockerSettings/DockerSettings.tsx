@@ -10,11 +10,10 @@ import Input from '../../../components/Inputs/Input'
 import { Label } from '../../../components/Inputs/Input/styles'
 import SettingsSectionHeader from '../../../components/SettingsSectionHeader'
 import Text from '../../../components/Text'
+import DockerImagesList from '../../../components/DockerImagesList'
 import t from '../../../locales'
 import { SettingsHeader } from '../styles'
 import { SettingsInputs } from '../types'
-
-import DockerImagesList from './DockerImagesList'
 
 const DockerSettings = ({
   control,
@@ -30,7 +29,7 @@ const DockerSettings = ({
   return (
     <>
       <SettingsHeader>
-        <Text type='header' as='h1'>
+        <Text type='subheader' as='h2'>
           {t.docker.settings.title}
         </Text>
       </SettingsHeader>
@@ -43,11 +42,11 @@ const DockerSettings = ({
         style={{
           display: 'flex',
           justifyContent: 'space-between',
-          alignItems: 'baseline',
+          alignItems: 'center',
           margin: `${theme.spacingVertical(0.5)} 0`,
         }}
       >
-        <Label>{t.docker.settings.tagLabel}</Label>
+        <Label $noMargin>{t.docker.settings.tagLabel}</Label>
         <Controller
           name='docker.tag'
           control={control}
@@ -67,11 +66,11 @@ const DockerSettings = ({
         style={{
           display: 'flex',
           justifyContent: 'space-between',
-          alignItems: 'baseline',
+          alignItems: 'center',
           margin: `${theme.spacingVertical(0.5)} 0`,
         }}
       >
-        <Label>{t.docker.settings.registryLabel}</Label>
+        <Label $noMargin>{t.docker.settings.registryLabel}</Label>
         <Controller
           name='docker.registry'
           control={control}
@@ -91,7 +90,7 @@ const DockerSettings = ({
         {t.docker.settings.imageStatuses}
       </SettingsSectionHeader>
 
-      <DockerImagesList />
+      <DockerImagesList style={{ marginBottom: theme.spacing() }} />
     </>
   )
 }

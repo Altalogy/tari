@@ -14,13 +14,15 @@ use std::{
 };
 
 use futures::StreamExt;
+use grpc::GrpcWalletClient;
 use log::*;
 mod api;
 mod commands;
 mod docker;
 mod error;
 mod grpc;
-use docker::{shutdown_all_containers, DockerWrapper, Workspaces, DOCKER_INSTANCE};
+use docker::{shutdown_all_containers, DockerWrapper, ImageType, Workspaces, DOCKER_INSTANCE};
+use tari_app_grpc::tari_rpc::wallet_client;
 use tauri::{
     api::cli::get_matches,
     async_runtime::block_on,
@@ -38,7 +40,7 @@ use tauri::{
 use tauri_plugin_sql::{Migration, MigrationKind, TauriSql};
 
 use crate::{
-    api::{image_list, network_list, wallet_balance, wallet_events, wallet_identity},
+    api::{image_info, network_list, wallet_balance, wallet_events, wallet_identity},
     commands::{
         create_default_workspace,
         create_new_workspace,
@@ -51,6 +53,8 @@ use crate::{
         stop_service,
         AppState,
     },
+    docker::DEFAULT_WORKSPACE_NAME,
+    grpc::WalletTransaction,
 };
 
 fn main() {
@@ -62,7 +66,6 @@ fn main() {
     let package_info = context.package_info().clone();
     // Handle --help and --version. Exits after printing
     handle_cli_options(&cli_config, &package_info);
-
     let docker = match DockerWrapper::new() {
         Ok(docker) => docker,
         Err(err) => {
@@ -70,7 +73,12 @@ fn main() {
             std::process::exit(-1);
         },
     };
-
+    thread::spawn(|| {
+        block_on(shutdown_all_containers(
+            DEFAULT_WORKSPACE_NAME.to_string(),
+            &DOCKER_INSTANCE,
+        ))
+    });
     let about_menu = Submenu::new(
         "App",
         Menu::new()
@@ -127,7 +135,7 @@ fn main() {
         .manage(AppState::new(docker, workspaces, package_info))
         .menu(menu)
         .invoke_handler(tauri::generate_handler![
-            image_list,
+            image_info,
             network_list,
             pull_images,
             create_new_workspace,
@@ -149,8 +157,13 @@ fn main() {
 fn on_event(evt: GlobalWindowEvent) {
     if let WindowEvent::Destroyed = evt.event() {
         info!("Stopping and destroying all tari containers");
-        thread::spawn(|| block_on(shutdown_all_containers("default".to_string(), &DOCKER_INSTANCE.clone())));
-        sleep(Duration::from_secs(5));
+        let task = thread::spawn(|| {
+            block_on(shutdown_all_containers(
+                DEFAULT_WORKSPACE_NAME.to_string(),
+                &DOCKER_INSTANCE.clone(),
+            ))
+        });
+        let _unused = task.join();
     }
 }
 
