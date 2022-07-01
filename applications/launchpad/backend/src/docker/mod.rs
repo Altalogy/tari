@@ -42,6 +42,7 @@ use bollard::{
 pub use container::{add_container, change_container_status, container_state, filter, remove_container};
 pub use error::DockerWrapperError;
 pub use filesystem::create_workspace_folders;
+use futures::StreamExt;
 use log::{debug, info};
 pub use models::{ContainerId, ContainerState, ContainerStatus, ImageType, LogMessage, TariNetwork};
 pub use settings::{
@@ -59,7 +60,7 @@ pub use settings::{
 pub use workspace::{TariWorkspace, Workspaces};
 pub use wrapper::DockerWrapper;
 
-use crate::commands::DEFAULT_IMAGES;
+use crate::{commands::DEFAULT_IMAGES, grpc::GrpcBaseNodeClient};
 
 lazy_static! {
     pub static ref DOCKER_INSTANCE: Docker = Docker::connect_with_local_defaults().unwrap();
@@ -166,5 +167,26 @@ pub async fn shutdown_all_containers(workspace_name: String, docker: &Docker) ->
             Err(_) => debug!("Docker image {} has not been found", image_name),
         }
     }
+    Ok(())
+}
+
+
+pub async fn listen_progress_info() -> Result<(), DockerWrapperError> {
+    info!("Listen for base node info....");
+    let mut client = GrpcBaseNodeClient::new();
+    loop{
+        let connected = client.connected().await;
+        if connected {
+            break;
+        } else {
+            continue
+        }
+    }
+
+    let mut stream = client.stream().await.unwrap();
+    while let Some(message) = stream.next().await {
+        info!("Here is the progress: {:?}", message);
+    }
+    info!("Base node stream is closed.");
     Ok(())
 }
