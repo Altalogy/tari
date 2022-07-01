@@ -1,7 +1,11 @@
 import { useMemo } from 'react'
 import groupby from 'lodash.groupby'
 
-import { WalletTransactionEvent, TransactionEvent } from '../useWalletEvents'
+import {
+  WalletTransactionEvent,
+  TransactionEvent,
+  TransactionDirection,
+} from '../useWalletEvents'
 import { Dictionary } from '../types/general'
 import { useAppSelector } from '../store/hooks'
 import { selectNetwork } from '../store/baseNode/selectors'
@@ -20,8 +24,22 @@ export interface MinedTariEntry {
   xtr: number
 }
 
+export interface TransactionDBRecord {
+  event: TransactionEvent
+  id: string
+  receivedAt: Date
+  status: string
+  direction: TransactionDirection
+  amount: number
+  message: string
+  source: string
+  destination: string
+  isCoinbase: boolean
+  network: string
+}
+
 export interface TransactionsRepository {
-  add: (transactionEvent: WalletTransactionEvent) => Promise<void>
+  addOrReplace: (transactionEvent: WalletTransactionEvent) => Promise<void>
   getMinedXtr: (
     from: Date,
     to?: Date,
@@ -30,6 +48,7 @@ export interface TransactionsRepository {
   hasDataBefore: (d: Date) => Promise<boolean>
   getLifelongMinedBalance: () => Promise<number>
   getMinedTransactionsDataSpan: () => Promise<{ from: Date; to: Date }>
+  getRecent: (number: number) => Promise<TransactionDBRecord[]>
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -42,11 +61,19 @@ const toTariFromMicroTari = (result: WithAmount): WithAmount => ({
 const repositoryFactory: (
   network: string,
 ) => TransactionsRepository = network => ({
-  add: async event => {
+  addOrReplace: async event => {
     const db = await getDb()
 
-    await db.execute(
-      `INSERT INTO
+    console.log('New tx to add or update', event.tx_id)
+
+    // Ignore 'empty/incorrect' events:
+    if (!event.tx_id || event.status === 'not_supported') {
+      console.log('it is unsupported')
+      return
+    }
+
+    const result = await db.execute(
+      `INSERT OR REPLACE INTO
         transactions(event, id, receivedAt, status, direction, amount, message, source, destination, isCoinbase, network)
         values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
       [
@@ -63,6 +90,8 @@ const repositoryFactory: (
         network,
       ],
     )
+
+    console.log('sql result', result)
   },
   getMinedXtr: async (
     from,
@@ -168,6 +197,22 @@ const repositoryFactory: (
       from: new Date(resultsFrom[0]?.receivedAt) || new Date(),
       to: new Date(resultsTo[0]?.receivedAt) || new Date(),
     }
+  },
+
+  getRecent: async number => {
+    const db = await getDb()
+
+    const results: TransactionDBRecord[] = await db.select(
+      `SELECT * FROM
+        transactions
+      ORDER BY
+        receivedAt DESC
+      LIMIT $1
+     `,
+      [number],
+    )
+
+    return results
   },
 })
 

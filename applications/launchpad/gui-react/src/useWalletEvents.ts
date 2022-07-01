@@ -73,7 +73,7 @@ export const useWalletEvents = ({
               txId: payload.tx_id,
             }),
           )
-          transactionsRepository.add(payload)
+          transactionsRepository.addOrReplace(payload)
           // }
         },
       )
