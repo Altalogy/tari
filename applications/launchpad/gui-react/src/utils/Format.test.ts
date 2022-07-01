@@ -54,6 +54,8 @@ describe('Format', () => {
   })
 
   it('formats the non-zero coin amount to 00,000.00', () => {
-    expect(formatAmount(123123123.789)).toBe('123,123,123.79')
+    expect(formatAmount(123123123.789)).toBe(
+      (123123123.79).toLocaleString([], { maximumFractionDigits: 2 }),
+    )
   })
 })

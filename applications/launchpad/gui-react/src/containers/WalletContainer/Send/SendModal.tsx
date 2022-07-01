@@ -77,7 +77,7 @@ const SendModal = ({ open, onClose, available }: SendModalProps) => {
     }
 
     if (amount === 0) {
-      return ''
+      return
     }
 
     return
@@ -111,7 +111,7 @@ const SendModal = ({ open, onClose, available }: SendModalProps) => {
             </Text>
           </ResultModalContent>
           <CtaButtonContainer>
-            <Button onClick={() => cancel()} fullWidth>
+            <Button onClick={cancel} fullWidth>
               {`${t.common.phrases.gotIt}!`}
             </Button>
           </CtaButtonContainer>
@@ -141,7 +141,7 @@ const SendModal = ({ open, onClose, available }: SendModalProps) => {
             </Text>
           </ResultModalContent>
           <CtaButtonContainer>
-            <Button onClick={() => cancel()} fullWidth>
+            <Button onClick={cancel} fullWidth>
               {`${t.common.phrases.gotIt}!`}
             </Button>
           </CtaButtonContainer>
@@ -198,7 +198,7 @@ const SendModal = ({ open, onClose, available }: SendModalProps) => {
                 maxDecimals={2}
                 icon={<SvgTariSignetGradient />}
                 onChange={field.onChange}
-                value={field?.value}
+                value={field.value}
                 currency='XTR'
                 autoFocus
                 withFee
