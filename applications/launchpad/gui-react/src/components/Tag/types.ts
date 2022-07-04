@@ -14,6 +14,7 @@ export type TagType = 'info' | 'running' | 'warning' | 'expert' | 'light'
  * @prop {ReactNode} [subText] - optional additional tag text
  * @prop {TagVariantType} [variant] - small or large size tag
  * @prop {boolean} [inverted] - boolean indicated if inverted colors should be used
+ * @prop {boolean} [dashboard] - boolean indicating if tag is used in Dashboard tabs section
  */
 
 export interface TagProps {
@@ -24,4 +25,5 @@ export interface TagProps {
   icon?: ReactNode
   subText?: ReactNode
   inverted?: boolean
+  dashboard?: boolean
 }

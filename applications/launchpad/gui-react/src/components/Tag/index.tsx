@@ -31,21 +31,33 @@ const Tag = ({
   icon,
   subText,
   inverted,
+  dashboard,
 }: TagProps) => {
   const theme = useTheme()
 
   let baseStyle: CSSProperties = {}
   let textStyle: CSSProperties = {}
 
+  let runningTagBackgroundColor
+  let runningTagTextColor
+
+  if (dashboard) {
+    runningTagBackgroundColor = theme.dashboardRunningTagBackground
+    runningTagTextColor = theme.dashboardRunningTagText
+  } else {
+    runningTagBackgroundColor = theme.runningTagBackground
+    runningTagTextColor = theme.runningTagText
+  }
+
   switch (type) {
     case 'running':
       baseStyle = {
         backgroundColor: inverted
           ? theme.transparent(theme.onText, 40)
-          : theme.on,
+          : runningTagBackgroundColor,
       }
       textStyle = {
-        color: inverted ? theme.inverted.accentSecondary : theme.onText,
+        color: inverted ? theme.onTextLight : runningTagTextColor,
       }
       break
     case 'warning':
@@ -106,7 +118,7 @@ const Tag = ({
 
       {subText && (
         <Text
-          style={{ marginLeft: '4px' }}
+          style={{ marginLeft: '6px' }}
           type='microMedium'
           color={theme.onTextLight}
         >
