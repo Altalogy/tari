@@ -40,6 +40,7 @@ const darkTheme = {
   lightTagText: styles.colors.dark.secondary,
   placeholderText: styles.colors.dark.placeholder,
   mergedAccent: styles.colors.merged.dark,
+  helpTipText: styles.colors.light.textSecondary,
 
   inverted: {
     primary: styles.colors.light.primary,

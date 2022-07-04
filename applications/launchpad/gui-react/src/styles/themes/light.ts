@@ -44,6 +44,7 @@ const lightTheme = {
   lightTagText: styles.colors.dark.secondary,
   placeholderText: styles.colors.dark.placeholder,
   textSecondary: styles.colors.light.textSecondary,
+  helpTipText: styles.colors.dark.primary,
 
   inverted: {
     primary: styles.colors.light.primary,
