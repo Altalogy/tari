@@ -1,3 +1,4 @@
 # Version refers to the base_node, wallet, etc. version
 VERSION=0.32.3-lp2
 XMRIG_VERSION=v6.16.3
+TOR_VERSION=0.4.7.8-r0

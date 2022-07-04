@@ -33,7 +33,6 @@ RUN --mount=type=cache,id=build-apt-cache-${BUILDOS}-${BUILDARCH}${BUILDVARIANT}
   cmake
 
 ARG ARCH=native
-#ARG FEATURES=avx2
 ARG FEATURES=safe
 ENV RUSTFLAGS="-C target_cpu=$ARCH"
 ENV ROARING_ARCH=$ARCH

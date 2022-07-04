@@ -1,3 +1,5 @@
+# The launchpad application does not make use of docker-compose at all. This file is merely provided for testing
+# purposes and is not guaranteed to be on parity with the image configuration used by launchpad.
 version: "3.9"
 services:
   tor:

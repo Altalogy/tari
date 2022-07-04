@@ -336,7 +336,6 @@ impl LaunchpadConfig {
     fn tor_cmd(&self) -> Vec<String> {
         let hashed_password = EncryptedKey::hash_password(self.tor_control_password.as_str()).to_string();
         let args = vec![
-            "/usr/bin/tor",
             "--SocksPort",
             "0.0.0.0:9050",
             "--ControlPort",
