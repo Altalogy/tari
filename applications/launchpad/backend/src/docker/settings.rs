@@ -348,7 +348,7 @@ impl LaunchpadConfig {
             "1",
             "--HashedControlPassword",
             hashed_password.as_str(),
-            "--allow-missing-torrc"
+            "--allow-missing-torrc",
         ];
         args.into_iter().map(String::from).collect()
     }

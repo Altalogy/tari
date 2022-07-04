@@ -1,7 +1,7 @@
 use std::convert::TryFrom;
 
 use serde::Serialize;
-use tari_app_grpc::tari_rpc::{TransactionEvent, GetIdentityResponse, GetBalanceResponse, SyncProgressResponse};
+use tari_app_grpc::tari_rpc::{GetBalanceResponse, GetIdentityResponse, SyncProgressResponse, TransactionEvent};
 use tari_common_types::emoji::EmojiId;
 
 #[derive(Debug, Clone, Serialize)]
@@ -34,9 +34,9 @@ pub struct WalletBalance {
 
 #[derive(Debug, Clone, Serialize)]
 pub struct ProgressInfo {
-    tip_height: u64,
-    local_height: u64,
-    state: String,
+    pub tip_height: u64,
+    pub local_height: u64,
+    pub state: i32,
 }
 
 impl TryFrom<TransactionEvent> for WalletTransaction {
@@ -61,12 +61,11 @@ impl TryFrom<TransactionEvent> for WalletTransaction {
 }
 
 impl From<SyncProgressResponse> for ProgressInfo {
-    
     fn from(value: SyncProgressResponse) -> Self {
         ProgressInfo {
             tip_height: value.tip_height,
             local_height: value.local_height,
-            state: value.state.to_string(),
+            state: value.state,
         }
     }
 }
@@ -97,4 +96,3 @@ impl From<GetBalanceResponse> for WalletBalance {
         }
     }
 }
-

@@ -21,7 +21,6 @@ mod commands;
 mod docker;
 mod error;
 mod grpc;
-mod rest;
 use docker::{shutdown_all_containers, DockerWrapper, ImageType, Workspaces, DOCKER_INSTANCE};
 use tari_app_grpc::tari_rpc::wallet_client;
 use tauri::{
@@ -54,7 +53,7 @@ use crate::{
         stop_service,
         AppState,
     },
-    docker::{DEFAULT_WORKSPACE_NAME, listen_progress_info},
+    docker::{listen_progress_info, DEFAULT_WORKSPACE_NAME},
     grpc::WalletTransaction,
 };
 
@@ -81,9 +80,7 @@ fn main() {
         ))
     });
 
-    thread::spawn(|| {
-        block_on(listen_progress_info())
-    });
+    thread::spawn(|| block_on(listen_progress_info()));
     let about_menu = Submenu::new(
         "App",
         Menu::new()

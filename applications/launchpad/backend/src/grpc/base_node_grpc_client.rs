@@ -22,33 +22,44 @@
 
 use std::{
     net::{IpAddr, Ipv4Addr, SocketAddr, SocketAddrV4},
-    time::Duration, thread::sleep,
+    thread::sleep,
+    time::Duration,
 };
 
 use bollard::container::Stats;
-use futures::{stream, Stream, StreamExt, TryStreamExt, channel::mpsc};
-use log::{info, error};
+use futures::{
+    channel::mpsc::{self, Sender},
+    stream,
+    Stream,
+    StreamExt,
+    TryStreamExt,
+};
+use log::{error, info};
 use tari_app_grpc::tari_rpc::{
+    base_node_client::BaseNodeClient,
     wallet_client::WalletClient,
+    Empty,
     GetBalanceRequest,
     GetBalanceResponse,
     GetIdentityRequest,
     GetIdentityResponse,
     TransactionEvent,
     TransactionEventRequest,
-    TransactionEventResponse, base_node_client::BaseNodeClient, Empty,
+    TransactionEventResponse,
 };
-use tauri::http::status;
+use tauri::{async_runtime::block_on, http::status};
+use tokio::task;
 use tonic::transport::Channel;
 
 use super::{error::GrpcError, ProgressInfo};
 use crate::{
     docker::{DockerWrapperError, LaunchpadConfig, BASE_NODE_GRPC_ADDRESS_URL},
-    error::LauncherError,
+    error::LauncherError
 };
 
 type Inner = BaseNodeClient<tonic::transport::Channel>;
 
+#[derive(Clone)]
 pub struct GrpcBaseNodeClient {
     inner: Option<Inner>,
 }
@@ -70,15 +81,15 @@ impl GrpcBaseNodeClient {
 
     pub async fn connected(&mut self) -> bool {
         loop {
-            match self.connection().await{
+            match self.connection().await {
                 Ok(_) => {
                     info!("#### Connected....");
-                    break
+                    break;
                 },
                 Err(_) => {
                     sleep(Duration::from_secs(3));
                     info!("---> Waiting for base node....");
-                    continue
+                    continue;
                 },
             }
         }
@@ -87,29 +98,33 @@ impl GrpcBaseNodeClient {
     }
 
     pub async fn stream(&mut self) -> Result<impl Stream<Item = ProgressInfo>, GrpcError> {
-        let (mut sender, receiver) = mpsc::channel(1);
-        loop {
-            let inner = self.connection().await?;
-            let request = Empty {};
-            let response = match inner.get_sync_progress(request).await {
-                Ok(response) => response.into_inner(),
-                Err(status) => {
-                    error!("Failed reading progress from base node: {}", status);
-                    return Err(GrpcError::FatalError("can't read ".to_string()))
+        let (mut sender, receiver) = mpsc::channel(100);
+        let connection = self.connection().await.unwrap().clone();
+        task::spawn(async move {
+            loop {
+                let request = Empty {};
+                let response = match connection.clone().get_sync_progress(request).await {
+                    Ok(response) => response.into_inner(),
+                    Err(status) => {
+                        error!("Failed reading progress from base node: {}", status);
+                        return;
+                    },
+                };
+
+                info!("Response: {:?}", response);
+
+                match response.clone().state() {
+                    tari_app_grpc::tari_rpc::SyncState::Done => {
+                        info!("GONGRATS....Base node is synced.");
+                        return;
+                    },
+                    tari_app_grpc::tari_rpc::SyncState::Header |
+                    tari_app_grpc::tari_rpc::SyncState::Block => sender.try_send(ProgressInfo::from(response)).unwrap(),
+                    sync_state  => info!("Syncing is being started. Current state: {:?}", sync_state),
                 }
-            };
-            
-            info!("Response: {:?}", response);
-            
-            match response.clone().state() {
-                tari_app_grpc::tari_rpc::SyncState::Done => break,
-                _ => sender.try_send(ProgressInfo::from(response)).unwrap(),
+                sleep(Duration::from_secs(10));
             }
-            sleep(Duration::from_secs(1));
-        }
+        });
         Ok(receiver)
     }
-
-    
-
 }

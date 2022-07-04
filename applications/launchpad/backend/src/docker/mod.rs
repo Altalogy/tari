@@ -60,7 +60,7 @@ pub use settings::{
 pub use workspace::{TariWorkspace, Workspaces};
 pub use wrapper::DockerWrapper;
 
-use crate::{commands::DEFAULT_IMAGES, grpc::GrpcBaseNodeClient};
+use crate::{commands::DEFAULT_IMAGES, grpc::{GrpcBaseNodeClient, HEADER_PROGRESS, BLOCK_PROGRESS, start_sync_header, sync}};
 
 lazy_static! {
     pub static ref DOCKER_INSTANCE: Docker = Docker::connect_with_local_defaults().unwrap();
@@ -170,22 +170,34 @@ pub async fn shutdown_all_containers(workspace_name: String, docker: &Docker) ->
     Ok(())
 }
 
-
 pub async fn listen_progress_info() -> Result<(), DockerWrapperError> {
     info!("Listen for base node info....");
     let mut client = GrpcBaseNodeClient::new();
-    loop{
+    loop {
         let connected = client.connected().await;
         if connected {
             break;
         } else {
-            continue
+            continue;
         }
     }
 
     let mut stream = client.stream().await.unwrap();
+    let mut header_progress = HEADER_PROGRESS.write().unwrap();
+    let mut block_progress = BLOCK_PROGRESS.write().unwrap();
     while let Some(message) = stream.next().await {
         info!("Here is the progress: {:?}", message);
+
+        if message.state == 2 {
+            info!("HEADERS");
+            if header_progress.started {
+                let info = sync(&mut header_progress, message.local_height);
+                info!("HEADERS progress info: {:?}", info);
+            } else {
+                start_sync_header(&mut header_progress, message.local_height, message.tip_height);
+            }
+        }
+
     }
     info!("Base node stream is closed.");
     Ok(())
