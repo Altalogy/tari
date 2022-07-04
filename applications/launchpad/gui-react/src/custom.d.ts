@@ -62,6 +62,7 @@ declare module 'styled-components' {
     lightTagText: string
     placeholderText: string
     textSecondary: string
+    helpTipText: string
 
     inverted: {
       controlBackground: string
