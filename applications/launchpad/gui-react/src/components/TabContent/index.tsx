@@ -19,7 +19,7 @@ const TabContent = ({
     <StyledTabContent>
       <TabMainText>{text}</TabMainText>
       {running && !pending ? (
-        <Tag variant='small' type='running' subText={tagSubText}>
+        <Tag variant='small' type='running' subText={tagSubText} dashboard>
           {t.common.adjectives.running}
         </Tag>
       ) : null}

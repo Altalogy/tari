@@ -41,6 +41,10 @@ const darkTheme = {
   placeholderText: styles.colors.dark.placeholder,
   mergedAccent: styles.colors.merged.dark,
   helpTipText: styles.colors.light.textSecondary,
+  runningTagBackground: styles.colors.darkMode.tags,
+  runningTagText: styles.colors.secondary.onTextLight,
+  dashboardRunningTagText: styles.colors.light.primary,
+  dashboardRunningTagBackground: styles.colors.darkMode.modalBackground,
 
   inverted: {
     primary: styles.colors.light.primary,

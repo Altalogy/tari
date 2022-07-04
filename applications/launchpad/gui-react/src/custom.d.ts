@@ -63,6 +63,10 @@ declare module 'styled-components' {
     placeholderText: string
     textSecondary: string
     helpTipText: string
+    runningTagBackground: string
+    runningTagText: string
+    dashboardRunningTagText: string
+    dashboardRunningTagBackground: string
 
     inverted: {
       controlBackground: string
