@@ -20,9 +20,7 @@
 //  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 //  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use std::{
-    net::{IpAddr, Ipv4Addr, SocketAddr, SocketAddrV4}
-};
+use std::net::{IpAddr, Ipv4Addr, SocketAddr, SocketAddrV4};
 
 use bollard::container::Stats;
 use futures::{
@@ -46,7 +44,10 @@ use tari_app_grpc::tari_rpc::{
     TransactionEventResponse,
 };
 use tauri::{async_runtime::block_on, http::status};
-use tokio::{task, time::{sleep, Duration}};
+use tokio::{
+    task,
+    time::{sleep, Duration},
+};
 use tonic::transport::Channel;
 
 use super::{error::GrpcError, BlockStateInfo};
