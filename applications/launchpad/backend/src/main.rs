@@ -79,7 +79,6 @@ fn main() {
             &DOCKER_INSTANCE,
         ))
     });
-
     thread::spawn(|| block_on(listen_progress_info()));
     let about_menu = Submenu::new(
         "App",

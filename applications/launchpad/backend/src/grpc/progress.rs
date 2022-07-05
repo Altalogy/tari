@@ -23,12 +23,12 @@
 use std::{
     cell::RefCell,
     sync::{Arc, Mutex, RwLock},
-    thread::sleep,
-    time::{Duration, Instant, SystemTime, UNIX_EPOCH},
+    time::{Instant, SystemTime, UNIX_EPOCH},
 };
 
 use log::debug;
 use serde::Serialize;
+use tokio::time::{sleep, Duration};
 
 use super::{SyncProgress, SyncProgressInfo, SyncType, BLOCKS_SYNC_EXPECTED_TIME_SEC};
 use crate::grpc::HEADERS_SYNC_EXPECTED_TIME_SEC;
@@ -37,8 +37,8 @@ fn calculate_remaining_time_in_sec(current_progress: f32, elapsed_time_in_sec: f
     elapsed_time_in_sec * (100.0 - current_progress) / current_progress
 }
 
-#[test]
-fn progress_info_test() {
+#[tokio::test]
+async fn progress_info_test() {
     let local = 250;
     let tip = 1250;
     let sleep_sec = 5;
@@ -50,7 +50,7 @@ fn progress_info_test() {
     for i in 1..11 {
         let local_height = local + i * (tip - local) / 10;
         println!("iteration: {}, blocks: {}", i, local_height);
-        sleep(Duration::from_secs(sleep_sec));
+        sleep(Duration::from_secs(sleep_sec)).await;
         progress_info.sync(local_height, tip);
         let progress = SyncProgressInfo::from(progress_info.clone());
         println!("Progress: {:?}", progress);
@@ -68,20 +68,20 @@ fn progress_info_test() {
     }
 }
 
-#[test]
-fn tip_height_is_changed_test() {
+#[tokio::test]
+async fn tip_height_is_changed_test() {
     let mut header_progress = SyncProgress::new(SyncType::Header, 0, 0);
     assert!(!header_progress.started);
     header_progress.start(250, 1250);
     assert!(header_progress.started);
-    sleep(Duration::from_secs(5));
+    sleep(Duration::from_secs(5)).await;
     header_progress.sync(750, 1250);
     let progress = SyncProgressInfo::from(header_progress.clone());
     assert_eq!(5, progress.min_estimated_time_sec);
     assert_eq!(HEADERS_SYNC_EXPECTED_TIME_SEC / 2, progress.max_estimated_time_sec);
     assert_eq!(750, progress.synced_items);
     assert_eq!(5, progress.elapsed_time_sec);
-    sleep(Duration::from_secs(5));
+    sleep(Duration::from_secs(5)).await;
     header_progress.sync(1250, 2250);
     let progress = SyncProgressInfo::from(header_progress.clone());
     println!("Progress: {:?}", progress);

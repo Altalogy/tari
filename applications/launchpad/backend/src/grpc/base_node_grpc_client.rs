@@ -21,8 +21,7 @@
 //  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use std::{
-    net::{IpAddr, Ipv4Addr, SocketAddr, SocketAddrV4},
-    time::Duration,
+    net::{IpAddr, Ipv4Addr, SocketAddr, SocketAddrV4}
 };
 
 use bollard::container::Stats;
@@ -47,7 +46,7 @@ use tari_app_grpc::tari_rpc::{
     TransactionEventResponse,
 };
 use tauri::{async_runtime::block_on, http::status};
-use tokio::{task, time::sleep};
+use tokio::{task, time::{sleep, Duration}};
 use tonic::transport::Channel;
 
 use super::{error::GrpcError, BlockStateInfo};
@@ -86,7 +85,7 @@ impl GrpcBaseNodeClient {
                     break;
                 },
                 Err(_) => {
-                    sleep(Duration::from_secs(3));
+                    sleep(Duration::from_secs(3)).await;
                     info!("---> Waiting for base node....");
                 },
             }
@@ -119,7 +118,7 @@ impl GrpcBaseNodeClient {
                     },
                     sync_state => info!("Syncing is being started. Current state: {:?}", sync_state),
                 }
-                sleep(Duration::from_secs(10));
+                sleep(Duration::from_secs(10)).await;
             }
         });
         Ok(receiver)
