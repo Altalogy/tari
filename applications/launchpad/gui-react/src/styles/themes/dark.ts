@@ -16,7 +16,7 @@ const darkTheme = {
   mergedGradient: styles.gradients.mergedDark,
   warningGradient: styles.gradients.warning,
   greenMedium: styles.colors.secondary.greenMedium,
-  borderColor: styles.colors.light.backgroundImage,
+  borderColor: styles.colors.darkMode.modalBackground,
 
   titleBar: styles.colors.dark.primary,
   borderColorLight: styles.colors.secondary.borderLight,
