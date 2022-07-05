@@ -69,6 +69,9 @@ declare module 'styled-components' {
     runningTagText: string
     dashboardRunningTagText: string
     dashboardRunningTagBackground: string
+    switchBorder: string
+    switchCircle: string
+    switchController: string
 
     inverted: {
       controlBackground: string
@@ -107,6 +110,9 @@ declare module 'styled-components' {
       expert: string
       expertText: string
       expertSecText: string
+      switchBorder: string
+      switchCircle: string
+      switchController: string
     }
   }
 }

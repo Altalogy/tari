@@ -47,6 +47,9 @@ const darkTheme = {
   runningTagText: styles.colors.secondary.onTextLight,
   dashboardRunningTagText: styles.colors.light.primary,
   dashboardRunningTagBackground: styles.colors.darkMode.modalBackground,
+  switchBorder: styles.colors.darkMode.input,
+  switchCircle: styles.colors.dark.secondary,
+  switchController: styles.colors.light.overlay,
 
   inverted: {
     primary: styles.colors.light.primary,
@@ -85,6 +88,9 @@ const darkTheme = {
     resetBackgroundHover: styles.colors.light.overlayDark,
     moneroDark: styles.colors.monero.dark,
     controlBackground: 'transparent',
+    switchBorder: styles.colors.darkMode.input,
+    switchCircle: styles.colors.dark.secondary,
+    switchController: styles.colors.light.overlay,
   },
 }
 

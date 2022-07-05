@@ -51,6 +51,9 @@ const lightTheme = {
   runningTagText: styles.colors.secondary.onText,
   dashboardRunningTagText: styles.colors.secondary.onText,
   dashboardRunningTagBackground: styles.colors.secondary.on,
+  switchBorder: styles.colors.dark.primary,
+  switchCircle: styles.colors.light.background,
+  switchController: styles.colors.light.background,
 
   inverted: {
     primary: styles.colors.light.primary,
@@ -92,6 +95,8 @@ const lightTheme = {
     resetBackgroundHover: styles.colors.light.overlayDark,
     moneroDark: styles.colors.monero.dark,
     controlBackground: 'rgba(255,255,255,.2)',
+    switchBorder: styles.colors.dark.primary,
+    switchController: styles.colors.light.background,
   },
 }
 
