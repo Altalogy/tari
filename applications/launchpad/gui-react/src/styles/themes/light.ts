@@ -56,6 +56,12 @@ const lightTheme = {
   switchController: styles.colors.light.background,
   nodeBackground: styles.colors.light.primary,
   nodeLightIcon: styles.colors.light.backgroundImage,
+  nodeSubHeading: styles.colors.dark.primary,
+  nodeWarningText: styles.colors.dark.secondary,
+  calloutBackground: styles.colors.secondary.warning,
+  inputPlaceholder: styles.colors.dark.placeholder,
+  disabledPrimaryButton: styles.colors.light.backgroundImage,
+  disabledPrimaryButtonText: styles.colors.dark.placeholder,
 
   inverted: {
     primary: styles.colors.light.primary,
@@ -101,6 +107,12 @@ const lightTheme = {
     switchController: styles.colors.light.background,
     nodeBackground: styles.colors.light.primary,
     nodeLightIcon: styles.colors.light.backgroundImage,
+    nodeSubHeading: styles.colors.dark.primary,
+    nodeWarningText: styles.colors.dark.secondary,
+    calloutBackground: styles.colors.secondary.warning,
+    inputPlaceholder: styles.colors.dark.placeholder,
+    disabledPrimaryButton: styles.colors.light.backgroundImage,
+    disabledPrimaryButtonText: styles.colors.dark.placeholder,
   },
 }
 

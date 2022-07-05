@@ -135,16 +135,16 @@ const MiningBox = ({
     }`,
     boxStyle: {
       color: theme.primary,
-      background: theme.background,
+      background: theme.nodeBackground,
     },
     titleStyle: {
-      color: theme.primary,
+      color: theme.helpTipText,
     },
     contentStyle: {
       color: theme.secondary,
     },
     icon: {
-      color: theme.backgroundImage,
+      color: theme.nodeLightIcon,
     },
   }
 

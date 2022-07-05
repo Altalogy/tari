@@ -42,7 +42,7 @@ const MiningViewActions = ({
           autosizeIcons={false}
           variant='text'
           leftIcon={<SvgSetting2 width='1.5rem' height='1.5rem' />}
-          style={{ paddingLeft: 0, color: theme.helpTipText }}
+          style={{ paddingLeft: 0, paddingRight: 12, color: theme.helpTipText }}
           onClick={openSettings}
           testId='mining-view-actions-settings-btn'
         >
