@@ -9,7 +9,7 @@ const getButtonBackgroundColor = ({
   theme,
 }: Pick<ButtonProps, 'variant' | 'disabled'> & { theme: DefaultTheme }) => {
   if ((disabled || variant === 'secondary') && variant !== 'text') {
-    return theme.backgroundImage
+    return theme.disabledPrimaryButton
   }
 
   switch (variant) {
@@ -199,7 +199,7 @@ export const ButtonContentWrapper = styled.span<{
   display: inline-flex;
   color: ${({ disabled, theme }) => {
     if (disabled) {
-      return theme.placeholderText
+      return theme.disabledPrimaryButtonText
     }
 
     return 'inherit'

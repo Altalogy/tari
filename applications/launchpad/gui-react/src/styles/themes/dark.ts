@@ -53,6 +53,12 @@ const darkTheme = {
   switchController: styles.colors.light.overlay,
   nodeBackground: styles.colors.darkMode.modalBackground,
   nodeLightIcon: styles.colors.darkMode.darkLogoCard,
+  nodeSubHeading: styles.colors.dark.secondary,
+  nodeWarningText: styles.colors.light.textSecondary,
+  calloutBackground: styles.colors.darkMode.tags,
+  inputPlaceholder: styles.colors.dark.secondary,
+  disabledPrimaryButton: styles.colors.darkMode.borders,
+  disabledPrimaryButtonText: styles.colors.darkMode.disabledText,
 
   inverted: {
     primary: styles.colors.light.primary,
@@ -85,6 +91,7 @@ const darkTheme = {
     expertSecText: 'rgba(255, 255, 255, 0.32)',
     lightTag: styles.colors.light.backgroundImage,
     lightTagText: styles.colors.dark.secondary,
+    placeholderText: styles.colors.dark.placeholder,
     borderColor: styles.colors.light.backgroundImage,
     borderColorLight: styles.colors.secondary.borderLight,
     resetBackground: styles.colors.light.overlay,
@@ -95,6 +102,12 @@ const darkTheme = {
     switchCircle: styles.colors.dark.secondary,
     switchController: styles.colors.light.overlay,
     nodeBackground: styles.colors.darkMode.modalBackground,
+    nodeLightIcon: styles.colors.darkMode.darkLogoCard,
+    nodeSubHeading: styles.colors.dark.secondary,
+    nodeWarningText: styles.colors.light.textSecondary,
+    calloutBackground: styles.colors.darkMode.tags,
+    inputPlaceholder: styles.colors.dark.secondary,
+    disabledPrimaryButtonText: styles.colors.darkMode.disabledText,
   },
 }
 

@@ -74,6 +74,12 @@ declare module 'styled-components' {
     switchController: string
     nodeBackground: string
     nodeLightIcon: string
+    nodeSubHeading: string
+    nodeWarningText: string
+    calloutBackground: string
+    inputPlaceholder: string
+    disabledPrimaryButton: string
+    disabledPrimaryButtonText: string
 
     inverted: {
       controlBackground: string
@@ -117,6 +123,12 @@ declare module 'styled-components' {
       switchController: string
       nodeBackground: string
       nodeLightIcon: string
+      nodeSubHeading: string
+      nodeWarningText: string
+      calloutBackground: string
+      inputPlaceholder: string
+      disabledPrimaryButton: string
+      disabledPrimaryButtonText: string
     }
   }
 }
