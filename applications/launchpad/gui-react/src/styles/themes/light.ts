@@ -28,7 +28,7 @@ const lightTheme = {
 
   titleBar: styles.colors.light.background,
   controlBackground: 'transparent',
-  info: styles.colors.secondary.info,
+  infoTag: styles.colors.secondary.info,
   infoText: styles.colors.secondary.infoText,
   on: styles.colors.secondary.on,
   onText: styles.colors.secondary.onText,

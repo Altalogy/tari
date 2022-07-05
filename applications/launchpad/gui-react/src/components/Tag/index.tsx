@@ -89,7 +89,7 @@ const Tag = ({
     // info tag type is default
     default:
       baseStyle = {
-        backgroundColor: theme.info,
+        backgroundColor: theme.infoTag,
       }
       textStyle = {
         color: theme.infoText,

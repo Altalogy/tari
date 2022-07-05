@@ -46,7 +46,7 @@ declare module 'styled-components' {
     titleBar: string
 
     controlBackground: string
-    info: string
+    infoTag: string
     infoText: string
     on: string
     onText: string

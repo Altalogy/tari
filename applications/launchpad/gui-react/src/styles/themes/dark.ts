@@ -24,7 +24,7 @@ const darkTheme = {
   resetBackgroundHover: styles.colors.light.overlayDark,
   moneroDark: styles.colors.monero.dark,
   controlBackground: 'rgba(255,255,255,.2)',
-  info: styles.colors.secondary.info,
+  infoTag: styles.colors.darkMode.tags,
   infoText: styles.colors.secondary.infoText,
   on: styles.colors.secondary.on,
   onText: styles.colors.secondary.onText,
