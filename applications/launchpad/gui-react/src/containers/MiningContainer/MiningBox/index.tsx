@@ -170,6 +170,15 @@ const MiningBox = ({
         content: t.common.adjectives.paused,
         type: 'light',
       },
+      titleStyle: {
+        color: theme.helpTipText,
+      },
+      boxStyle: {
+        background: theme.nodeBackground,
+      },
+      icon: {
+        color: theme.nodeLightIcon,
+      },
     },
     [MiningBoxStatus.PausedNoSession]: {
       tag: {

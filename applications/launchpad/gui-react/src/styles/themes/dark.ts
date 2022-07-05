@@ -38,7 +38,7 @@ const darkTheme = {
   expert: 'rgba(255, 255, 255, 0.06)',
   expertText: styles.gradients.tari,
   expertSecText: 'rgba(255, 255, 255, 0.32)',
-  lightTag: styles.colors.darkMode.modalBackground,
+  lightTag: styles.colors.darkMode.tags,
   lightTagText: styles.colors.dark.secondary,
   placeholderText: styles.colors.dark.placeholder,
   mergedAccent: styles.colors.merged.dark,
@@ -50,6 +50,8 @@ const darkTheme = {
   switchBorder: styles.colors.darkMode.input,
   switchCircle: styles.colors.dark.secondary,
   switchController: styles.colors.light.overlay,
+  nodeBackground: styles.colors.darkMode.modalBackground,
+  nodeLightIcon: styles.colors.darkMode.darkLogoCard,
 
   inverted: {
     primary: styles.colors.light.primary,
@@ -91,6 +93,7 @@ const darkTheme = {
     switchBorder: styles.colors.darkMode.input,
     switchCircle: styles.colors.dark.secondary,
     switchController: styles.colors.light.overlay,
+    nodeBackground: styles.colors.darkMode.modalBackground,
   },
 }
 
