@@ -70,7 +70,7 @@ pub async fn wallet_events(app: AppHandle<Wry>) -> Result<(), String> {
 
     let mut stream = match wallet_client.stream().await.map_err(|e| e.chained_message()) {
         Ok(s) => s,
-        Err(err) => return Err("wallet is not running".to_string()),
+        Err(_err) => return Err("wallet is not running".to_string()),
     };
 
     let app_clone = app.clone();

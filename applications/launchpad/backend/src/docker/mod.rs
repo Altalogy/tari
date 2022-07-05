@@ -200,6 +200,16 @@ pub async fn listen_progress_info() -> Result<(), DockerWrapperError> {
                 start_sync_header(&mut header_progress, message.local_height, message.tip_height);
             }
         }
+
+        if message.state == 4 {
+            info!("BLOCKS");
+            if block_progress.started {
+                let info = sync(&mut block_progress, message.local_height);
+                info!("Block progress info: {:?}", info);
+            } else {
+                start_sync_header(&mut block_progress, message.local_height, message.tip_height);
+            }
+        }
     }
     info!("Base node stream is closed.");
     Ok(())
