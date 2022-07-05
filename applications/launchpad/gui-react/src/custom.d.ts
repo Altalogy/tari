@@ -72,6 +72,8 @@ declare module 'styled-components' {
     switchBorder: string
     switchCircle: string
     switchController: string
+    nodeBackground: string
+    nodeLightIcon: string
 
     inverted: {
       controlBackground: string
@@ -113,6 +115,8 @@ declare module 'styled-components' {
       switchBorder: string
       switchCircle: string
       switchController: string
+      nodeBackground: string
+      nodeLightIcon: string
     }
   }
 }

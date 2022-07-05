@@ -54,6 +54,8 @@ const lightTheme = {
   switchBorder: styles.colors.dark.primary,
   switchCircle: styles.colors.light.background,
   switchController: styles.colors.light.background,
+  nodeBackground: styles.colors.light.primary,
+  nodeLightIcon: styles.colors.light.backgroundImage,
 
   inverted: {
     primary: styles.colors.light.primary,
@@ -97,6 +99,8 @@ const lightTheme = {
     controlBackground: 'rgba(255,255,255,.2)',
     switchBorder: styles.colors.dark.primary,
     switchController: styles.colors.light.background,
+    nodeBackground: styles.colors.light.primary,
+    nodeLightIcon: styles.colors.light.backgroundImage,
   },
 }
 

@@ -24,6 +24,7 @@ import { MiningBoxContent, NodeIcons } from './styles'
 import RunningButton from '../../../components/RunningButton'
 import { tbotactions } from '../../../store/tbot'
 import { useWithWalletPassword } from '../../../useWithWalletPassword'
+import themes from '../../../styles/themes'
 
 const parseLastSessionToCoins = (
   lastSession: MiningSession | undefined,
@@ -159,6 +160,15 @@ const MiningBox = ({
       tag: {
         content: t.common.adjectives.paused,
         type: 'light',
+      },
+      titleStyle: {
+        color: theme.helpTipText,
+      },
+      boxStyle: {
+        background: theme.nodeBackground,
+      },
+      icon: {
+        color: theme.nodeLightIcon,
       },
     },
     [MiningBoxStatus.PausedNoSession]: {
