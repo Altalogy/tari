@@ -41,6 +41,7 @@ const darkTheme = {
   lightTag: styles.colors.darkMode.tags,
   lightTagText: styles.colors.dark.secondary,
   placeholderText: styles.colors.dark.placeholder,
+  textSecondary: styles.colors.light.textSecondary,
   mergedAccent: styles.colors.merged.dark,
   helpTipText: styles.colors.light.textSecondary,
   runningTagBackground: styles.colors.darkMode.tags,
