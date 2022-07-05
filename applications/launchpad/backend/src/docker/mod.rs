@@ -196,7 +196,7 @@ pub async fn listen_progress_info() -> Result<(), DockerWrapperError> {
                 SyncType::Block => {
                     if block_progress.started {
                         block_progress.sync(message.local_height, message.tip_height);
-                        info!("Block progress: {:?}", SyncProgressInfo::from(block_progress.clone()));
+                        debug!("Block progress: {:?}", SyncProgressInfo::from(block_progress.clone()));
                     } else {
                         block_progress.start(message.local_height, message.tip_height);
                     }
