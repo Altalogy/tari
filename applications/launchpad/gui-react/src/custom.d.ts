@@ -59,6 +59,7 @@ declare module 'styled-components' {
     error: string
     expert: string
     expertText: string
+    expertSecText: string
     lightTag: string
     lightTagText: string
     placeholderText: string
@@ -103,6 +104,9 @@ declare module 'styled-components' {
       expertText: string
       lightTag: string
       lightTagText: string
+      expert: string
+      expertText: string
+      expertSecText: string
     }
   }
 }

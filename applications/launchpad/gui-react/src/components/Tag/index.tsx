@@ -13,6 +13,7 @@ import { TagContainer, IconWrapper } from './styles'
  * @prop {ReactNode} [children] - text content to display
  * @prop {CSSProperties} [style] - optional component styles
  * @prop {'info' | 'running' | 'warning' | 'expert' | 'light'} [type] - tag types to determine color settings
+ * @prop {boolean} [expertSec] - specific usage of expert tag type
  * @prop {ReactNode} [icon] - optional SVG icon
  * @prop {ReactNode} [subText] - optional additional tag text
  * @prop {boolean} [inverted] - optional prop indicating whether tag should be rendered in inverted coloring
@@ -32,6 +33,7 @@ const Tag = ({
   subText,
   inverted,
   dashboard,
+  expertSec,
 }: TagProps) => {
   const theme = useTheme()
 
@@ -72,10 +74,16 @@ const Tag = ({
       baseStyle = {
         backgroundColor: theme.expert,
       }
-      textStyle = {
-        backgroundImage: theme.expertText,
-        WebkitBackgroundClip: 'text',
-        color: 'transparent',
+      if (expertSec) {
+        textStyle = {
+          color: theme.expertSecText,
+        }
+      } else {
+        textStyle = {
+          backgroundImage: theme.expertText,
+          WebkitBackgroundClip: 'text',
+          color: 'transparent',
+        }
       }
       break
     case 'light':
