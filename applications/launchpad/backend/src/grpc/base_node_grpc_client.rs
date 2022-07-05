@@ -69,7 +69,7 @@ impl GrpcBaseNodeClient {
         Self { inner: None }
     }
 
-    pub async fn connection(&mut self) -> Result<&mut Inner, GrpcError> {
+    pub async fn try_connect(&mut self) -> Result<&mut Inner, GrpcError> {
         if self.inner.is_none() {
             let inner = Inner::connect(BASE_NODE_GRPC_ADDRESS_URL).await?;
             self.inner = Some(inner);
