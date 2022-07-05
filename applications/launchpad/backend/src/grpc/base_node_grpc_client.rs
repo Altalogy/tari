@@ -89,7 +89,6 @@ impl GrpcBaseNodeClient {
                 Err(_) => {
                     sleep(Duration::from_secs(3));
                     info!("---> Waiting for base node....");
-                    continue;
                 },
             }
         }
