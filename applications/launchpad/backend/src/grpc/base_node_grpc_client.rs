@@ -94,7 +94,6 @@ impl GrpcBaseNodeClient {
             }
         }
 
-        true
     }
 
     pub async fn stream(&mut self) -> Result<impl Stream<Item = BlockStateInfo>, GrpcError> {
