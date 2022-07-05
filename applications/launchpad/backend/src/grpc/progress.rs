@@ -33,62 +33,8 @@ use serde::Serialize;
 use super::{SyncProgress, SyncProgressInfo, SyncType, BLOCKS_SYNC_EXPECTED_TIME_SEC};
 use crate::grpc::HEADERS_SYNC_EXPECTED_TIME_SEC;
 
-/// Init and start progress tracking headers syncing.
-pub fn start_sync_header(progress: &mut SyncProgress, local_height: u64, tip_height: u64) {
-    debug!("Start syncing: HEADERS");
-    progress.start_index = local_height;
-    progress.sync_items = local_height;
-    progress.total_items = tip_height;
-    progress.start_time = Instant::now();
-    progress.started = true;
-}
-/// Init and start progress tracking blocks syncing.
-pub fn start_sync_block(progress: &mut SyncProgress, local_height: u64, tip_height: u64) {
-    debug!("Start syncing: BLOCKS");
-    progress.start_index = local_height;
-    progress.sync_items = local_height;
-    progress.total_items = tip_height;
-    progress.start_time = Instant::now();
-    progress.started = true;
-}
-
-/// Update sync_items and cacludate remaing times.
-pub fn sync(progress_info: &mut SyncProgress, local_height: u64) -> SyncProgressInfo {
-    progress_info.sync_local_items(local_height);
-    calucate_estimated_times(progress_info);
-    SyncProgressInfo::from(progress_info.clone())
-}
-
 fn calculate_remaining_time_in_sec(current_progress: f32, elapsed_time_in_sec: f32) -> f32 {
     elapsed_time_in_sec * (100.0 - current_progress) / current_progress
-}
-/// Calculates max_remaining_time and min_remaining_time based on progress rate.
-fn calucate_estimated_times(progress_info: &mut SyncProgress) {
-    let expected_time_in_sec = match progress_info.sync_type {
-        SyncType::Block => BLOCKS_SYNC_EXPECTED_TIME_SEC,
-        SyncType::Header => HEADERS_SYNC_EXPECTED_TIME_SEC,
-    } as f32;
-    let elapsed_time_in_sec = progress_info.start_time.elapsed().as_secs_f32();
-
-    let all_items = ((progress_info.total_items + progress_info.new_items) - progress_info.start_index) as f32;
-    let all_local_items = (progress_info.sync_items - progress_info.start_index) as f32;
-    let current_progress = (all_local_items * 100.0) / (all_items);
-    progress_info.min_remaining_time = (elapsed_time_in_sec * (100.0 - current_progress) / current_progress) as u64;
-    let remaining_parts: f32 = (100.0 - current_progress as f32) / 100.0;
-    progress_info.max_remaining_time = (expected_time_in_sec * remaining_parts) as u64;
-}
-/// Calculates current progress: progress = sync_items/all_items.
-/// It is possible new blocks to be mined meanwhile.
-fn calculate_progress_rate(progress: &SyncProgress) -> f32 {
-    let all_items = ((progress.total_items + progress.new_items) - progress.start_index) as f32;
-    let all_local_items = (progress.sync_items - progress.start_index) as f32;
-    (all_local_items * 100.0) / (all_items)
-}
-
-fn calculate_overall_progress_rate(progress: &SyncProgress) -> f32 {
-    let all_items = (progress.total_items + progress.new_items) as f32;
-    let all_local_items = (progress.sync_items - progress.start_index) as f32;
-    (all_local_items * 100.0) / (all_items)
 }
 
 #[test]
@@ -98,14 +44,15 @@ fn progress_info_test() {
     let sleep_sec = 5;
     let mut progress_info = SyncProgress::new(SyncType::Header, 0, 0);
     assert!(!progress_info.started);
-    start_sync_header(&mut progress_info, local, tip);
+    progress_info.start(local, tip);
     assert!(progress_info.started);
     let max_time_interval = HEADERS_SYNC_EXPECTED_TIME_SEC / 10;
     for i in 1..11 {
         let local_height = local + i * (tip - local) / 10;
         println!("iteration: {}, blocks: {}", i, local_height);
         sleep(Duration::from_secs(sleep_sec));
-        let progress = sync(&mut progress_info, local_height);
+        progress_info.sync(local_height, tip);
+        let progress = SyncProgressInfo::from(progress_info.clone());
         println!("Progress: {:?}", progress);
         assert_eq!(
             HEADERS_SYNC_EXPECTED_TIME_SEC - i * max_time_interval,
@@ -119,4 +66,27 @@ fn progress_info_test() {
         let progress_percentage = actual_synced_items as f32 / actual_total_items as f32;
         assert_eq!(i as f32 / 10.0, progress_percentage);
     }
+}
+
+#[test]
+fn tip_height_is_changed_test() {
+    let mut header_progress = SyncProgress::new(SyncType::Header, 0, 0);
+    assert!(!header_progress.started);
+    header_progress.start(250, 1250);
+    assert!(header_progress.started);
+    sleep(Duration::from_secs(5));
+    header_progress.sync(750, 1250);
+    let progress = SyncProgressInfo::from(header_progress.clone());
+    assert_eq!(5, progress.min_estimated_time_sec);
+    assert_eq!(HEADERS_SYNC_EXPECTED_TIME_SEC / 2, progress.max_estimated_time_sec);
+    assert_eq!(750, progress.synced_items);
+    assert_eq!(5, progress.elapsed_time_sec);
+    sleep(Duration::from_secs(5));
+    header_progress.sync(1250, 2250);
+    let progress = SyncProgressInfo::from(header_progress.clone());
+    println!("Progress: {:?}", progress);
+    assert_eq!(10, progress.min_estimated_time_sec);
+    assert_eq!(HEADERS_SYNC_EXPECTED_TIME_SEC / 2, progress.max_estimated_time_sec);
+    assert_eq!(1250, progress.synced_items);
+    assert_eq!(10, progress.elapsed_time_sec);
 }

@@ -62,7 +62,7 @@ pub use wrapper::DockerWrapper;
 
 use crate::{
     commands::DEFAULT_IMAGES,
-    grpc::{start_sync_header, sync, GrpcBaseNodeClient, SyncProgress, SyncType},
+    grpc::{GrpcBaseNodeClient, SyncProgress, SyncType},
 };
 
 lazy_static! {

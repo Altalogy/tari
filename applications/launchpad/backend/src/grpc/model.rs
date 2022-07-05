@@ -22,6 +22,7 @@
 
 use std::{convert::TryFrom, time::Instant};
 
+use log::info;
 use serde::Serialize;
 use tari_app_grpc::tari_rpc::{GetBalanceResponse, GetIdentityResponse, SyncProgressResponse, TransactionEvent};
 use tari_common_types::emoji::EmojiId;
@@ -181,6 +182,41 @@ impl SyncProgress {
 
     pub fn sync_total_items(&mut self, tip_height: u64) {
         self.new_items = tip_height - self.total_items;
+    }
+
+    /// Init and start progress tracking blocks syncing.
+    pub fn start(&mut self, local_height: u64, tip_height: u64) {
+        self.start_index = local_height;
+        self.sync_items = local_height;
+        self.total_items = tip_height;
+        self.start_time = Instant::now();
+        self.started = true;
+    }
+
+    /// Update sync_items and cacludate remaing times.
+    pub fn sync(&mut self, local_height: u64, tip_height: u64) {
+        self.sync_items = local_height;
+        self.total_items = tip_height;
+        self.calucate_estimated_times();
+    }
+
+    /// Calculates max_remaining_time and min_remaining_time based on progress rate.
+    pub fn calucate_estimated_times(&mut self) {
+        let expected_time_in_sec = match self.sync_type {
+            SyncType::Block => BLOCKS_SYNC_EXPECTED_TIME_SEC,
+            SyncType::Header => HEADERS_SYNC_EXPECTED_TIME_SEC,
+        } as f32;
+        let elapsed_time_in_sec = self.start_time.elapsed().as_secs_f32();
+        let current_progress = self.calculate_progress_rate();
+        self.min_remaining_time = (elapsed_time_in_sec * (100.0 - current_progress) / current_progress) as u64;
+        let remaining_parts: f32 = (100.0 - current_progress as f32) / 100.0;
+        self.max_remaining_time = (expected_time_in_sec * remaining_parts) as u64;
+    }
+
+    fn calculate_progress_rate(&self) -> f32 {
+        let all_items = (self.total_items - self.start_index) as f32;
+        let all_local_items = (self.sync_items - self.start_index) as f32;
+        (all_local_items * 100.0) / (all_items)
     }
 }
 

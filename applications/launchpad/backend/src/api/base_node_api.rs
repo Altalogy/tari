@@ -25,7 +25,7 @@ use futures::StreamExt;
 use log::{info, warn};
 use tauri::{AppHandle, Manager, Wry};
 
-use crate::grpc::{start_sync_header, sync, GrpcBaseNodeClient, SyncProgress, SyncType};
+use crate::grpc::{GrpcBaseNodeClient, SyncProgress, SyncProgressInfo, SyncType};
 
 pub const ONBOARDING_PROGRESS_DESTINATION: &str = "tari://onboarding_progress";
 
@@ -37,30 +37,31 @@ pub async fn base_node_sync_progress(app: AppHandle<Wry>) -> Result<(), String> 
 
     let app_clone = app.clone();
     tauri::async_runtime::spawn(async move {
-        let mut block_progress = SyncProgress::new(SyncType::Block, 0, 0);
-        let mut header_progress = SyncProgress::new(SyncType::Header, 0, 0);
+        let block_progress = &mut SyncProgress::new(SyncType::Block, 0, 0);
+        let header_progress = &mut SyncProgress::new(SyncType::Header, 0, 0);
         info!("Syncing blocks progress is started....");
         while let Some(message) = stream.next().await {
             if let Some(sync_type) = message.sync_type {
                 match sync_type {
                     SyncType::Header => {
                         if header_progress.started {
-                            let progress = sync(&mut header_progress, message.local_height);
+                            header_progress.sync(message.local_height, message.tip_height);
+                            let progress = SyncProgressInfo::from(header_progress.clone());
                             if let Err(err) = app_clone.emit_all(ONBOARDING_PROGRESS_DESTINATION, progress) {
                                 warn!("Could not emit event to front-end, {:?}", err);
                             }
                         } else {
-                            start_sync_header(&mut header_progress, message.local_height, message.tip_height);
+                            header_progress.start(message.local_height, message.tip_height);
                         }
                     },
                     SyncType::Block => {
                         if block_progress.started {
-                            let progress = sync(&mut block_progress, message.local_height);
+                            let progress = SyncProgressInfo::from(block_progress.clone());
                             if let Err(err) = app_clone.emit_all(ONBOARDING_PROGRESS_DESTINATION, progress) {
                                 warn!("Could not emit event to front-end, {:?}", err);
                             }
                         } else {
-                            start_sync_header(&mut block_progress, message.local_height, message.tip_height);
+                            block_progress.start(message.local_height, message.tip_height);
                         }
                     },
                 }
