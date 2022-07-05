@@ -36,7 +36,7 @@ const darkTheme = {
   error: styles.colors.secondary.error,
   expert: 'rgba(147, 48, 255, 0.05)',
   expertText: styles.gradients.tari,
-  lightTag: styles.colors.light.backgroundImage,
+  lightTag: styles.colors.darkMode.modalBackground,
   lightTagText: styles.colors.dark.secondary,
   placeholderText: styles.colors.dark.placeholder,
   mergedAccent: styles.colors.merged.dark,
