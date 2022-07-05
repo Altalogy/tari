@@ -62,7 +62,7 @@ pub use wrapper::DockerWrapper;
 
 use crate::{
     commands::DEFAULT_IMAGES,
-    grpc::{GrpcBaseNodeClient, SyncProgress, SyncType},
+    grpc::{GrpcBaseNodeClient, SyncProgress, SyncType, SyncProgressInfo},
 };
 
 lazy_static! {
@@ -170,5 +170,41 @@ pub async fn shutdown_all_containers(workspace_name: String, docker: &Docker) ->
             Err(_) => debug!("Docker image {} has not been found", image_name),
         }
     }
+    Ok(())
+}
+
+pub async fn listen_progress_info() -> Result<(), DockerWrapperError> {
+    info!("Listen for base node info....");
+    let mut client = GrpcBaseNodeClient::new();
+    client.wait_for_connection().await;        
+    let mut stream = client.stream().await.unwrap();
+    let mut header_progress = SyncProgress::new(SyncType::Header, 0, 0);
+    let mut block_progress = SyncProgress::new(SyncType::Block, 0, 0);
+    while let Some(message) = stream.next().await {
+        info!("Here is the progress: {:?}", message);
+
+        if let Some(sync_type) = message.sync_type {
+            match sync_type {
+                SyncType::Header => {
+                   if header_progress.started {
+                    header_progress.sync( message.local_height, message.tip_height);
+                    info!("HEADER progress: {:?}", SyncProgressInfo::from(header_progress.clone()));
+                    } else {
+                        header_progress.start(message.local_height, message.tip_height);
+                    }
+                },
+                SyncType::Block => {
+                    if block_progress.started {
+                        block_progress.sync(message.local_height, message.tip_height);
+                        info!("Block progress: {:?}", SyncProgressInfo::from(block_progress.clone()));
+                    } else {
+                        block_progress.start(message.local_height, message.tip_height);
+                    }
+                }
+            }
+        }
+
+    }
+    info!("Base node stream is closed.");
     Ok(())
 }

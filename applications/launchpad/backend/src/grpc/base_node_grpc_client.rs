@@ -22,7 +22,6 @@
 
 use std::{
     net::{IpAddr, Ipv4Addr, SocketAddr, SocketAddrV4},
-    thread::sleep,
     time::Duration,
 };
 
@@ -81,7 +80,7 @@ impl GrpcBaseNodeClient {
 
     pub async fn wait_for_connection(&mut self) {
         loop {
-            match self.connection().await {
+            match self.try_connect().await {
                 Ok(_) => {
                     info!("#### Connected....");
                     break;
@@ -96,7 +95,7 @@ impl GrpcBaseNodeClient {
 
     pub async fn stream(&mut self) -> Result<impl Stream<Item = BlockStateInfo>, GrpcError> {
         let (mut sender, receiver) = mpsc::channel(100);
-        let connection = self.connection().await.unwrap().clone();
+        let connection = self.try_connect().await?.clone();
         task::spawn(async move {
             loop {
                 let request = Empty {};
