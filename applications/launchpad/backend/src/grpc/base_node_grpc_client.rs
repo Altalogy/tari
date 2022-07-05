@@ -48,7 +48,7 @@ use tari_app_grpc::tari_rpc::{
     TransactionEventResponse,
 };
 use tauri::{async_runtime::block_on, http::status};
-use tokio::task;
+use tokio::{task, time::sleep};
 use tonic::transport::Channel;
 
 use super::{error::GrpcError, BlockStateInfo};
@@ -79,7 +79,7 @@ impl GrpcBaseNodeClient {
             .ok_or_else(|| GrpcError::FatalError("no connection".into()))
     }
 
-    pub async fn wait_for_connection(&mut self)  {
+    pub async fn wait_for_connection(&mut self) {
         loop {
             match self.connection().await {
                 Ok(_) => {
@@ -92,7 +92,6 @@ impl GrpcBaseNodeClient {
                 },
             }
         }
-
     }
 
     pub async fn stream(&mut self) -> Result<impl Stream<Item = BlockStateInfo>, GrpcError> {
