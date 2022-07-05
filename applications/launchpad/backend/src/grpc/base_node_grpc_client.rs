@@ -51,7 +51,7 @@ use tauri::{async_runtime::block_on, http::status};
 use tokio::task;
 use tonic::transport::Channel;
 
-use super::{error::GrpcError, ProgressInfo};
+use super::{error::GrpcError, BlockStateInfo};
 use crate::{
     docker::{DockerWrapperError, LaunchpadConfig, BASE_NODE_GRPC_ADDRESS_URL},
     error::LauncherError,
@@ -97,7 +97,7 @@ impl GrpcBaseNodeClient {
         true
     }
 
-    pub async fn stream(&mut self) -> Result<impl Stream<Item = ProgressInfo>, GrpcError> {
+    pub async fn stream(&mut self) -> Result<impl Stream<Item = BlockStateInfo>, GrpcError> {
         let (mut sender, receiver) = mpsc::channel(100);
         let connection = self.connection().await.unwrap().clone();
         task::spawn(async move {
@@ -119,7 +119,7 @@ impl GrpcBaseNodeClient {
                         return;
                     },
                     tari_app_grpc::tari_rpc::SyncState::Header | tari_app_grpc::tari_rpc::SyncState::Block => {
-                        sender.try_send(ProgressInfo::from(response)).unwrap()
+                        sender.try_send(BlockStateInfo::from(response)).unwrap()
                     },
                     sync_state => info!("Syncing is being started. Current state: {:?}", sync_state),
                 }

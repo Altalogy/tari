@@ -1,8 +1,33 @@
-use std::convert::TryFrom;
+//  Copyright 2021. The Tari Project
+//
+//  Redistribution and use in source and binary forms, with or without modification, are permitted provided that the
+//  following conditions are met:
+//
+//  1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following
+//  disclaimer.
+//
+//  2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the
+//  following disclaimer in the documentation and/or other materials provided with the distribution.
+//
+//  3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote
+//  products derived from this software without specific prior written permission.
+//
+//  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+//  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+//  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+//  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+//  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+//  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+//  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+use std::{convert::TryFrom, time::Instant};
 
 use serde::Serialize;
 use tari_app_grpc::tari_rpc::{GetBalanceResponse, GetIdentityResponse, SyncProgressResponse, TransactionEvent};
 use tari_common_types::emoji::EmojiId;
+
+pub const BLOCKS_SYNC_EXPECTED_TIME_SEC: u64 = 7200;
+pub const HEADERS_SYNC_EXPECTED_TIME_SEC: u64 = 1800;
 
 #[derive(Debug, Clone, Serialize)]
 pub struct WalletTransaction {
@@ -33,10 +58,40 @@ pub struct WalletBalance {
 }
 
 #[derive(Debug, Clone, Serialize)]
-pub struct ProgressInfo {
+pub struct BlockStateInfo {
     pub tip_height: u64,
     pub local_height: u64,
     pub state: i32,
+}
+
+#[derive(Serialize, Clone, Debug)]
+pub struct SyncProgressInfo {
+    pub sync_type: SyncType,
+    pub starting_items_index: u64,
+    pub synced_items: u64,
+    pub total_items: u64,
+    pub elapsed_time_sec: u64,
+    pub min_estimated_time_sec: u64,
+    pub max_estimated_time_sec: u64,
+}
+
+#[derive(Debug, Clone)]
+pub struct SyncProgress {
+    pub sync_type: SyncType,
+    pub start_time: Instant,
+    pub started: bool,
+    pub start_index: u64,
+    pub total_items: u64,
+    pub sync_items: u64,
+    pub new_items: u64,
+    pub min_remaining_time: u64,
+    pub max_remaining_time: u64,
+}
+
+#[derive(Debug, Clone, Serialize, PartialEq)]
+pub enum SyncType {
+    Block,
+    Header,
 }
 
 impl TryFrom<TransactionEvent> for WalletTransaction {
@@ -60,9 +115,9 @@ impl TryFrom<TransactionEvent> for WalletTransaction {
     }
 }
 
-impl From<SyncProgressResponse> for ProgressInfo {
+impl From<SyncProgressResponse> for BlockStateInfo {
     fn from(value: SyncProgressResponse) -> Self {
-        ProgressInfo {
+        BlockStateInfo {
             tip_height: value.tip_height,
             local_height: value.local_height,
             state: value.state,
@@ -93,6 +148,61 @@ impl From<GetBalanceResponse> for WalletBalance {
             available_balance: value.available_balance,
             pending_incoming_balance: value.pending_incoming_balance,
             pending_outgoing_balance: value.pending_outgoing_balance,
+        }
+    }
+}
+
+impl SyncProgress {
+    pub fn new(sync_type: SyncType, local_height: u64, tip_height: u64) -> Self {
+        SyncProgress {
+            sync_type,
+            started: false,
+            start_index: local_height,
+            total_items: tip_height,
+            start_time: Instant::now(),
+            sync_items: 0,
+            max_remaining_time: 7200,
+            min_remaining_time: 0,
+            new_items: 0,
+        }
+    }
+
+    pub fn sync_local_items(&mut self, local_height: u64) {
+        self.sync_items = local_height;
+    }
+
+    pub fn sync_total_items(&mut self, tip_height: u64) {
+        self.new_items = tip_height - self.total_items;
+    }
+}
+
+impl SyncProgressInfo {
+    fn new(sync_type: SyncType, synced_items: u64, total_items: u64) -> Self {
+        SyncProgressInfo {
+            sync_type: sync_type.clone(),
+            starting_items_index: synced_items,
+            synced_items,
+            total_items,
+            elapsed_time_sec: 0,
+            min_estimated_time_sec: 0,
+            max_estimated_time_sec: match sync_type {
+                SyncType::Header => HEADERS_SYNC_EXPECTED_TIME_SEC,
+                _ => BLOCKS_SYNC_EXPECTED_TIME_SEC,
+            },
+        }
+    }
+}
+
+impl From<SyncProgress> for SyncProgressInfo {
+    fn from(source: SyncProgress) -> Self {
+        SyncProgressInfo {
+            sync_type: source.sync_type,
+            starting_items_index: source.start_index,
+            synced_items: source.sync_items,
+            total_items: source.total_items,
+            elapsed_time_sec: source.start_time.elapsed().as_secs(),
+            max_estimated_time_sec: source.max_remaining_time,
+            min_estimated_time_sec: source.min_remaining_time,
         }
     }
 }

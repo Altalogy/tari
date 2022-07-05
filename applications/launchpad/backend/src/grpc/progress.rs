@@ -30,93 +30,8 @@ use std::{
 use log::debug;
 use serde::Serialize;
 
-pub const BLOCKS_SYNC_EXPECTED_TIME_SEC: u64 = 7200;
-pub const HEADERS_SYNC_EXPECTED_TIME_SEC: u64 = 1800;
-
-#[derive(Serialize, Clone, Debug)]
-pub struct SyncInfo {
-    sync_type: SyncType,
-    starting_items_index: u64,
-    synced_items: u64,
-    total_items: u64,
-    elapsed_time_sec: u64,
-    min_estimated_time_sec: u64,
-    max_estimated_time_sec: u64,
-}
-
-#[derive(Debug, Clone)]
-pub struct SyncProgress {
-    pub sync_type: SyncType,
-    pub start_time: Instant,
-    pub started: bool,
-    pub start_index: u64,
-    pub total_items: u64,
-    pub sync_items: u64,
-    pub new_items: u64,
-    pub min_remaining_time: u64,
-    pub max_remaining_time: u64,
-}
-
-#[derive(Debug, Clone, Serialize, PartialEq)]
-pub enum SyncType {
-    Block,
-    Header,
-}
-
-impl SyncProgress {
-    pub fn new(sync_type: SyncType, local_height: u64, tip_height: u64) -> Self {
-        SyncProgress {
-            sync_type,
-            started: false,
-            start_index: local_height,
-            total_items: tip_height,
-            start_time: Instant::now(),
-            sync_items: 0,
-            max_remaining_time: 7200,
-            min_remaining_time: 0,
-            new_items: 0,
-        }
-    }
-
-    fn sync_local_items(&mut self, local_height: u64) {
-        self.sync_items = local_height;
-    }
-
-    fn sync_total_items(&mut self, tip_height: u64) {
-        self.new_items = tip_height - self.total_items;
-    }
-}
-
-impl SyncInfo {
-    fn new(sync_type: SyncType, synced_items: u64, total_items: u64) -> Self {
-        SyncInfo {
-            sync_type: sync_type.clone(),
-            starting_items_index: synced_items,
-            synced_items,
-            total_items,
-            elapsed_time_sec: 0,
-            min_estimated_time_sec: 0,
-            max_estimated_time_sec: match sync_type {
-                SyncType::Header => HEADERS_SYNC_EXPECTED_TIME_SEC,
-                _ => BLOCKS_SYNC_EXPECTED_TIME_SEC,
-            },
-        }
-    }
-}
-
-impl From<SyncProgress> for SyncInfo {
-    fn from(source: SyncProgress) -> Self {
-        SyncInfo {
-            sync_type: source.sync_type,
-            starting_items_index: source.start_index,
-            synced_items: source.sync_items,
-            total_items: source.total_items,
-            elapsed_time_sec: source.start_time.elapsed().as_secs(),
-            max_estimated_time_sec: source.max_remaining_time,
-            min_estimated_time_sec: source.min_remaining_time,
-        }
-    }
-}
+use super::{SyncProgress, SyncProgressInfo, SyncType, BLOCKS_SYNC_EXPECTED_TIME_SEC};
+use crate::grpc::HEADERS_SYNC_EXPECTED_TIME_SEC;
 
 /// Init and start progress tracking headers syncing.
 pub fn start_sync_header(progress: &mut SyncProgress, local_height: u64, tip_height: u64) {
@@ -138,10 +53,10 @@ pub fn start_sync_block(progress: &mut SyncProgress, local_height: u64, tip_heig
 }
 
 /// Update sync_items and cacludate remaing times.
-pub fn sync(progress_info: &mut SyncProgress, local_height: u64) -> SyncInfo {
+pub fn sync(progress_info: &mut SyncProgress, local_height: u64) -> SyncProgressInfo {
     progress_info.sync_local_items(local_height);
     calucate_estimated_times(progress_info);
-    SyncInfo::from(progress_info.clone())
+    SyncProgressInfo::from(progress_info.clone())
 }
 
 fn calculate_remaining_time_in_sec(current_progress: f32, elapsed_time_in_sec: f32) -> f32 {
