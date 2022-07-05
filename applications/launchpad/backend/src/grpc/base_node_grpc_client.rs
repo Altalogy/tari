@@ -54,7 +54,7 @@ use tonic::transport::Channel;
 use super::{error::GrpcError, ProgressInfo};
 use crate::{
     docker::{DockerWrapperError, LaunchpadConfig, BASE_NODE_GRPC_ADDRESS_URL},
-    error::LauncherError
+    error::LauncherError,
 };
 
 type Inner = BaseNodeClient<tonic::transport::Channel>;
@@ -118,9 +118,10 @@ impl GrpcBaseNodeClient {
                         info!("GONGRATS....Base node is synced.");
                         return;
                     },
-                    tari_app_grpc::tari_rpc::SyncState::Header |
-                    tari_app_grpc::tari_rpc::SyncState::Block => sender.try_send(ProgressInfo::from(response)).unwrap(),
-                    sync_state  => info!("Syncing is being started. Current state: {:?}", sync_state),
+                    tari_app_grpc::tari_rpc::SyncState::Header | tari_app_grpc::tari_rpc::SyncState::Block => {
+                        sender.try_send(ProgressInfo::from(response)).unwrap()
+                    },
+                    sync_state => info!("Syncing is being started. Current state: {:?}", sync_state),
                 }
                 sleep(Duration::from_secs(10));
             }

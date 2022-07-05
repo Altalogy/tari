@@ -60,7 +60,10 @@ pub use settings::{
 pub use workspace::{TariWorkspace, Workspaces};
 pub use wrapper::DockerWrapper;
 
-use crate::{commands::DEFAULT_IMAGES, grpc::{GrpcBaseNodeClient, HEADER_PROGRESS, BLOCK_PROGRESS, start_sync_header, sync}};
+use crate::{
+    commands::DEFAULT_IMAGES,
+    grpc::{start_sync_header, sync, GrpcBaseNodeClient, SyncProgress, SyncType},
+};
 
 lazy_static! {
     pub static ref DOCKER_INSTANCE: Docker = Docker::connect_with_local_defaults().unwrap();
@@ -183,8 +186,8 @@ pub async fn listen_progress_info() -> Result<(), DockerWrapperError> {
     }
 
     let mut stream = client.stream().await.unwrap();
-    let mut header_progress = HEADER_PROGRESS.write().unwrap();
-    let mut block_progress = BLOCK_PROGRESS.write().unwrap();
+    let mut header_progress = SyncProgress::new(SyncType::Header, 0, 0);
+    let mut block_progress = SyncProgress::new(SyncType::Block, 0, 0);
     while let Some(message) = stream.next().await {
         info!("Here is the progress: {:?}", message);
 
@@ -197,7 +200,6 @@ pub async fn listen_progress_info() -> Result<(), DockerWrapperError> {
                 start_sync_header(&mut header_progress, message.local_height, message.tip_height);
             }
         }
-
     }
     info!("Base node stream is closed.");
     Ok(())

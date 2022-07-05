@@ -21,18 +21,14 @@
 //  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use std::{
-    sync::RwLock,
+    cell::RefCell,
+    sync::{Arc, Mutex, RwLock},
     thread::sleep,
     time::{Duration, Instant, SystemTime, UNIX_EPOCH},
 };
 
 use log::debug;
 use serde::Serialize;
-
-lazy_static! {
-    pub static ref BLOCK_PROGRESS: RwLock<SyncProgress> = RwLock::new(SyncProgress::new(SyncType::Block, 0, 0,));
-    pub static ref HEADER_PROGRESS: RwLock<SyncProgress> = RwLock::new(SyncProgress::new(SyncType::Header, 0, 0,));
-}
 
 pub const BLOCKS_SYNC_EXPECTED_TIME_SEC: u64 = 7200;
 pub const HEADERS_SYNC_EXPECTED_TIME_SEC: u64 = 1800;
@@ -52,7 +48,7 @@ pub struct SyncInfo {
 pub struct SyncProgress {
     pub sync_type: SyncType,
     pub start_time: Instant,
-    pub started: bool,    
+    pub started: bool,
     pub start_index: u64,
     pub total_items: u64,
     pub sync_items: u64,
@@ -68,7 +64,7 @@ pub enum SyncType {
 }
 
 impl SyncProgress {
-    fn new(sync_type: SyncType, local_height: u64, tip_height: u64) -> Self {
+    pub fn new(sync_type: SyncType, local_height: u64, tip_height: u64) -> Self {
         SyncProgress {
             sync_type,
             started: false,
@@ -91,7 +87,6 @@ impl SyncProgress {
     }
 }
 
-
 impl SyncInfo {
     fn new(sync_type: SyncType, synced_items: u64, total_items: u64) -> Self {
         SyncInfo {
@@ -103,7 +98,7 @@ impl SyncInfo {
             min_estimated_time_sec: 0,
             max_estimated_time_sec: match sync_type {
                 SyncType::Header => HEADERS_SYNC_EXPECTED_TIME_SEC,
-                _ => BLOCKS_SYNC_EXPECTED_TIME_SEC
+                _ => BLOCKS_SYNC_EXPECTED_TIME_SEC,
             },
         }
     }
@@ -133,16 +128,14 @@ pub fn start_sync_header(progress: &mut SyncProgress, local_height: u64, tip_hei
     progress.started = true;
 }
 /// Init and start progress tracking blocks syncing.
-pub fn start_sync_block(local_height: u64, tip_height: u64) {
+pub fn start_sync_block(progress: &mut SyncProgress, local_height: u64, tip_height: u64) {
     debug!("Start syncing: BLOCKS");
-    let mut progress = BLOCK_PROGRESS.write().unwrap();
     progress.start_index = local_height;
     progress.sync_items = local_height;
     progress.total_items = tip_height;
     progress.start_time = Instant::now();
     progress.started = true;
 }
-
 
 /// Update sync_items and cacludate remaing times.
 pub fn sync(progress_info: &mut SyncProgress, local_height: u64) -> SyncInfo {
@@ -183,25 +176,27 @@ fn calculate_overall_progress_rate(progress: &SyncProgress) -> f32 {
     (all_local_items * 100.0) / (all_items)
 }
 
-
 #[test]
 fn progress_info_test() {
     assert!(true);
     let local = 250;
     let tip = 1250;
     let sleep_sec = 5;
-    let mut progress_info = HEADER_PROGRESS.write().unwrap();
+    let mut progress_info = SyncProgress::new(SyncType::Header, 0, 0);
     assert!(!progress_info.started);
     start_sync_header(&mut progress_info, local, tip);
     assert!(progress_info.started);
-    let max_time_interval = HEADERS_SYNC_EXPECTED_TIME_SEC/10;
+    let max_time_interval = HEADERS_SYNC_EXPECTED_TIME_SEC / 10;
     for i in 1..11 {
         let local_height = local + i * (tip - local) / 10;
         println!("iteration: {}, blocks: {}", i, local_height);
         sleep(Duration::from_secs(sleep_sec));
         let progress = sync(&mut progress_info, local_height);
         println!("Progress: {:?}", progress);
-        assert_eq!(HEADERS_SYNC_EXPECTED_TIME_SEC - i * max_time_interval, progress.max_estimated_time_sec);
+        assert_eq!(
+            HEADERS_SYNC_EXPECTED_TIME_SEC - i * max_time_interval,
+            progress.max_estimated_time_sec
+        );
         assert_eq!((10 - i) * sleep_sec, progress.min_estimated_time_sec);
         assert_eq!(i * sleep_sec, progress.elapsed_time_sec);
         assert_eq!(local + i * 100, progress.synced_items);
