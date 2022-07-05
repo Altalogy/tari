@@ -52,6 +52,7 @@ declare module 'styled-components' {
     onText: string
     onTextLight: string
     warning: string
+    warningTag: string
     warningText: string
     warningDark: string
     success: string
