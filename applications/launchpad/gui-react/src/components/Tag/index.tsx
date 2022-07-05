@@ -62,7 +62,7 @@ const Tag = ({
       break
     case 'warning':
       baseStyle = {
-        backgroundColor: theme.warning,
+        backgroundColor: theme.warningTag,
       }
       textStyle = {
         color: theme.warningText,
