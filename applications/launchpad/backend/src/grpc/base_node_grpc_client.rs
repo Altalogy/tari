@@ -79,7 +79,7 @@ impl GrpcBaseNodeClient {
             .ok_or_else(|| GrpcError::FatalError("no connection".into()))
     }
 
-    pub async fn connected(&mut self) -> bool {
+    pub async fn wait_for_connection(&mut self)  {
         loop {
             match self.connection().await {
                 Ok(_) => {
