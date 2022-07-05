@@ -207,6 +207,7 @@ const TitleBar = ({
             variant='text'
             size='small'
             leftIcon={<SvgSetting width='16px' height='16px' />}
+            leftIconColor={theme.helpTipText}
             onClick={() => dispatch(settingsActions.open({}))}
             style={{
               color:

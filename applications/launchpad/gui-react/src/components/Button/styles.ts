@@ -159,6 +159,7 @@ export const IconWrapper = styled.span<{
   $autosizeIcon?: boolean
   $variant?: ButtonVariantType
   $disabled?: boolean
+  $leftIconColor?: string
 }>`
   display: inline-flex;
   ${({ $spacing, theme }) => {
@@ -169,9 +170,11 @@ export const IconWrapper = styled.span<{
     return ''
   }}
 
-  color: ${({ $disabled, theme }) => {
+  color: ${({ $disabled, theme, $leftIconColor }) => {
     if ($disabled) {
       return theme.placeholderText
+    } else if ($leftIconColor) {
+      return $leftIconColor
     }
 
     return 'inherit'
