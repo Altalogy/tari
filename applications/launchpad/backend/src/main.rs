@@ -53,7 +53,7 @@ use crate::{
         stop_service,
         AppState,
     },
-    docker::{DEFAULT_WORKSPACE_NAME, listen_progress_info},
+    docker::{listen_progress_info, DEFAULT_WORKSPACE_NAME},
     grpc::WalletTransaction,
 };
 
