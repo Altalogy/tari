@@ -93,7 +93,6 @@ fn calculate_overall_progress_rate(progress: &SyncProgress) -> f32 {
 
 #[test]
 fn progress_info_test() {
-    assert!(true);
     let local = 250;
     let tip = 1250;
     let sleep_sec = 5;
