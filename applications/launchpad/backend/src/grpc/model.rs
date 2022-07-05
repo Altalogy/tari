@@ -28,6 +28,8 @@ use tari_common_types::emoji::EmojiId;
 
 pub const BLOCKS_SYNC_EXPECTED_TIME_SEC: u64 = 7200;
 pub const HEADERS_SYNC_EXPECTED_TIME_SEC: u64 = 1800;
+pub const HEADER: i32 = 2;
+pub const BLOCK: i32 = 4;
 
 #[derive(Debug, Clone, Serialize)]
 pub struct WalletTransaction {
@@ -61,7 +63,7 @@ pub struct WalletBalance {
 pub struct BlockStateInfo {
     pub tip_height: u64,
     pub local_height: u64,
-    pub state: i32,
+    pub sync_type: Option<SyncType>,
 }
 
 #[derive(Serialize, Clone, Debug)]
@@ -120,7 +122,13 @@ impl From<SyncProgressResponse> for BlockStateInfo {
         BlockStateInfo {
             tip_height: value.tip_height,
             local_height: value.local_height,
-            state: value.state,
+            sync_type: if value.state == HEADER as i32 {
+                Some(SyncType::Header)
+            } else if value.state == BLOCK as i32 {
+                Some(SyncType::Block)
+            } else {
+                None
+            },
         }
     }
 }
