@@ -53,7 +53,7 @@ use crate::{
         stop_service,
         AppState,
     },
-    docker::{listen_progress_info, DEFAULT_WORKSPACE_NAME},
+    docker::DEFAULT_WORKSPACE_NAME,
     grpc::WalletTransaction,
 };
 
@@ -79,7 +79,6 @@ fn main() {
             &DOCKER_INSTANCE,
         ))
     });
-    thread::spawn(|| block_on(listen_progress_info()));
     let about_menu = Submenu::new(
         "App",
         Menu::new()
