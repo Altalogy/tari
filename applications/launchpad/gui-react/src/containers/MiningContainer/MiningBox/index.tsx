@@ -197,7 +197,7 @@ const MiningBox = ({
         color: theme.inverted.primary,
       },
       contentStyle: {
-        color: theme.inverted.secondary,
+        color: theme.inverted.primary,
       },
       icon: {
         color: theme.accentDark,
@@ -272,7 +272,9 @@ const MiningBox = ({
       case MiningBoxStatus.Paused:
         return (
           <MiningBoxContent data-testid='mining-box-paused-content'>
-            {coins ? <CoinsList coins={coins} /> : null}
+            {coins ? (
+              <CoinsList coins={coins} color={theme.nodeWarningText} />
+            ) : null}
             <Button
               onClick={startMiningWithPasswordEnsured}
               disabled={disableActions}
@@ -289,8 +291,8 @@ const MiningBox = ({
             {coins ? (
               <CoinsList
                 coins={coins}
-                color={theme.inverted.primary}
-                unitsColor={theme.inverted.secondary}
+                color={theme.textSecondary}
+                unitsColor={theme.textSecondary}
                 showSymbols
               />
             ) : null}
