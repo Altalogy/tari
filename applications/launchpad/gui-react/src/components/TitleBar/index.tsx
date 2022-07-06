@@ -28,6 +28,7 @@ import {
   WindowButtons,
 } from './styles'
 import { TitleBarProps } from './types'
+import colors from '../../styles/styles/colors'
 
 const TitleBar = ({
   drawerViewWidth = '50%',
@@ -77,6 +78,14 @@ const TitleBar = ({
       } else {
         dispatch(setExpertView('open'))
       }
+    }
+  }
+
+  const getSettingsIconColor = () => {
+    if (expertView !== 'hidden') {
+      return colors.light.textSecondary
+    } else {
+      return theme.helpTipText
     }
   }
 
@@ -207,7 +216,7 @@ const TitleBar = ({
             variant='text'
             size='small'
             leftIcon={<SvgSetting width='16px' height='16px' />}
-            leftIconColor={theme.helpTipText}
+            leftIconColor={getSettingsIconColor()}
             onClick={() => dispatch(settingsActions.open({}))}
             style={{
               color:
