@@ -52,8 +52,8 @@ pub fn convert_to_transaction_event(event: String, source: TransactionWrapper) -
             direction: "inbound".to_string(),
             amount: inbound.amount.as_u64(),
             message: inbound.message.clone(),
-            ///The coinbase are technically Inbound.
-            /// To determine whether a transaction is coinbase 
+            /// The coinbase are technically Inbound.
+            /// To determine whether a transaction is coinbase
             /// we will check whether the message contains `Coinbase`.
             is_coinbase: if inbound.message.to_lowercase().contains("coinbase") {
                 true
