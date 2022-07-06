@@ -48,7 +48,11 @@ const MiningViewActions = ({
         >
           {t.mining.viewActions.miningSettings}
         </Button>
-        <Tag type='expert' expertSec>
+        <Tag
+          type='expert'
+          expertSec
+          style={{ marginTop: theme.spacingVertical(0.3) }}
+        >
           {t.common.nouns.expert}
         </Tag>
       </div>
