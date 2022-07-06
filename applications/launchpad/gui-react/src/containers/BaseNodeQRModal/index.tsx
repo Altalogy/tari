@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import QRCode from 'react-qr-code'
 import { useTheme } from 'styled-components'
 import Button from '../../components/Button'
@@ -6,6 +7,9 @@ import Modal from '../../components/Modal'
 import Text from '../../components/Text'
 
 import t from '../../locales'
+import { selectNetwork } from '../../store/baseNode/selectors'
+import { useAppSelector } from '../../store/hooks'
+import { selectWalletAddress } from '../../store/wallet/selectors'
 import {
   ModalContainer,
   Content,
@@ -18,18 +22,29 @@ import {
 import { BaseNodeQRModalProps } from './types'
 
 /**
- * @TODO Replace with real data
- */
-const QRContent =
-  'tari://dibbler/base_nodes/add?name=00000000000000000000000000&peer=::/onion3/0000000000000000000000000000000000000000000000000000000000000000:00000'
-
-/**
  * The modal rendering the Base Node address as QR code.
  * @param {boolean} open - show modal
  * @param {() => void} onClose - on modal close
  */
 const BaseNodeQRModal = ({ open, onClose }: BaseNodeQRModalProps) => {
   const theme = useTheme()
+  const address = useAppSelector(selectWalletAddress)
+  const network = useAppSelector(selectNetwork)
+
+  /**
+   * @TODO Get following publicKey and baseNodeId from backend.
+   */
+  const publicKey = 'TODO_PUBLIC_KEY'
+  const baseNodeId = 'TODO_BASE_NODE_ID'
+
+  const [qrUrl, setQrUrl] = useState('')
+
+  useEffect(() => {
+    setQrUrl(
+      `tari://${network}/base_nodes/add?name=${baseNodeId}&peer=${publicKey}::${address}`,
+    )
+  }, [address, network])
+
   return (
     <Modal open={open} onClose={onClose} size='small'>
       <ModalContainer>
@@ -65,7 +80,7 @@ const BaseNodeQRModal = ({ open, onClose }: BaseNodeQRModalProps) => {
 
           <QRContainer>
             <QRCode
-              value={QRContent}
+              value={qrUrl}
               level='H'
               size={220}
               data-testid='base-node-qr-code'

@@ -5,6 +5,7 @@ import {
   selectState,
   selectPending,
   selectRunning,
+  selectNetwork,
 } from '../../store/baseNode/selectors'
 import { actions } from '../../store/baseNode'
 import Alert from '../../components/Alert'
@@ -13,11 +14,12 @@ import t from '../../locales'
 
 import BaseNode from './BaseNode'
 import BaseNodeHelp from './BaseNodeHelp'
+import { Network } from './types'
 
 const BaseNodeContainer = () => {
   const [error, setError] = useState('')
 
-  const { network } = useAppSelector(selectState)
+  const network = useAppSelector(selectNetwork) as Network
   const pending = useAppSelector(selectPending)
   const running = useAppSelector(selectRunning)
   const dispatch = useAppDispatch()
