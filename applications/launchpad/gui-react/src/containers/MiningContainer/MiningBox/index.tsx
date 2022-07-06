@@ -24,7 +24,6 @@ import { MiningBoxContent, NodeIcons } from './styles'
 import RunningButton from '../../../components/RunningButton'
 import { tbotactions } from '../../../store/tbot'
 import { useWithWalletPassword } from '../../../useWithWalletPassword'
-import themes from '../../../styles/themes'
 
 const parseLastSessionToCoins = (
   lastSession: MiningSession | undefined,
