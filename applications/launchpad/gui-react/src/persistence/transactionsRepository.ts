@@ -48,7 +48,8 @@ export interface TransactionsRepository {
   hasDataBefore: (d: Date) => Promise<boolean>
   getLifelongMinedBalance: () => Promise<number>
   getMinedTransactionsDataSpan: () => Promise<{ from: Date; to: Date }>
-  getRecent: (number: number) => Promise<TransactionDBRecord[]>
+  list: (limit: number, page?: number) => Promise<TransactionDBRecord[]>
+  count: () => Promise<number>
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -64,15 +65,7 @@ const repositoryFactory: (
   addOrReplace: async event => {
     const db = await getDb()
 
-    console.log('New tx to add or update', event.tx_id)
-
-    // Ignore 'empty/incorrect' events:
-    if (!event.tx_id || event.status === 'not_supported') {
-      console.log('it is unsupported')
-      return
-    }
-
-    const result = await db.execute(
+    await db.execute(
       `INSERT OR REPLACE INTO
         transactions(event, id, receivedAt, status, direction, amount, message, source, destination, isCoinbase, network)
         values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
@@ -90,8 +83,6 @@ const repositoryFactory: (
         network,
       ],
     )
-
-    console.log('sql result', result)
   },
   getMinedXtr: async (
     from,
@@ -199,7 +190,7 @@ const repositoryFactory: (
     }
   },
 
-  getRecent: async number => {
+  list: async (limit, page = 1) => {
     const db = await getDb()
 
     const results: TransactionDBRecord[] = await db.select(
@@ -208,11 +199,31 @@ const repositoryFactory: (
       ORDER BY
         receivedAt DESC
       LIMIT $1
+      OFFSET $2
      `,
-      [number],
+      [limit, page * limit],
     )
 
     return results
+  },
+
+  count: async () => {
+    const db = await getDb()
+
+    /**
+     * @TODO Using `SELECT COUNT(*)...` returns null.
+     * The issue is already reported:
+     * https://github.com/tauri-apps/tauri-plugin-sql/issues/121
+     */
+    const result: TransactionDBRecord[] = await db.select(
+      'SELECT id FROM transactions',
+    )
+
+    if (!result) {
+      return 0
+    }
+
+    return result.length
   },
 })
 

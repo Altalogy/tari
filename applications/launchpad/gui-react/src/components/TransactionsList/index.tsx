@@ -1,13 +1,8 @@
-import SvgArrowSwap from '../../styles/Icons/ArrowSwap'
 import Text from '../Text'
 
 import t from '../../locales'
 
 import {
-  Header,
-  LeftHeader,
-  RightHeader,
-  StyledTransactionsList,
   DirectionTag,
   StyledAddress,
   StyledTable,
@@ -16,6 +11,7 @@ import {
   DirectionTd,
   EventTd,
   StatusTd,
+  EmojiWrapper,
 } from './styles'
 import { TransactionsListProps } from './types'
 import { TransactionDBRecord } from '../../persistence/transactionsRepository'
@@ -112,26 +108,86 @@ const InboundTxRow = ({ record }: { record: TransactionDBRecord }) => {
   )
 }
 
+const OutboundTxRow = ({ record }: { record: TransactionDBRecord }) => {
+  return (
+    <tr>
+      <DirectionTd>
+        <DirectionTag $variant='out'>
+          <SvgArrowLeft style={{ transform: 'rotate(135deg)' }} />
+        </DirectionTag>
+      </DirectionTd>
+      <EventTd>
+        <Text as='span'>
+          {t.wallet.transactions.youSentTariTo}{' '}
+          <StyledAddress>
+            {trimAddress(convertU8ToString(record.destination))}
+          </StyledAddress>
+        </Text>
+      </EventTd>
+      <StatusTd>{renderStatus(record)}</StatusTd>
+      <DateTd>
+        <Text as='span' type='smallMedium'>
+          {formatDate(record.receivedAt.toString())}
+        </Text>
+      </DateTd>
+      <AmountTd $variant='out'>
+        <Text as='span' type='defaultHeavy'>
+          -{parseFloat(toT(record.amount).toString()).toFixed(2)}{' '}
+        </Text>
+        <Text as='span' type='microMedium'>
+          XTR
+        </Text>
+      </AmountTd>
+    </tr>
+  )
+}
+
+const MiningTxRow = ({ record }: { record: TransactionDBRecord }) => {
+  return (
+    <tr>
+      <DirectionTd>
+        <DirectionTag $variant='earned'>
+          <EmojiWrapper>{'\u26CF'}</EmojiWrapper>
+        </DirectionTag>
+      </DirectionTd>
+      <EventTd>
+        <Text as='span'>{t.wallet.transactions.youEarnedTari}</Text>
+      </EventTd>
+      <StatusTd>{renderStatus(record)}</StatusTd>
+      <DateTd>
+        <Text as='span' type='smallMedium'>
+          {formatDate(record.receivedAt.toString())}
+        </Text>
+      </DateTd>
+      <AmountTd $variant='earned'>
+        <Text as='span' type='defaultHeavy'>
+          {parseFloat(toT(record.amount).toString()).toFixed(2)}{' '}
+        </Text>
+        <Text as='span' type='microMedium'>
+          XTR
+        </Text>
+      </AmountTd>
+    </tr>
+  )
+}
+
 const TransactionsList = ({ records }: TransactionsListProps) => {
   return (
-    <StyledTransactionsList>
-      <Header>
-        <LeftHeader>
-          <SvgArrowSwap />
-          <Text as='span' type='defaultHeavy'>
-            {t.wallet.recentTransactions}
-          </Text>
-        </LeftHeader>
-        <RightHeader>History all</RightHeader>
-      </Header>
-      <StyledTable>
-        <tbody>
-          {records.map((row, idx) => (
-            <InboundTxRow record={row} key={idx} />
-          ))}
-        </tbody>
-      </StyledTable>
-    </StyledTransactionsList>
+    <StyledTable>
+      <tbody>
+        {records.map((row, idx) => {
+          if (row.direction === 'Outbound') {
+            return <OutboundTxRow record={row} key={idx} />
+          }
+
+          if (row.isCoinbase) {
+            return <MiningTxRow record={row} key={idx} />
+          }
+
+          return <InboundTxRow record={row} key={idx} />
+        })}
+      </tbody>
+    </StyledTable>
   )
 }
 

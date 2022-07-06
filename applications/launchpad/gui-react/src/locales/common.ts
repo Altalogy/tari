@@ -33,6 +33,7 @@ const translations: { [key: string]: { [key: string]: string } } = {
     memory: 'Memory',
     error: 'Error',
     today: 'Today',
+    results: 'Results',
   },
   weekdayCapitals: {
     sunday: 'S',
@@ -62,6 +63,7 @@ const translations: { [key: string]: { [key: string]: string } } = {
   },
   conjunctions: {
     or: 'or',
+    of: 'of',
   },
   phrases: {
     actionRequired: 'Action required',

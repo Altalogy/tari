@@ -1,20 +1,5 @@
 import styled from 'styled-components'
 
-export const StyledTransactionsList = styled.div``
-
-export const Header = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-`
-
-export const LeftHeader = styled.div`
-  display: flex;
-  column-gap: ${({ theme }) => theme.spacing(0.2)};
-`
-
-export const RightHeader = styled.div``
-
 export const DirectionTag = styled.span<{ $variant: 'earned' | 'out' }>`
   background: ${({ $variant, theme }) =>
     $variant === 'earned' ? theme.on : theme.warning};
@@ -26,6 +11,10 @@ export const DirectionTag = styled.span<{ $variant: 'earned' | 'out' }>`
   justify-content: center;
   height: ${({ theme }) => theme.spacing(1)};
   width: ${({ theme }) => theme.spacing(1)};
+`
+
+export const EmojiWrapper = styled.span`
+  font-size: 12px;
 `
 
 export const StyledAddress = styled.span`
