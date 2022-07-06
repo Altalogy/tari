@@ -172,7 +172,7 @@ export const IconWrapper = styled.span<{
 
   color: ${({ $disabled, theme, $leftIconColor }) => {
     if ($disabled) {
-      return theme.placeholderText
+      return theme.disabledPrimaryButtonText
     } else if ($leftIconColor) {
       return $leftIconColor
     }
