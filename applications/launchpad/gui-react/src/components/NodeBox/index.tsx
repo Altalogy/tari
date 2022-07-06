@@ -1,3 +1,4 @@
+import { useTheme } from 'styled-components'
 import SvgQuestion from '../../styles/Icons/Question'
 import Box from '../Box'
 import Tag from '../Tag'
@@ -40,6 +41,12 @@ const NodeBox = ({
   children,
   testId = 'node-box-cmp',
 }: NodeBoxProps) => {
+  const setSvgGradient =
+    tag?.content === 'Ready to go' ||
+    tag?.content === 'Ready to set' ||
+    typeof tag?.content !== 'string'
+  const theme = useTheme()
+
   return (
     <Box testId={testId} style={style}>
       <BoxHeader>
@@ -62,7 +69,8 @@ const NodeBox = ({
           >
             <SvgQuestion
               onClick={onHelpPromptClick}
-              useGradient={tag?.type !== 'running'}
+              useGradient={setSvgGradient}
+              color={tag?.type === 'light' ? theme.accent : 'inherit'}
             />
           </SvgContainer>
         )}
