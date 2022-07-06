@@ -60,6 +60,7 @@ const translations: { [key: string]: { [key: string]: string } } = {
     recommended: 'Recommended',
     remaining: 'Remaining',
     processing: 'Processing',
+    cancelled: 'Cancelled',
   },
   conjunctions: {
     or: 'or',

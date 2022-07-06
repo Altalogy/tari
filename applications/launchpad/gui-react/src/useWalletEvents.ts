@@ -16,6 +16,7 @@ export enum TransactionEvent {
   Mined = 'mined',
   Cancelled = 'cancelled',
   NewBlockMined = 'new_block_mined',
+  Unknwon = 'unknown',
 }
 
 export enum TransactionDirection {
@@ -69,7 +70,11 @@ export const useWalletEvents = ({
           // if (payload.is_coinbase && status.toLowerCase() === 'mined confirmed') {
 
           // Ignore 'empty/improper' events:
-          if (payload.tx_id && payload.status !== 'not_supported') {
+          if (
+            payload.tx_id &&
+            payload.status !== 'not_supported' &&
+            payload.event !== 'unknown'
+          ) {
             dispatch(
               miningActions.addMinedTx({
                 amount: toT(payload.amount),

@@ -41,13 +41,18 @@ const trimAddress = (address: string, start = 4, end = 4) => {
 
 const renderStatus = (record: TransactionDBRecord) => {
   /**
-   * @TODO find a list of possible statuses and which are 'processing', or 'failed'
+   * @TODO revisit this - check how the tx status is being changed
+   * and confirm that frontend gets all updates from backend for each tx.
    */
-  if (record.status.toLowerCase() !== 'coinbase') {
-    return <Tag>{t.common.adjectives.processing}</Tag>
+  if (record.event === 'cancelled') {
+    return <Tag type='light'>{t.common.adjectives.cancelled}</Tag>
   }
 
-  return null
+  if (record.event === 'received' || record.event === 'sent') {
+    return null
+  }
+
+  return <Tag>{t.common.adjectives.processing}</Tag>
 }
 
 const addNth = (day: number) => {
