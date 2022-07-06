@@ -48,15 +48,15 @@ const RecentTransactions = () => {
     countRecords()
   }, [lastTxHistoryUpdate])
 
-  const selectTxs = async () => {
-    const records = await transactionsRepository.list(
-      seeAllHistory ? ALL_HISTORY_PAGE_SIZE : CLOSE_HISTORY_PAGE_SIZE,
-      currentPage,
-    )
-    setTxs(records)
-  }
-
   useEffect(() => {
+    const selectTxs = async () => {
+      const records = await transactionsRepository.list(
+        seeAllHistory ? ALL_HISTORY_PAGE_SIZE : CLOSE_HISTORY_PAGE_SIZE,
+        currentPage,
+      )
+      setTxs(records)
+    }
+
     selectTxs()
   }, [seeAllHistory, currentPage, lastTxHistoryUpdate])
 
