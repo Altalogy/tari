@@ -6,10 +6,10 @@ export interface StatsEntry {
   timestamp: string
   network: string
   service: ContainerName
-  cpu: number
-  memory: number
-  upload: number
-  download: number
+  cpu: number | null
+  memory: number | null
+  upload: number | null
+  download: number | null
 }
 
 export interface StatsRepository {
@@ -54,6 +54,7 @@ const repositoryFactory: () => StatsRepository = () => {
         [network, since.toISOString()],
       )
       console.timeEnd('select')
+      console.debug(`selected ${results.length}`)
 
       return results
     },

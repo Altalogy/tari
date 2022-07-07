@@ -1,20 +1,42 @@
 import { SeriesData } from '../../../../components/Charts/TimeSeries/types'
-type ChartData = SeriesData['data']
+import { StatsEntry } from '../../../../persistence/statsRepository'
 
-const guardBlanksWithNulls = (data: ChartData, interval = 1000): ChartData => {
+// TODO this is a performance nightmare
+const guardBlanksWithNulls = (
+  data: StatsEntry[],
+  interval = 1000,
+): StatsEntry[] => {
+  console.time('guard')
   if (!data.length) {
     return data
   }
 
-  const nullsToInsert: { index: number; xValue: number }[] = []
+  const nullsToInsert: {
+    index: number
+    timestamp: number
+    network: string
+    service: string
+  }[] = []
 
   for (let i = 1; i < data.length; ++i) {
-    const a = data[i - 1]
-    const b = data[i]
+    const aData = data[i - 1]
+    const a = new Date(aData.timestamp).getTime()
+    const bData = data[i]
+    const b = new Date(bData.timestamp).getTime()
 
-    if (b.x - a.x > interval) {
-      nullsToInsert.push({ index: i, xValue: a.x + interval })
-      nullsToInsert.push({ index: i, xValue: b.x - interval })
+    if (b - a > interval) {
+      nullsToInsert.push({
+        index: i,
+        timestamp: a + interval,
+        network: aData.network,
+        service: aData.service,
+      })
+      nullsToInsert.push({
+        index: i,
+        timestamp: b - interval,
+        network: aData.network,
+        service: aData.service,
+      })
     }
   }
 
@@ -25,11 +47,17 @@ const guardBlanksWithNulls = (data: ChartData, interval = 1000): ChartData => {
   const dataCopy = [...data]
   nullsToInsert.forEach((nullToInsert, i) => {
     dataCopy.splice(nullToInsert.index + i, 0, {
-      x: nullToInsert.xValue,
-      y: null,
+      timestamp: new Date(nullToInsert.timestamp).toISOString(),
+      cpu: null,
+      memory: null,
+      download: null,
+      upload: null,
+      network: nullToInsert.network,
+      service: nullToInsert.service,
     })
   })
 
+  console.timeEnd('guard')
   return dataCopy
 }
 

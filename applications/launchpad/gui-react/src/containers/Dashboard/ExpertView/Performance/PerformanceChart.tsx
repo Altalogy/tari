@@ -33,6 +33,7 @@ const PerformanceChart = ({
   style,
   title,
   unit,
+  data,
 }: PerformanceChartProps) => {
   const [latchedFrom, setLatchedFrom] = useState(() => from)
   useEffect(() => {
@@ -46,12 +47,28 @@ const PerformanceChart = ({
       setLatchedTo(to)
     }
   }, [enabled, to])
+  const [latchedData, setLatchedData] = useState<SeriesData[]>([])
 
-  const data: SeriesData[] = []
+  useEffect(() => {
+    if (!data || !enabled) {
+      return
+    }
+
+    const seriesData = Object.entries(data).map(([key, values]) => ({
+      name: key,
+      visible: true,
+      empty: false,
+      data: values.map(extractor).map(value => ({
+        x: new Date(value.timestamp).getTime(),
+        y: value.value,
+      })),
+    }))
+    setLatchedData(seriesData)
+  }, [data, enabled])
 
   return (
     <TimeSeriesChart
-      data={data}
+      data={latchedData}
       percentageValues={percentageValues}
       toggleSeries={() => null}
       unit={unit}

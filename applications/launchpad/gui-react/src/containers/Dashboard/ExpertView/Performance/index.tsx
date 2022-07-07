@@ -9,6 +9,8 @@ import getStatsRepository, {
 } from '../../../../persistence/statsRepository'
 import t from '../../../../locales'
 import { Option } from '../../../../components/Select/types'
+import TimeSeriesChart from '../../../../components/Charts/TimeSeries'
+import { SeriesData } from '../../../../components/Charts/TimeSeries/types'
 import { Dictionary } from '../../../../types/general'
 
 import PerformanceChart from './PerformanceChart'
@@ -16,6 +18,7 @@ import PerformanceControls, {
   defaultRenderWindow,
   defaultRefreshRate,
 } from './PerformanceControls'
+import guardBlanksWithNulls from './guardBlanksWithNulls'
 
 /**
  * @name PerformanceContainer
@@ -42,12 +45,12 @@ const PerformanceContainer = () => {
     [now],
   )
   const [data, setData] = useState<Dictionary<StatsEntry[]>>()
-  const [lastTimestamp, setLastTimestamp] = useState<Date | undefined>()
+  const [lastTimestamp, setLastTimestamp] = useState<Date>(since)
   const intervalRef = useRef<ReturnType<typeof setInterval> | undefined>()
-  const [lastNowForGraph, setLastNowForGraph] = useState<{
-    cpu?: Date
-    memory?: Date
-    network?: Date
+  const [frozenCharts, setFrozenCharts] = useState<{
+    cpu?: boolean
+    memory?: boolean
+    network?: boolean
   }>({})
 
   useEffect(() => {
@@ -73,7 +76,14 @@ const PerformanceContainer = () => {
       if (data.length) {
         setLastTimestamp(new Date(data[data.length - 1].timestamp))
       }
-      setData(groupby(data.reverse(), 'service'))
+      const grouped = groupby(data.reverse(), 'service')
+      Object.keys(grouped).forEach(key => {
+        grouped[key] = guardBlanksWithNulls(
+          grouped[key],
+          Number(refreshRate.value),
+        )
+      })
+      setData(grouped)
     }
 
     getData()
@@ -100,8 +110,58 @@ const PerformanceContainer = () => {
 
       setData(previousData => {
         const newData = { ...previousData }
-        Object.entries(newGroupedData).forEach(([key, value]) => {
-          newData[key] = [...(newData[key] || []), ...value]
+        Object.entries(newGroupedData).forEach(([key, newTimeSeries]) => {
+          const oldTimeSeries = newData[key] || []
+          const hasOldTimeSeries = oldTimeSeries.length
+
+          const lastOldTimestamp = new Date(
+            oldTimeSeries[oldTimeSeries.length - 1]?.timestamp,
+          ).getTime()
+          const firstNewTimestamp = new Date(
+            newTimeSeries[0].timestamp,
+          ).getTime()
+          const difference = hasOldTimeSeries
+            ? firstNewTimestamp - lastOldTimestamp
+            : 0
+          const newTimeSeriesWithNullGuard =
+            !hasOldTimeSeries || difference > Number(refreshRate.value)
+              ? [
+                  {
+                    timestamp: new Date(
+                      firstNewTimestamp - Number(refreshRate.value),
+                    ).toISOString(),
+                    cpu: null,
+                    memory: null,
+                    download: null,
+                    upload: null,
+                    service: key,
+                    network: configuredNetwork,
+                  },
+                  ...newTimeSeries,
+                ]
+              : newTimeSeries
+          const oldTimeSeriesWithNullGuard =
+            hasOldTimeSeries && difference > Number(refreshRate.value)
+              ? [
+                  ...oldTimeSeries,
+                  {
+                    timestamp: new Date(
+                      lastOldTimestamp + Number(refreshRate.value),
+                    ).toISOString(),
+                    cpu: null,
+                    memory: null,
+                    download: null,
+                    upload: null,
+                    service: key,
+                    network: configuredNetwork,
+                  },
+                ]
+              : oldTimeSeries
+
+          newData[key] = [
+            ...oldTimeSeriesWithNullGuard,
+            ...newTimeSeriesWithNullGuard,
+          ]
         })
 
         return newData
@@ -109,7 +169,7 @@ const PerformanceContainer = () => {
     }
 
     getData()
-  }, [now])
+  }, [now, configuredNetwork])
 
   return (
     <>
@@ -122,36 +182,86 @@ const PerformanceContainer = () => {
       <button
         style={{ color: 'white' }}
         onClick={useCallback(
-          () => setLastNowForGraph({ cpu: now, memory: now, network: now }),
+          () =>
+            setFrozenCharts({
+              cpu: true,
+              memory: true,
+              network: true,
+            }),
           [now],
         )}
       >
         stop
       </button>
-      <button style={{ color: 'white' }} onClick={() => setLastNowForGraph({})}>
+      <button style={{ color: 'white' }} onClick={() => setFrozenCharts({})}>
         start
       </button>
-      {/*
-<PerformanceChart
-        enabled={refreshEnabled.cpu}
-        extractor={({ timestamp, cpu }) => ({
-          timestamp,
-          value: cpu,
-        })}
-        percentageValues
+
+      <PerformanceChart
+        data={data}
+        chartHeight={175}
+        enabled={!frozenCharts.cpu}
         from={since}
         to={now}
-        title={t.common.nouns.cpu}
-        onUserInteraction={({ interacting }) => {
-          setRefreshEnabled(a => ({
-            ...a,
-            cpu: !interacting,
+        extractor={useCallback(
+          (statsEntry: StatsEntry) => ({
+            timestamp: statsEntry.timestamp,
+            value: statsEntry.cpu,
+          }),
+          [],
+        )}
+        onUserInteraction={useCallback(({ interacting }) => {
+          if (interacting) {
+            setFrozenCharts(oldState => ({
+              ...oldState,
+              cpu: true,
+            }))
+
+            return
+          }
+
+          setFrozenCharts(oldState => ({
+            ...oldState,
+            cpu: false,
           }))
-        }}
+        }, [])}
+        percentageValues
+        title={t.common.nouns.cpu}
         style={{ marginTop: theme.spacing() }}
-        chartHeight={175}
       />
-        */}
+
+      <PerformanceChart
+        data={data}
+        chartHeight={175}
+        enabled={!frozenCharts.memory}
+        from={since}
+        to={now}
+        extractor={useCallback(
+          (statsEntry: StatsEntry) => ({
+            timestamp: statsEntry.timestamp,
+            value: statsEntry.memory && statsEntry.memory / (1024 * 1024),
+          }),
+          [],
+        )}
+        onUserInteraction={useCallback(({ interacting }) => {
+          if (interacting) {
+            setFrozenCharts(oldState => ({
+              ...oldState,
+              memory: true,
+            }))
+
+            return
+          }
+
+          setFrozenCharts(oldState => ({
+            ...oldState,
+            memory: false,
+          }))
+        }, [])}
+        unit='MiB'
+        title={t.common.nouns.memory}
+        style={{ marginTop: theme.spacing() }}
+      />
     </>
   )
 }
