@@ -217,7 +217,8 @@ impl TariWorkspace {
     /// It also lets power users customise which version of docker images they want to run in the workspace.
     pub fn fully_qualified_image(image: ImageType, registry: Option<&str>, tag: Option<&str>) -> String {
         let reg = registry.unwrap_or(DEFAULT_REGISTRY);
-        let tag = Self::arch_specific_tag(tag);
+        let tag = Self::
+        arch_specific_tag(tag);
         format!("{}/{}:{}", reg, image.image_name(), tag)
     }
 

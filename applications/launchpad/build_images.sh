@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 # Build docker images script, with options
 #
+# Prerequisites:
+# 1. Docker (obviously)
+# 2. BuildX extensions to docker
+# 3. jq
 #
 
 set -e
@@ -89,14 +93,21 @@ build_all_images() {
 }
 
 build_help_info() {
-  echo "$0 used to build docker images"
-  echo "USAGE: "
-  echo "  $0 < -a > or < all > or < without any options > | build all images with current default environment varibles"
-  echo "  $0 < -3 > | build 3rd Party images"
-  echo "  $0 < -t > | build Tari suite images"
-  echo "  $0 < -l > | list images that can be built"
-  echo "  $0 < -b image_name > | build an image"
-  echo "  $0 < -h > | this help info"
+  cat << EOF
+Build launchpad's docker images locally
+
+USAGE:
+  $0 [OPTIONS]
+
+OPTIONS:
+  -a, --all         build all images with current default environment variables
+  -3, 3rdparty      build 3rd Party images
+  -t, tari          build Tari suite images
+  -l, ls            list images that can be built
+  -r, requirements  list and check for pre-requisite software needed by this script
+  -b image_name     build an image
+  -h                this help info
+EOF
 }
 
 build_help_images() {
@@ -136,11 +147,13 @@ arrAllTools=(  $(jq -r '.[].image_name' tarisuite.json 3rdparty.json) )
 arrTariSuite=( $(jq -r '.[].image_name' tarisuite.json) )
 arr3rdParty=(  $(jq -r '.[].image_name' 3rdparty.json) )
 
-if [ -z "${1}" ]; then
-  echo "Build all images with defaults"
-  build_all_images
-  exit 0
-fi
+check_for() {
+  if result=$($1 --version 2>/dev/null); then
+    result="$1: $result INSTALLED ✓"
+  else
+    result="$1: MISSING ⨯"
+  fi
+}
 
 # toLower
 commandEnv="${1,,}"
@@ -149,7 +162,7 @@ case $commandEnv in
   -3 | 3rdparty )
     build_all_3dparty_images
     ;;
-  -t | tari_ )
+  -t | tari )
     build_all_tari_images
     ;;
   -a | all )
@@ -175,15 +188,20 @@ case $commandEnv in
   -l | ls )
     build_help_images
     ;;
-  -r | requirement | requirements )
+  -r | req | requirement | requirements )
     echo "List of requirements and possible test:"
-    jqVersion=$(jq --version)
-    echo "jq is new - ${jqVersion}"
+    check_for jq
+    echo "$result"
+    check_for docker
+    echo "$result"
+    check_for awk
+    echo "$result"
     ;;
   -h | -? | --help | help )
     build_help_info
     ;;
-  *) echo "Invalid input"
+  *) echo "Unrecognised option: $1"
+    build_help_info
     exit 1
     ;;
 esac

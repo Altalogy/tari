@@ -1,4 +1,4 @@
-on:
+git ceon:
   workflow_call:
 jobs:
   licenses:
