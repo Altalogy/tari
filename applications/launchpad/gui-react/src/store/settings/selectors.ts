@@ -23,5 +23,4 @@ export const selectServiceSettings = (state: RootState) => ({
   moneroUsername: selectMoneroUsername(state),
   moneroPassword: selectMoneroPassword(state),
   rootFolder: state.baseNode.rootFolder,
-  walletPassword: state.settings.serviceSettings.parole,
 })
