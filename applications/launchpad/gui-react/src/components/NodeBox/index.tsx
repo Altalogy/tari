@@ -38,13 +38,10 @@ const NodeBox = ({
   titleStyle,
   contentStyle,
   onHelpPromptClick,
+  helpSvgGradient,
   children,
   testId = 'node-box-cmp',
 }: NodeBoxProps) => {
-  const setSvgGradient =
-    tag?.content === 'Ready to go' ||
-    tag?.content === 'Ready to set' ||
-    typeof tag?.content !== 'string'
   const theme = useTheme()
 
   return (
@@ -69,7 +66,7 @@ const NodeBox = ({
           >
             <SvgQuestion
               onClick={onHelpPromptClick}
-              useGradient={setSvgGradient}
+              useGradient={helpSvgGradient}
               color={tag?.type === 'light' ? theme.accent : 'inherit'}
             />
           </SvgContainer>

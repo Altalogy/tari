@@ -7,8 +7,7 @@ import { TagProps } from './types'
 import { TagContainer, IconWrapper } from './styles'
 
 /**
- * @name Tag
- * @typedef TagProps
+ * Tag component
  *
  * @prop {ReactNode} [children] - text content to display
  * @prop {CSSProperties} [style] - optional component styles
@@ -17,6 +16,8 @@ import { TagContainer, IconWrapper } from './styles'
  * @prop {ReactNode} [icon] - optional SVG icon
  * @prop {ReactNode} [subText] - optional additional tag text
  * @prop {boolean} [inverted] - optional prop indicating whether tag should be rendered in inverted coloring
+//  * @prop {boolean} [dark] - special style case
+ * @prop {boolean} [expertSec] - special style case for expert tag type
  *
  * @example
  * <Tag type='running' style={extraStyles} icon={<someIconComponent/>} subText='Mainnet'>
@@ -32,7 +33,7 @@ const Tag = ({
   icon,
   subText,
   inverted,
-  dashboard,
+  dark,
   expertSec,
 }: TagProps) => {
   const theme = useTheme()
@@ -43,7 +44,7 @@ const Tag = ({
   let runningTagBackgroundColor
   let runningTagTextColor
 
-  if (dashboard) {
+  if (dark) {
     runningTagBackgroundColor = theme.dashboardRunningTagBackground
     runningTagTextColor = theme.dashboardRunningTagText
   } else {
