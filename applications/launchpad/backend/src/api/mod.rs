@@ -31,7 +31,6 @@ use serde::Serialize;
 use tari_app_grpc::tari_rpc::wallet_client;
 use tauri::{http::status, AppHandle, Manager, Wry};
 pub use wallet_api::{wallet_balance, wallet_events, wallet_identity};
-pub use base_node_api::base_node_sync_progress;
 
 use crate::{
     commands::{status, AppState, ServiceSettings, DEFAULT_IMAGES},

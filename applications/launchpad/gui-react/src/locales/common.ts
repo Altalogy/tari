@@ -78,7 +78,7 @@ const translations: { [key: string]: { [key: string]: string } } = {
     pleaseWait: 'Please wait',
     yourJobIsDoneHere: 'Your job is done here',
     calculatingTheRemainingTime:
-      'Calculating remaining time (this may take few minutes)',
+      'Calculating remaining time (this may take a few minutes)',
   },
   containers: {
     [Container.Tor]: 'Tor',
