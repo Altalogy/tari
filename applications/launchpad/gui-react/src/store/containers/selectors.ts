@@ -136,3 +136,11 @@ export const selectRecipePending = (containerName: ContainerName) =>
   createSelector(selectContainerStatusesByRecipe(containerName), containers =>
     containers.some(container => container.pending),
   )
+
+export const selectAllContainerEventsChannels = ({ containers }: RootState) =>
+  Object.values(containers.containers)
+    .filter(cont => cont.eventsChannel)
+    .map(cont => ({
+      service: cont.name,
+      eventsChannel: cont.eventsChannel,
+    }))

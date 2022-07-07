@@ -1,16 +1,18 @@
 import { useCallback, useEffect, useRef, useState, useMemo } from 'react'
 import groupby from 'lodash.groupby'
 import { useTheme } from 'styled-components'
+import { listen } from '@tauri-apps/api/event'
 
 import { selectNetwork } from '../../../../store/baseNode/selectors'
+import { selectAllContainerEventsChannels } from '../../../../store/containers/selectors'
+import { extractStatsFromEvent } from '../../../../store/containers/thunks'
+import { StatsEventPayload } from '../../../../store/containers/types'
 import { useAppSelector } from '../../../../store/hooks'
 import getStatsRepository, {
   StatsEntry,
 } from '../../../../persistence/statsRepository'
 import t from '../../../../locales'
 import { Option } from '../../../../components/Select/types'
-import TimeSeriesChart from '../../../../components/Charts/TimeSeries'
-import { SeriesData } from '../../../../components/Charts/TimeSeries/types'
 import { Dictionary } from '../../../../types/general'
 
 import PerformanceChart from './PerformanceChart'
@@ -19,6 +21,65 @@ import PerformanceControls, {
   defaultRefreshRate,
 } from './PerformanceControls'
 import guardBlanksWithNulls from './guardBlanksWithNulls'
+
+const addDataWithBlankGuards = (
+  oldEntries: StatsEntry[],
+  stats: any,
+  service: string,
+  network: string,
+  refreshRate: number,
+): StatsEntry[] => {
+  const hasOldTimeSeries = oldEntries.length
+
+  const lastOldTimestamp = new Date(
+    oldEntries[oldEntries.length - 1]?.timestamp,
+  ).getTime()
+  const firstNewTimestamp = new Date(stats.timestamp).getTime()
+  const difference = hasOldTimeSeries ? firstNewTimestamp - lastOldTimestamp : 0
+  const addStatsWithNullGuard = !hasOldTimeSeries || difference > refreshRate
+
+  if (!addStatsWithNullGuard) {
+    return [
+      ...oldEntries,
+      {
+        ...stats,
+        service,
+        network,
+      },
+    ]
+  }
+
+  const nullGuardAtBlankStart = {
+    timestamp: new Date(lastOldTimestamp + refreshRate).toISOString(),
+    network,
+    service,
+    memory: null,
+    cpu: null,
+    download: null,
+    upload: null,
+  }
+
+  const nullGuardAtBlankEnd = {
+    timestamp: new Date(lastOldTimestamp + refreshRate).toISOString(),
+    network,
+    service,
+    memory: null,
+    cpu: null,
+    download: null,
+    upload: null,
+  }
+
+  return [
+    ...oldEntries,
+    nullGuardAtBlankStart,
+    nullGuardAtBlankEnd,
+    {
+      ...stats,
+      service,
+      network,
+    },
+  ]
+}
 
 /**
  * @name PerformanceContainer
@@ -31,6 +92,10 @@ const PerformanceContainer = () => {
   const theme = useTheme()
   const configuredNetwork = useAppSelector(selectNetwork)
   const statsRepository = getStatsRepository()
+  const allContainerEventsChannels = useAppSelector(
+    selectAllContainerEventsChannels,
+  )
+  const unsubscribeFunctions = useRef<any[]>()
 
   const [timeWindow, setTimeWindow] = useState<Option>(defaultRenderWindow)
   const [refreshRate, setRefreshRate] = useState<Option>(defaultRefreshRate)
@@ -44,8 +109,7 @@ const PerformanceContainer = () => {
     () => new Date(now.getTime() - Number(timeWindow.value)),
     [now],
   )
-  const [data, setData] = useState<Dictionary<StatsEntry[]>>()
-  const [lastTimestamp, setLastTimestamp] = useState<Date>(since)
+  const [data, setData] = useState<Dictionary<StatsEntry[]>>({})
   const intervalRef = useRef<ReturnType<typeof setInterval> | undefined>()
   const [frozenCharts, setFrozenCharts] = useState<{
     cpu?: boolean
@@ -73,9 +137,6 @@ const PerformanceContainer = () => {
         since,
       )
 
-      if (data.length) {
-        setLastTimestamp(new Date(data[data.length - 1].timestamp))
-      }
       const grouped = groupby(data.reverse(), 'service')
       Object.keys(grouped).forEach(key => {
         grouped[key] = guardBlanksWithNulls(
@@ -90,86 +151,36 @@ const PerformanceContainer = () => {
   }, [timeWindow])
 
   useEffect(() => {
-    // every time 'now' changes,
-    // get new data since `last`
-    // and add to the dataset
-    if (!lastTimestamp) {
-      return
-    }
+    const subscribeToAllChannels = async () => {
+      unsubscribeFunctions.current = await Promise.all(
+        allContainerEventsChannels.map(containerChannel =>
+          listen(
+            containerChannel.eventsChannel as string,
+            (statsEvent: { payload: StatsEventPayload }) => {
+              const stats = extractStatsFromEvent(statsEvent.payload)
 
-    const getData = async () => {
-      const data = await statsRepository.getGroupedByContainer(
-        configuredNetwork,
-        lastTimestamp,
+              setData(oldState => ({
+                ...oldState,
+                [containerChannel.service as string]: addDataWithBlankGuards(
+                  oldState[containerChannel.service as string],
+                  stats,
+                  containerChannel.service as string,
+                  configuredNetwork,
+                  Number(refreshRate.value),
+                ),
+              }))
+            },
+          ),
+        ),
       )
-
-      if (data.length) {
-        setLastTimestamp(new Date(data[data.length - 1].timestamp))
-      }
-      const newGroupedData = groupby(data.reverse(), 'service')
-
-      setData(previousData => {
-        const newData = { ...previousData }
-        Object.entries(newGroupedData).forEach(([key, newTimeSeries]) => {
-          const oldTimeSeries = newData[key] || []
-          const hasOldTimeSeries = oldTimeSeries.length
-
-          const lastOldTimestamp = new Date(
-            oldTimeSeries[oldTimeSeries.length - 1]?.timestamp,
-          ).getTime()
-          const firstNewTimestamp = new Date(
-            newTimeSeries[0].timestamp,
-          ).getTime()
-          const difference = hasOldTimeSeries
-            ? firstNewTimestamp - lastOldTimestamp
-            : 0
-          const newTimeSeriesWithNullGuard =
-            !hasOldTimeSeries || difference > Number(refreshRate.value)
-              ? [
-                  {
-                    timestamp: new Date(
-                      firstNewTimestamp - Number(refreshRate.value),
-                    ).toISOString(),
-                    cpu: null,
-                    memory: null,
-                    download: null,
-                    upload: null,
-                    service: key,
-                    network: configuredNetwork,
-                  },
-                  ...newTimeSeries,
-                ]
-              : newTimeSeries
-          const oldTimeSeriesWithNullGuard =
-            hasOldTimeSeries && difference > Number(refreshRate.value)
-              ? [
-                  ...oldTimeSeries,
-                  {
-                    timestamp: new Date(
-                      lastOldTimestamp + Number(refreshRate.value),
-                    ).toISOString(),
-                    cpu: null,
-                    memory: null,
-                    download: null,
-                    upload: null,
-                    service: key,
-                    network: configuredNetwork,
-                  },
-                ]
-              : oldTimeSeries
-
-          newData[key] = [
-            ...oldTimeSeriesWithNullGuard,
-            ...newTimeSeriesWithNullGuard,
-          ]
-        })
-
-        return newData
-      })
     }
 
-    getData()
-  }, [now, configuredNetwork])
+    subscribeToAllChannels()
+
+    return () =>
+      unsubscribeFunctions.current &&
+      unsubscribeFunctions.current.forEach(unsubscribe => unsubscribe())
+  }, [allContainerEventsChannels, configuredNetwork])
 
   return (
     <>
@@ -239,7 +250,7 @@ const PerformanceContainer = () => {
         extractor={useCallback(
           (statsEntry: StatsEntry) => ({
             timestamp: statsEntry.timestamp,
-            value: statsEntry.memory && statsEntry.memory / (1024 * 1024),
+            value: statsEntry.memory && statsEntry.memory,
           }),
           [],
         )}
