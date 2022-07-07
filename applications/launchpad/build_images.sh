@@ -2,9 +2,7 @@
 # Build docker images script, with options
 #
 # Prerequisites:
-# 1. Docker (obviously)
-# 2. BuildX extensions to docker
-# 3. jq
+# Run `./build_images.sh -r`
 #
 
 set -e
@@ -50,16 +48,24 @@ build_tari_image() {
 # $4 APP_NAME ie: base_node
 # $5 APP_EXEC ie: tari_base_node
 
-  echo "Building from tarilabs.Dockerfile in $1 image version $2 ..."
   # Add docker tag alias - ie: latest
   if [ ! -z "${TL_TAG_ALIAS}" ]; then
     TL_TAG_CMD=" -t ${TL_TAG_URL}/$1:${TL_TAG_ALIAS} "
   fi
+  echo "Building $4 ($5) from tarilabs.Dockerfile in $1 image version $2 ..."
+  echo "* Image will be tagged as ${TL_TAG_URL}/$1:$2"
+  echo "* and: ${TL_TAG_CMD}"
+  echo "* Build options: ${TL_TAG_BUILD_OPTS}"
+  echo "* Toolchain: ${RUST_TOOLCHAIN}"
+  echo "* Architecture: ${TBN_ARCH}"
+  echo "* Features: ${TBN_FEATURES}"
+  echo "* TL_TAG_BUILD_Extra: ${TL_TAG_BUILD_Extra}"
 
   docker ${TL_TAG_BUILD_OPTS} \
     -f docker_rig/tarilabs.Dockerfile \
     --build-arg ARCH=${TBN_ARCH} \
     --build-arg FEATURES=${TBN_FEATURES} \
+    --build-arg RUST_TOOLCHAIN="${RUST_TOOLCHAIN}" \
     --build-arg VERSION=$2 \
     --build-arg APP_NAME=$4 \
     --build-arg APP_EXEC=$5 \
