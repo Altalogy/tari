@@ -37,6 +37,19 @@ export const useBaseNodeSync = (started: boolean) => {
     syncType: undefined,
   })
 
+  const invokeWithDelay = async () => {
+    /**
+     * @TODO if we do not wait, the backend has an issue base_node_gprc
+     * bc base node is not running yet.
+     * Should this be handled by the backend?
+     * Or frontend can check the status_check/health first?
+     * Because waiting arbirtary 10sec is not a good idea.
+     */
+    await wait(10000)
+
+    invoke('base_node_sync_progress')
+  }
+
   useEffect(() => {
     if (isAlreadyInvoked) {
       return
@@ -45,7 +58,6 @@ export const useBaseNodeSync = (started: boolean) => {
     let unsubscribe
 
     const listenToEvents = async () => {
-      await wait(2000)
       unsubscribe = await listen(
         'tari://onboarding_progress',
         async ({
@@ -84,8 +96,7 @@ export const useBaseNodeSync = (started: boolean) => {
 
     if (started) {
       listenToEvents()
-
-      invoke('base_node_sync_progress')
+      invokeWithDelay()
     }
 
     return unsubscribe

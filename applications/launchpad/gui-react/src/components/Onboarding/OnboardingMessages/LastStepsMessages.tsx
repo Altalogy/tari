@@ -171,7 +171,7 @@ export const BlockchainSyncStep = ({
     }
   }
 
-  const baseNodeSyncProgress = useBaseNodeSync(syncStarting)
+  const baseNodeSyncProgress = useBaseNodeSync(syncStarted)
 
   useEffect(() => {
     if (syncStarted && updateMessageBoxSize && contentRef.current) {
