@@ -28,7 +28,7 @@ import {
   WindowButtons,
 } from './styles'
 import { TitleBarProps } from './types'
-import colors from '../../styles/styles/colors'
+import { useMemo } from 'react'
 
 const TitleBar = ({
   drawerViewWidth = '50%',
@@ -81,13 +81,13 @@ const TitleBar = ({
     }
   }
 
-  const getSettingsIconColor = () => {
+  const settingsIconColor = useMemo(() => {
     if (expertView !== 'hidden') {
-      return colors.light.textSecondary
+      return theme.textSecondary
     } else {
       return theme.helpTipText
     }
-  }
+  }, [theme, expertView])
 
   return (
     <StyledTitleBar
@@ -216,7 +216,7 @@ const TitleBar = ({
             variant='text'
             size='small'
             leftIcon={<SvgSetting width='16px' height='16px' />}
-            leftIconColor={getSettingsIconColor()}
+            leftIconColor={settingsIconColor}
             onClick={() => dispatch(settingsActions.open({}))}
             style={{
               color:

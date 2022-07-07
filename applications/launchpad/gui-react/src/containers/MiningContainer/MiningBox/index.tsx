@@ -145,6 +145,7 @@ const MiningBox = ({
     icon: {
       color: theme.nodeLightIcon,
     },
+    helpSvgGradient: false,
   }
 
   const defaultStates: Partial<{
@@ -154,6 +155,7 @@ const MiningBox = ({
       tag: {
         content: t.common.phrases.startHere,
       },
+      helpSvgGradient: true,
     },
     [MiningBoxStatus.Paused]: {
       tag: {
@@ -174,6 +176,7 @@ const MiningBox = ({
       tag: {
         content: t.common.phrases.startHere,
       },
+      helpSvgGradient: true,
     },
     [MiningBoxStatus.Running]: {
       tag: {
@@ -320,6 +323,7 @@ const MiningBox = ({
       titleStyle={currentState.titleStyle}
       contentStyle={currentState.contentStyle}
       onHelpPromptClick={helpPromptClick}
+      helpSvgGradient={currentState.helpSvgGradient}
       testId={testId}
     >
       {icons && icons.length > 0 ? (
