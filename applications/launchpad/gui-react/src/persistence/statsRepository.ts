@@ -1,8 +1,6 @@
-import groupby from 'lodash.groupby'
-
 import { Dictionary, ContainerName } from '../types/general'
 import { SerializableContainerStats } from '../store/containers/types'
-import getDb from './db'
+import { db } from './db'
 
 export interface StatsEntry {
   timestamp: string
@@ -21,18 +19,13 @@ export interface StatsRepository {
     secondTimestamp: string,
     stats: SerializableContainerStats,
   ) => Promise<void>
-  getGroupedByContainer: (
-    network: string,
-    from: Date,
-    to: Date,
-  ) => Promise<Dictionary<StatsEntry[]>>
+  getGroupedByContainer: (network: string, since: Date) => Promise<StatsEntry[]>
 }
 
 const repositoryFactory: () => StatsRepository = () => {
   return {
     add: async (network, container, secondTimestamp, stats) => {
-      const db = await getDb()
-
+      console.time('insert')
       await db.execute(
         `INSERT INTO stats(timestamp, network, service, cpu, memory, upload, download) VALUES($1, $2, $3, $4, $5, $6, $7)
            ON CONFLICT(timestamp, network, service)
@@ -52,16 +45,17 @@ const repositoryFactory: () => StatsRepository = () => {
           stats.network.download,
         ],
       )
+      console.timeEnd('insert')
     },
-    getGroupedByContainer: async (network, from, to) => {
-      const db = await getDb()
-
+    getGroupedByContainer: async (network, since) => {
+      console.time('select')
       const results: StatsEntry[] = await db.select(
-        'SELECT * FROM stats WHERE network = $1 AND "timestamp" >= $2 AND "timestamp" <= $3 ORDER BY "timestamp"',
-        [network, from, to],
+        'SELECT timestamp, service, cpu, memory, upload, download FROM stats WHERE network = $1 AND "timestamp" > $2 ORDER BY "timestamp"',
+        [network, since.toISOString()],
       )
+      console.timeEnd('select')
 
-      return groupby(results, 'service')
+      return results
     },
   }
 }

@@ -5,7 +5,6 @@ import TimeSeriesChart from '../../../../components/Charts/TimeSeries'
 import { SeriesData } from '../../../../components/Charts/TimeSeries/types'
 
 import guardBlanksWithNulls from './guardBlanksWithNulls'
-import usePerformanceStats from './usePerformanceStats'
 import { PerformanceChartProps } from './types'
 
 /**
@@ -48,53 +47,13 @@ const PerformanceChart = ({
     }
   }, [enabled, to])
 
-  const performanceData = usePerformanceStats({
-    extractor,
-    enabled,
-    from: latchedFrom,
-    to: latchedTo,
-  })
-
-  const [hiddenSeries, setHiddenSeries] = useState<Container[]>([])
-  const data = useMemo<SeriesData[]>(
-    () =>
-      Object.entries(performanceData).map(([container, containerData]) => {
-        const data = guardBlanksWithNulls(
-          containerData.map(({ timestamp, value }) => ({
-            x: new Date(timestamp).getTime(),
-            y: value,
-          })),
-        )
-
-        const visible = !hiddenSeries.includes(container as Container)
-
-        return {
-          name: container,
-          empty: !data.length,
-          visible,
-          data: visible ? data : [],
-        }
-      }),
-    [performanceData, hiddenSeries],
-  )
-
-  const toggleSeries = useCallback(
-    (seriesName: string) =>
-      setHiddenSeries(hidden => {
-        if (hidden.includes(seriesName as Container)) {
-          return hidden.filter(h => h !== (seriesName as Container))
-        }
-
-        return [...hidden, seriesName as Container]
-      }),
-    [performanceData],
-  )
+  const data: SeriesData[] = []
 
   return (
     <TimeSeriesChart
       data={data}
       percentageValues={percentageValues}
-      toggleSeries={toggleSeries}
+      toggleSeries={() => null}
       unit={unit}
       from={latchedFrom}
       to={latchedTo}

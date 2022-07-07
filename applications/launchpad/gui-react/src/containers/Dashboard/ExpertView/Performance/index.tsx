@@ -1,8 +1,15 @@
-import { useEffect, useRef, useState, useMemo } from 'react'
+import { useCallback, useEffect, useRef, useState, useMemo } from 'react'
+import groupby from 'lodash.groupby'
 import { useTheme } from 'styled-components'
 
+import { selectNetwork } from '../../../../store/baseNode/selectors'
+import { useAppSelector } from '../../../../store/hooks'
+import getStatsRepository, {
+  StatsEntry,
+} from '../../../../persistence/statsRepository'
 import t from '../../../../locales'
 import { Option } from '../../../../components/Select/types'
+import { Dictionary } from '../../../../types/general'
 
 import PerformanceChart from './PerformanceChart'
 import PerformanceControls, {
@@ -19,6 +26,8 @@ import PerformanceControls, {
  */
 const PerformanceContainer = () => {
   const theme = useTheme()
+  const configuredNetwork = useAppSelector(selectNetwork)
+  const statsRepository = getStatsRepository()
 
   const [timeWindow, setTimeWindow] = useState<Option>(defaultRenderWindow)
   const [refreshRate, setRefreshRate] = useState<Option>(defaultRefreshRate)
@@ -28,20 +37,18 @@ const PerformanceContainer = () => {
 
     return n
   })
-  const from = useMemo(
+  const since = useMemo(
     () => new Date(now.getTime() - Number(timeWindow.value)),
     [now],
   )
+  const [data, setData] = useState<Dictionary<StatsEntry[]>>()
+  const [lastTimestamp, setLastTimestamp] = useState<Date | undefined>()
   const intervalRef = useRef<ReturnType<typeof setInterval> | undefined>()
-  const [refreshEnabled, setRefreshEnabled] = useState<{
-    cpu: boolean
-    memory: boolean
-    network: boolean
-  }>({
-    cpu: true,
-    memory: true,
-    network: true,
-  })
+  const [lastNowForGraph, setLastNowForGraph] = useState<{
+    cpu?: Date
+    memory?: Date
+    network?: Date
+  }>({})
 
   useEffect(() => {
     intervalRef.current = setInterval(() => {
@@ -54,6 +61,56 @@ const PerformanceContainer = () => {
     return () => clearInterval(intervalRef.current!)
   }, [refreshRate])
 
+  useEffect(() => {
+    // get data for the whole timeWindow whenever it changes
+    // also set the `last` timestamp that is present in the dataset
+    const getData = async () => {
+      const data = await statsRepository.getGroupedByContainer(
+        configuredNetwork,
+        since,
+      )
+
+      if (data.length) {
+        setLastTimestamp(new Date(data[data.length - 1].timestamp))
+      }
+      setData(groupby(data.reverse(), 'service'))
+    }
+
+    getData()
+  }, [timeWindow])
+
+  useEffect(() => {
+    // every time 'now' changes,
+    // get new data since `last`
+    // and add to the dataset
+    if (!lastTimestamp) {
+      return
+    }
+
+    const getData = async () => {
+      const data = await statsRepository.getGroupedByContainer(
+        configuredNetwork,
+        lastTimestamp,
+      )
+
+      if (data.length) {
+        setLastTimestamp(new Date(data[data.length - 1].timestamp))
+      }
+      const newGroupedData = groupby(data.reverse(), 'service')
+
+      setData(previousData => {
+        const newData = { ...previousData }
+        Object.entries(newGroupedData).forEach(([key, value]) => {
+          newData[key] = [...(newData[key] || []), ...value]
+        })
+
+        return newData
+      })
+    }
+
+    getData()
+  }, [now])
+
   return (
     <>
       <PerformanceControls
@@ -62,14 +119,27 @@ const PerformanceContainer = () => {
         timeWindow={timeWindow}
         onTimeWindowChange={option => setTimeWindow(option)}
       />
-      <PerformanceChart
+      <button
+        style={{ color: 'white' }}
+        onClick={useCallback(
+          () => setLastNowForGraph({ cpu: now, memory: now, network: now }),
+          [now],
+        )}
+      >
+        stop
+      </button>
+      <button style={{ color: 'white' }} onClick={() => setLastNowForGraph({})}>
+        start
+      </button>
+      {/*
+<PerformanceChart
         enabled={refreshEnabled.cpu}
         extractor={({ timestamp, cpu }) => ({
           timestamp,
           value: cpu,
         })}
         percentageValues
-        from={from}
+        from={since}
         to={now}
         title={t.common.nouns.cpu}
         onUserInteraction={({ interacting }) => {
@@ -81,44 +151,7 @@ const PerformanceContainer = () => {
         style={{ marginTop: theme.spacing() }}
         chartHeight={175}
       />
-      <PerformanceChart
-        enabled={refreshEnabled.memory}
-        extractor={({ timestamp, memory }) => ({
-          timestamp,
-          value: memory,
-        })}
-        unit={t.common.units.mib}
-        from={from}
-        to={now}
-        title={t.expertView.performance.memoryChartTitle}
-        onUserInteraction={({ interacting }) => {
-          setRefreshEnabled(a => ({
-            ...a,
-            memory: !interacting,
-          }))
-        }}
-        style={{ marginTop: theme.spacing() }}
-        chartHeight={175}
-      />
-      <PerformanceChart
-        enabled={refreshEnabled.network}
-        extractor={({ timestamp, download }) => ({
-          timestamp,
-          value: download / (1024 * 1024),
-        })}
-        unit={t.common.units.mib}
-        from={from}
-        to={now}
-        title={t.expertView.performance.networkChartTitle}
-        onUserInteraction={({ interacting }) => {
-          setRefreshEnabled(a => ({
-            ...a,
-            network: !interacting,
-          }))
-        }}
-        style={{ marginTop: theme.spacing() }}
-        chartHeight={175}
-      />
+        */}
     </>
   )
 }
