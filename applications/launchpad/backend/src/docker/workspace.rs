@@ -225,9 +225,7 @@ impl TariWorkspace {
             ImageType::Sha3Miner |
             ImageType::MmProxy |
             ImageType::Monerod => registry.unwrap_or(DEFAULT_REGISTRY),
-            ImageType::Loki |
-            ImageType::Promtail |
-            ImageType::Grafana => GRAFANA_REGISTRY,
+            ImageType::Loki | ImageType::Promtail | ImageType::Grafana => GRAFANA_REGISTRY,
         };
         format!("{}/{}:{}", reg, image.image_name(), "latest")
     }

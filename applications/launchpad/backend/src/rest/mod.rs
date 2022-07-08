@@ -38,7 +38,6 @@ use crate::{
     rest::quay_io::TARILABS_REPO_NAME,
 };
 
-
 pub async fn pull_image(full_image_name: String) {
     let docker = DOCKER_INSTANCE.clone();
     let opts = Some(CreateImageOptions {

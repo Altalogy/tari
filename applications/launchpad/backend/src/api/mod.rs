@@ -56,7 +56,7 @@ pub struct ImageInfo {
     container_name: String,
     display_name: String,
     docker_image: String,
-    updated: bool,    
+    updated: bool,
     created_on: Option<String>,
 }
 
@@ -78,7 +78,6 @@ async fn from_image_type(image: ImageType, registry: Option<&str>) -> ImageInfo 
 
     info
 }
-
 
 impl Default for ImageInfo {
     fn default() -> Self {
