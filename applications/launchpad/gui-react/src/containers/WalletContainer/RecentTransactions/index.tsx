@@ -35,7 +35,7 @@ const RecentTransactions = () => {
   const lastTxHistoryUpdate = useAppSelector(selectLastTxHistoryUpdate)
 
   const [txs, setTxs] = useState<TransactionDBRecord[]>([])
-  const [total, setTotal] = useState<number>(0)
+  const [total, setTotal] = useState(0)
   const [currentPage, setCurrentPage] = useState(0)
   const [seeAllHistory, setSeeAllHistory] = useState(false)
 

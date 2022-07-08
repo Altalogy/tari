@@ -16,7 +16,7 @@ export enum TransactionEvent {
   Mined = 'mined',
   Cancelled = 'cancelled',
   NewBlockMined = 'new_block_mined',
-  Unknwon = 'unknown',
+  Unknown = 'unknown',
 }
 
 export enum TransactionDirection {
