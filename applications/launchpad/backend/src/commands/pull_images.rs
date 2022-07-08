@@ -21,15 +21,17 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
+use std::convert::TryFrom;
+
 use bollard::models::CreateImageInfo;
-use futures::{future::join_all, stream::StreamExt, TryFutureExt};
-use log::{debug, error};
+use futures::{future::join_all, stream::StreamExt, Stream, TryFutureExt};
+use log::{debug, error, warn};
 use serde::Serialize;
 use tauri::{AppHandle, Manager, Wry};
 
 use crate::{
     commands::AppState,
-    docker::{ImageType, TariWorkspace},
+    docker::{DockerWrapper, DockerWrapperError, ImageType, TariWorkspace, DOCKER_INSTANCE},
     error::LauncherError,
 };
 
@@ -60,7 +62,7 @@ pub async fn pull_images(app: AppHandle<Wry>) -> Result<(), String> {
     debug!("Command pull_images invoked");
     let futures = DEFAULT_IMAGES
         .iter()
-        .map(|image| pull_image(*image, app.clone()).map_err(|e| e.chained_message()));
+        .map(|image| pull_image(image.image_name(), app.clone()).map_err(|e| format!("error pulling image: {}", e)));
     let results: Vec<Result<_, String>> = join_all(futures).await;
     let errors = results
         .into_iter()
@@ -74,10 +76,15 @@ pub async fn pull_images(app: AppHandle<Wry>) -> Result<(), String> {
     Ok(())
 }
 
-async fn pull_image(image: ImageType, app: AppHandle<Wry>) -> Result<(), LauncherError> {
+#[tauri::command]
+pub async fn pull_image(image_name: &str, app: AppHandle<Wry>) -> Result<(), String> {
+    let image = ImageType::try_from(image_name).map_err(|_err| format!("invalid image name: {}", image_name))?;
     let state = app.state::<AppState>().clone();
     let docker = state.docker.read().await;
-    let image_name = TariWorkspace::fully_qualified_image(image, None, None);
+    let image_name = match image {
+        ImageType::Loki | ImageType::Promtail | ImageType::Grafana => format!("grafana/{}:latest", image.image_name()),
+        _ => TariWorkspace::fully_qualified_image(image, None),
+    };
     let mut stream = docker.pull_image(image_name.clone()).await;
     while let Some(update) = stream.next().await {
         match update {
@@ -88,9 +95,11 @@ async fn pull_image(image: ImageType, app: AppHandle<Wry>) -> Result<(), Launche
                     info: progress,
                 };
                 debug!("Image pull progress:{:?}", payload);
-                app.emit_all("image-pull-progress", payload)?
+                if let Err(err) = app.emit_all("tari://image_pull_progress", payload) {
+                    warn!("Could not emit event to front-end, {:?}", err);
+                }
             },
-            Err(err) => return Err(err.into()),
+            Err(err) => return Err(format!("Error reading docker progress: {}", err)),
         };
     }
     Ok(())
