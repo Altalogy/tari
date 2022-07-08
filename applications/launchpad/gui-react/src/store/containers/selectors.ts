@@ -137,10 +137,16 @@ export const selectRecipePending = (containerName: ContainerName) =>
     containers.some(container => container.pending),
   )
 
-export const selectAllContainerEventsChannels = ({ containers }: RootState) =>
-  Object.values(containers.containers)
-    .filter(cont => cont.eventsChannel)
-    .map(cont => ({
-      service: cont.name,
-      eventsChannel: cont.eventsChannel,
+export const selectAllContainerEventsChannels = (rootState: RootState) =>
+  Object.values(rootState.containers.containers)
+    .map(container => ({
+      status: selectContainerStatus(container.name as Container)(rootState),
+      container,
+    }))
+    .filter(
+      ({ container, status }) => container.eventsChannel && status.running,
+    )
+    .map(({ container }) => ({
+      service: container.name,
+      eventsChannel: container.eventsChannel,
     }))

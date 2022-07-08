@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState, useMemo } from 'react'
 import groupby from 'lodash.groupby'
-import { useTheme } from 'styled-components'
 import { listen } from '@tauri-apps/api/event'
 
 import uPlot from 'uplot'
@@ -11,78 +10,14 @@ import { selectAllContainerEventsChannels } from '../../../../store/containers/s
 import { extractStatsFromEvent } from '../../../../store/containers/thunks'
 import { StatsEventPayload } from '../../../../store/containers/types'
 import { useAppSelector } from '../../../../store/hooks'
-import getStatsRepository, {
-  StatsEntry,
-} from '../../../../persistence/statsRepository'
-import t from '../../../../locales'
+import getStatsRepository from '../../../../persistence/statsRepository'
 import { Option } from '../../../../components/Select/types'
 import { Dictionary } from '../../../../types/general'
 
-import PerformanceChart from './PerformanceChart'
 import PerformanceControls, {
   defaultRenderWindow,
   defaultRefreshRate,
 } from './PerformanceControls'
-import guardBlanksWithNulls from './guardBlanksWithNulls'
-
-const addDataWithBlankGuards = (
-  oldEntries: StatsEntry[],
-  stats: any,
-  service: string,
-  network: string,
-  refreshRate: number,
-): StatsEntry[] => {
-  const hasOldTimeSeries = oldEntries.length
-
-  const lastOldTimestamp = new Date(
-    oldEntries[oldEntries.length - 1]?.timestamp,
-  ).getTime()
-  const firstNewTimestamp = new Date(stats.timestamp).getTime()
-  const difference = hasOldTimeSeries ? firstNewTimestamp - lastOldTimestamp : 0
-  const addStatsWithNullGuard = !hasOldTimeSeries || difference > refreshRate
-
-  if (!addStatsWithNullGuard) {
-    return [
-      ...oldEntries,
-      {
-        ...stats,
-        service,
-        network,
-      },
-    ]
-  }
-
-  const nullGuardAtBlankStart = {
-    timestamp: new Date(lastOldTimestamp + refreshRate).toISOString(),
-    network,
-    service,
-    memory: null,
-    cpu: null,
-    download: null,
-    upload: null,
-  }
-
-  const nullGuardAtBlankEnd = {
-    timestamp: new Date(lastOldTimestamp + refreshRate).toISOString(),
-    network,
-    service,
-    memory: null,
-    cpu: null,
-    download: null,
-    upload: null,
-  }
-
-  return [
-    ...oldEntries,
-    nullGuardAtBlankStart,
-    nullGuardAtBlankEnd,
-    {
-      ...stats,
-      service,
-      network,
-    },
-  ]
-}
 
 /**
  * @name PerformanceContainer
@@ -92,7 +27,6 @@ const addDataWithBlankGuards = (
  *
  */
 const PerformanceContainer = () => {
-  const theme = useTheme()
   const configuredNetwork = useAppSelector(selectNetwork)
   const statsRepository = getStatsRepository()
   const allContainerEventsChannels = useAppSelector(
@@ -112,7 +46,6 @@ const PerformanceContainer = () => {
     () => new Date(now.getTime() - Number(timeWindow.value)),
     [now],
   )
-  const [data, setData] = useState<Dictionary<StatsEntry[]>>({})
   const intervalRef = useRef<ReturnType<typeof setInterval> | undefined>()
   const [frozenCharts, setFrozenCharts] = useState<{
     cpu?: boolean
@@ -132,21 +65,16 @@ const PerformanceContainer = () => {
   }, [refreshRate])
 
   const [xValues, setXValues] = useState<number[]>([])
-  const [cpuData, setCpuData] = useState<Dictionary<number[]>>({})
+  const [cpuData, setCpuData] = useState<Dictionary<(number | null)[]>>({})
 
   useEffect(() => {
-    console.time('generateXValues')
     const xValues = []
     const nowS = now.getTime() / 1000
     const sinceS = since.getTime() / 1000
-    console.debug({ nowS, sinceS })
     for (let i = 0; i < nowS - sinceS; ++i) {
       xValues.push(sinceS + i)
     }
     setXValues(xValues)
-    console.timeEnd('generateXValues')
-    console.debug('xvalueslength', xValues.length)
-    console.debug({ xValues })
 
     // get data for the whole timeWindow whenever it changes
     // also set the `last` timestamp that is present in the dataset
@@ -156,7 +84,6 @@ const PerformanceContainer = () => {
         since,
       )
 
-      console.time('generate series')
       const grouped = groupby(data.reverse(), 'service')
       const seriesData: Dictionary<number[]> = {}
       Object.keys(grouped).forEach(key => {
@@ -167,14 +94,65 @@ const PerformanceContainer = () => {
         })
         seriesData[key] = yValues
       })
-      console.timeEnd('generate series')
-      console.debug({ seriesData })
       setCpuData(seriesData)
     }
 
     getData()
   }, [timeWindow])
   const colors = ['red', 'blue']
+
+  useEffect(() => {
+    const subscribeToAllChannels = async () => {
+      unsubscribeFunctions.current = await Promise.all(
+        allContainerEventsChannels.map(containerChannel =>
+          listen(
+            containerChannel.eventsChannel as string,
+            (statsEvent: { payload: StatsEventPayload }) => {
+              const stats = extractStatsFromEvent(statsEvent.payload)
+              const statsTimestampS = new Date(stats.timestamp).getTime() / 1000
+              // this should be a reference/state on the component, I think
+              let lastX = 0
+
+              setXValues(oldState => {
+                lastX = oldState[oldState.length - 1]
+
+                const diff = statsTimestampS - lastX
+                const additionalTimestamps = []
+                for (let i = 0; i < diff; ++i) {
+                  additionalTimestamps.push(lastX + 1 + i)
+                }
+
+                return [...oldState, ...additionalTimestamps]
+              })
+
+              setCpuData(oldState => {
+                const newState = { ...oldState }
+
+                const emptyValues = []
+                const diff = statsTimestampS - lastX
+                for (let i = 1; i < diff; ++i) {
+                  emptyValues.push(null)
+                }
+                newState[containerChannel.service as string] = [
+                  ...(newState[containerChannel.service as string] || []),
+                  ...emptyValues,
+                  stats.cpu,
+                ]
+
+                return newState
+              })
+            },
+          ),
+        ),
+      )
+    }
+
+    subscribeToAllChannels()
+
+    return () =>
+      unsubscribeFunctions.current &&
+      unsubscribeFunctions.current.forEach(unsubscribe => unsubscribe())
+  }, [allContainerEventsChannels, configuredNetwork])
 
   return (
     <>
@@ -208,6 +186,12 @@ const PerformanceContainer = () => {
             title: 'cpu',
             width: 500,
             height: 175,
+            scales: {
+              '%': {
+                auto: false,
+                range: [0, 100],
+              },
+            },
             series: [
               {},
               ...Object.keys(cpuData).map((cpuKey, id) => ({
