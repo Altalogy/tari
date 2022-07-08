@@ -48,6 +48,7 @@ const guardBlanksWithNulls = (
   nullsToInsert.forEach((nullToInsert, i) => {
     dataCopy.splice(nullToInsert.index + i, 0, {
       timestamp: new Date(nullToInsert.timestamp).toISOString(),
+      timestampS: nullToInsert.timestamp / 1000,
       cpu: null,
       memory: null,
       download: null,

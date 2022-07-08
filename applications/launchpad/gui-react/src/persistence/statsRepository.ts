@@ -4,6 +4,7 @@ import { db } from './db'
 
 export interface StatsEntry {
   timestamp: string
+  timestampS: number
   network: string
   service: ContainerName
   cpu: number | null
@@ -49,14 +50,17 @@ const repositoryFactory: () => StatsRepository = () => {
     },
     getGroupedByContainer: async (network, since) => {
       console.time('select')
-      const results: StatsEntry[] = await db.select(
+      const results: Omit<StatsEntry, 'timestampS'>[] = await db.select(
         'SELECT timestamp, service, cpu, memory, upload, download FROM stats WHERE network = $1 AND "timestamp" > $2 ORDER BY "timestamp"',
         [network, since.toISOString()],
       )
       console.timeEnd('select')
       console.debug(`selected ${results.length}`)
 
-      return results
+      return results.map(r => ({
+        ...r,
+        timestampS: new Date(r.timestamp).getTime() / 1000,
+      }))
     },
   }
 }

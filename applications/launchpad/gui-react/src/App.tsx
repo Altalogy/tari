@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import styled, { ThemeProvider } from 'styled-components'
+import 'uplot/dist/uPlot.min.css'
 
 import { useAppSelector, useAppDispatch } from './store/hooks'
 import useTransactionsRepository from './persistence/transactionsRepository'

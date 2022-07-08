@@ -3,6 +3,9 @@ import groupby from 'lodash.groupby'
 import { useTheme } from 'styled-components'
 import { listen } from '@tauri-apps/api/event'
 
+import uPlot from 'uplot'
+import UplotReact from 'uplot-react'
+
 import { selectNetwork } from '../../../../store/baseNode/selectors'
 import { selectAllContainerEventsChannels } from '../../../../store/containers/selectors'
 import { extractStatsFromEvent } from '../../../../store/containers/thunks'
@@ -128,7 +131,23 @@ const PerformanceContainer = () => {
     return () => clearInterval(intervalRef.current!)
   }, [refreshRate])
 
+  const [xValues, setXValues] = useState<number[]>([])
+  const [cpuData, setCpuData] = useState<Dictionary<number[]>>({})
+
   useEffect(() => {
+    console.time('generateXValues')
+    const xValues = []
+    const nowS = now.getTime() / 1000
+    const sinceS = since.getTime() / 1000
+    console.debug({ nowS, sinceS })
+    for (let i = 0; i < nowS - sinceS; ++i) {
+      xValues.push(sinceS + i)
+    }
+    setXValues(xValues)
+    console.timeEnd('generateXValues')
+    console.debug('xvalueslength', xValues.length)
+    console.debug({ xValues })
+
     // get data for the whole timeWindow whenever it changes
     // also set the `last` timestamp that is present in the dataset
     const getData = async () => {
@@ -137,50 +156,25 @@ const PerformanceContainer = () => {
         since,
       )
 
+      console.time('generate series')
       const grouped = groupby(data.reverse(), 'service')
+      const seriesData: Dictionary<number[]> = {}
       Object.keys(grouped).forEach(key => {
-        grouped[key] = guardBlanksWithNulls(
-          grouped[key],
-          Number(refreshRate.value),
-        )
+        const yValues = new Array(xValues.length).fill(null)
+        grouped[key].forEach(v => {
+          const idx = v.timestampS - sinceS
+          yValues[idx] = v.cpu
+        })
+        seriesData[key] = yValues
       })
-      setData(grouped)
+      console.timeEnd('generate series')
+      console.debug({ seriesData })
+      setCpuData(seriesData)
     }
 
     getData()
   }, [timeWindow])
-
-  useEffect(() => {
-    const subscribeToAllChannels = async () => {
-      unsubscribeFunctions.current = await Promise.all(
-        allContainerEventsChannels.map(containerChannel =>
-          listen(
-            containerChannel.eventsChannel as string,
-            (statsEvent: { payload: StatsEventPayload }) => {
-              const stats = extractStatsFromEvent(statsEvent.payload)
-
-              setData(oldState => ({
-                ...oldState,
-                [containerChannel.service as string]: addDataWithBlankGuards(
-                  oldState[containerChannel.service as string],
-                  stats,
-                  containerChannel.service as string,
-                  configuredNetwork,
-                  Number(refreshRate.value),
-                ),
-              }))
-            },
-          ),
-        ),
-      )
-    }
-
-    subscribeToAllChannels()
-
-    return () =>
-      unsubscribeFunctions.current &&
-      unsubscribeFunctions.current.forEach(unsubscribe => unsubscribe())
-  }, [allContainerEventsChannels, configuredNetwork])
+  const colors = ['red', 'blue']
 
   return (
     <>
@@ -208,71 +202,26 @@ const PerformanceContainer = () => {
         start
       </button>
 
-      <PerformanceChart
-        data={data}
-        chartHeight={175}
-        enabled={!frozenCharts.cpu}
-        from={since}
-        to={now}
-        extractor={useCallback(
-          (statsEntry: StatsEntry) => ({
-            timestamp: statsEntry.timestamp,
-            value: statsEntry.cpu,
-          }),
-          [],
-        )}
-        onUserInteraction={useCallback(({ interacting }) => {
-          if (interacting) {
-            setFrozenCharts(oldState => ({
-              ...oldState,
-              cpu: true,
-            }))
-
-            return
-          }
-
-          setFrozenCharts(oldState => ({
-            ...oldState,
-            cpu: false,
-          }))
-        }, [])}
-        percentageValues
-        title={t.common.nouns.cpu}
-        style={{ marginTop: theme.spacing() }}
-      />
-
-      <PerformanceChart
-        data={data}
-        chartHeight={175}
-        enabled={!frozenCharts.memory}
-        from={since}
-        to={now}
-        extractor={useCallback(
-          (statsEntry: StatsEntry) => ({
-            timestamp: statsEntry.timestamp,
-            value: statsEntry.memory && statsEntry.memory,
-          }),
-          [],
-        )}
-        onUserInteraction={useCallback(({ interacting }) => {
-          if (interacting) {
-            setFrozenCharts(oldState => ({
-              ...oldState,
-              memory: true,
-            }))
-
-            return
-          }
-
-          setFrozenCharts(oldState => ({
-            ...oldState,
-            memory: false,
-          }))
-        }, [])}
-        unit='MiB'
-        title={t.common.nouns.memory}
-        style={{ marginTop: theme.spacing() }}
-      />
+      <div style={{ color: 'white' }}>
+        <UplotReact
+          options={{
+            title: 'cpu',
+            width: 500,
+            height: 175,
+            series: [
+              {},
+              ...Object.keys(cpuData).map((cpuKey, id) => ({
+                label: cpuKey,
+                scale: '%',
+                stroke: colors[id],
+              })),
+            ],
+          }}
+          data={[xValues, ...Object.values(cpuData)]}
+          onCreate={_chart => null}
+          onDelete={_chart => null}
+        />
+      </div>
     </>
   )
 }
