@@ -19,7 +19,6 @@ export const DayTimePickerWrapper = styled.div`
     font-size: 32px;
     color: ${({ theme }) => theme.primary};
     background: inherit;
-    max-width: 48px;
 
     &::-webkit-calendar-picker-indicator {
       background: none;
