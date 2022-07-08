@@ -98,13 +98,14 @@ pub async fn get_tag_info(image: ImageType) -> Result<TagInfo, String> {
         .filter(|t| t.name.contains("latest") && t.expiration.is_none())
         .cloned()
         .collect();
-    if !filtered.is_empty() {
+    if filtered.is_empty() {
+        Err("No tags found for tag [latest]".to_string())
+    } else {
         if filtered.len() > 1 {
             filtered.sort_by(|t1, t2| t1.start_ts.cmp(&t2.start_ts));
         }
         Ok(TagInfo::from(filtered.pop().unwrap()))
-    } else {
-        Err("No tags found for tag [latest]".to_string())
+        
     }
 }
 
