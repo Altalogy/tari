@@ -68,14 +68,10 @@ async fn from_image_type(image: ImageType, registry: Option<&str>) -> ImageInfo 
         docker_image: TariWorkspace::fully_qualified_image(image, registry),
         ..Default::default()
     };
-    match get_tag_info(image).await {
-        Ok(tag) => {
-            info.updated = tag.latest;
-            info.created_on = Some(tag.created_on);
-        },
-        Err(_) => (),
+    if let Ok(tag) = get_tag_info(image).await {
+        info.updated = tag.latest;
+        info.created_on = Some(tag.created_on);
     }
-
     info
 }
 
