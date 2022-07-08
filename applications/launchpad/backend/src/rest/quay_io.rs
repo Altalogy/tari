@@ -105,7 +105,6 @@ pub async fn get_tag_info(image: ImageType) -> Result<TagInfo, String> {
             filtered.sort_by(|t1, t2| t1.start_ts.cmp(&t2.start_ts));
         }
         Ok(TagInfo::from(filtered.pop().unwrap()))
-        
     }
 }
 
