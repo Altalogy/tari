@@ -29,6 +29,7 @@ use futures::StreamExt;
 use log::*;
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Manager, State, Wry};
+use std::process::Command;
 
 use crate::{
     commands::{create_workspace::copy_config_file, AppState},
@@ -346,5 +347,26 @@ async fn stop_service_impl(state: State<'_, AppState>, service_name: String) -> 
         .get_workspace_mut("default")
         .ok_or_else(|| DockerWrapperError::WorkspaceDoesNotExist("default".into()))?;
     workspace.stop_container(service_name.as_str(), true, &docker).await;
+    Ok(())
+}
+
+// @TODO - move this to another file?
+#[tauri::command]
+pub async fn open_terminal(app: AppHandle<Wry>, platform: String) -> Result<(), ()> {
+    if platform == "darwin" {
+        Command::new( "open" )
+            .args(["-a", "Terminal", "/"])
+            .spawn()
+            .unwrap();
+    } else if platform == "windows_nt" {
+        Command::new( "start" )
+            .args(["powershell"])
+            .spawn()
+            .unwrap();
+    } else if platform == "linux" {
+        Command::new( "gnome-terminal" )
+            .spawn()
+            .unwrap();
+    };
     Ok(())
 }

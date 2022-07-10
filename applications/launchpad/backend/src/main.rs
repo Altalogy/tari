@@ -47,6 +47,7 @@ use crate::{
         create_new_workspace,
         events,
         launch_docker,
+        open_terminal,
         pull_images,
         shutdown,
         start_service,
@@ -57,6 +58,7 @@ use crate::{
     docker::DEFAULT_WORKSPACE_NAME,
     grpc::WalletTransaction,
 };
+
 
 fn main() {
     env_logger::init();
@@ -155,6 +157,7 @@ fn main() {
             create_default_workspace,
             events,
             launch_docker,
+            open_terminal,
             start_service,
             stop_service,
             shutdown,

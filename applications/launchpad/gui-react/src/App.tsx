@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import styled, { ThemeProvider } from 'styled-components'
+import { useHotkeys } from 'react-hotkeys-hook'
 
 import { useAppSelector, useAppDispatch } from './store/hooks'
 import useTransactionsRepository from './persistence/transactionsRepository'
@@ -20,6 +21,7 @@ import MiningNotifications from './containers/MiningNotifications'
 import Onboarding from './pages/onboarding'
 import PasswordPrompt from './containers/PasswordPrompt'
 import { hideSplashscreen } from './splashscreen'
+import { openTerminalCmd } from './commands'
 
 const AppContainer = styled.div`
   background: ${({ theme }) => theme.background};
@@ -48,6 +50,11 @@ const App = () => {
   const dispatch = useAppDispatch()
   const themeConfig = useAppSelector(selectThemeConfig)
   const onboardingComplete = useAppSelector(selectOnboardingComplete)
+
+  useHotkeys('ctrl+t,cmd+t', () => {
+    console.log('shortcut triggered')
+    openTerminalCmd()
+  })
 
   const [initialized, setInitialized] = useState(false)
 

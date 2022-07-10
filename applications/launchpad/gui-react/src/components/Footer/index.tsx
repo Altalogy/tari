@@ -8,6 +8,8 @@ import Text from '../Text'
 import t from '../../locales'
 
 import { FooterTextWrapper, StyledFooter } from './styles'
+import Button from '../Button'
+import { openTerminalCmd } from '../../commands'
 
 const TerminalInstructions = {
   linux: {
@@ -81,6 +83,7 @@ const Footer = () => {
           >
             {t.footer.press} {TerminalInstructions[osType]?.keysImage}{' '}
             {TerminalInstructions[osType]?.text}
+            <Button onClick={() => openTerminalCmd()}>Open</Button>
           </Text>
         ) : null}
       </FooterTextWrapper>
