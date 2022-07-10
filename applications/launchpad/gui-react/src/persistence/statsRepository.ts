@@ -1,4 +1,4 @@
-import { Dictionary, ContainerName } from '../types/general'
+import { ContainerName } from '../types/general'
 import { SerializableContainerStats } from '../store/containers/types'
 import { db } from './db'
 
@@ -21,12 +21,12 @@ export interface StatsRepository {
     stats: SerializableContainerStats,
   ) => Promise<void>
   getGroupedByContainer: (network: string, since: Date) => Promise<StatsEntry[]>
+  removeOld: (age?: number) => Promise<void>
 }
 
 const repositoryFactory: () => StatsRepository = () => {
   return {
     add: async (network, container, secondTimestamp, stats) => {
-      console.time('insert')
       await db.execute(
         `INSERT INTO stats(timestamp, network, service, cpu, memory, upload, download) VALUES($1, $2, $3, $4, $5, $6, $7)
            ON CONFLICT(timestamp, network, service)
@@ -46,7 +46,15 @@ const repositoryFactory: () => StatsRepository = () => {
           stats.network.download,
         ],
       )
-      console.timeEnd('insert')
+    },
+    removeOld: async (age = 24 * 3600 * 1000) => {
+      console.time('remove old')
+      const nowTS = new Date().getTime()
+      const whenTS = new Date(nowTS - age)
+      await db.execute('DELETE from stats WHERE "timestamp" < $1', [
+        whenTS.toISOString(),
+      ])
+      console.timeEnd('remove old')
     },
     getGroupedByContainer: async (network, since) => {
       console.time('select')

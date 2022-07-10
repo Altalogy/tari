@@ -28,7 +28,7 @@ import PerformanceControls, {
  */
 const PerformanceContainer = () => {
   const configuredNetwork = useAppSelector(selectNetwork)
-  const statsRepository = getStatsRepository()
+  const statsRepository = useMemo(getStatsRepository, [])
   const allContainerEventsChannels = useAppSelector(
     selectAllContainerEventsChannels,
   )
@@ -47,14 +47,13 @@ const PerformanceContainer = () => {
     [now],
   )
   const intervalRef = useRef<ReturnType<typeof setInterval> | undefined>()
-  const [frozenCharts, setFrozenCharts] = useState<{
-    cpu?: boolean
-    memory?: boolean
-    network?: boolean
-  }>({})
+  const frozen = useRef(false)
 
   useEffect(() => {
     intervalRef.current = setInterval(() => {
+      if (frozen.current) {
+        return
+      }
       const n = new Date()
       n.setMilliseconds(0)
       setNow(n)
@@ -62,20 +61,45 @@ const PerformanceContainer = () => {
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return () => clearInterval(intervalRef.current!)
-  }, [refreshRate])
+  }, [refreshRate, frozen])
 
-  const [xValues, setXValues] = useState<number[]>([])
-  const [cpuData, setCpuData] = useState<Dictionary<(number | null)[]>>({})
-
-  useEffect(() => {
-    const xValues = []
+  const [data, setData] = useState<
+    {
+      cpu: number | null
+      memory: number | null
+      download: number | null
+      service: string
+      timestampS: number
+    }[]
+  >([])
+  const xValues = useMemo(() => {
+    const x = []
     const nowS = now.getTime() / 1000
     const sinceS = since.getTime() / 1000
     for (let i = 0; i < nowS - sinceS; ++i) {
-      xValues.push(sinceS + i)
+      x.push(sinceS + i)
     }
-    setXValues(xValues)
 
+    return x
+  }, [now, since, frozen])
+  const cpuData = useMemo(() => {
+    const grouped = groupby(data, 'service')
+    const seriesData: Dictionary<number[]> = {}
+    const sinceS = xValues[0]
+    Object.keys(grouped)
+      .sort()
+      .forEach(key => {
+        const yValues = new Array(xValues.length).fill(null)
+        grouped[key].forEach(v => {
+          const idx = v.timestampS - sinceS
+          yValues[idx] = v.cpu
+        })
+        seriesData[key] = yValues
+      })
+    return seriesData
+  }, [xValues, data])
+
+  useEffect(() => {
     // get data for the whole timeWindow whenever it changes
     // also set the `last` timestamp that is present in the dataset
     const getData = async () => {
@@ -84,17 +108,15 @@ const PerformanceContainer = () => {
         since,
       )
 
-      const grouped = groupby(data.reverse(), 'service')
-      const seriesData: Dictionary<number[]> = {}
-      Object.keys(grouped).forEach(key => {
-        const yValues = new Array(xValues.length).fill(null)
-        grouped[key].forEach(v => {
-          const idx = v.timestampS - sinceS
-          yValues[idx] = v.cpu
-        })
-        seriesData[key] = yValues
-      })
-      setCpuData(seriesData)
+      setData(
+        data.map(statsEntry => ({
+          cpu: statsEntry.cpu,
+          memory: statsEntry.memory,
+          download: statsEntry.download,
+          timestampS: new Date(statsEntry.timestamp).getTime() / 1000,
+          service: statsEntry.service,
+        })),
+      )
     }
 
     getData()
@@ -109,38 +131,17 @@ const PerformanceContainer = () => {
             containerChannel.eventsChannel as string,
             (statsEvent: { payload: StatsEventPayload }) => {
               const stats = extractStatsFromEvent(statsEvent.payload)
-              const statsTimestampS = new Date(stats.timestamp).getTime() / 1000
-              // this should be a reference/state on the component, I think
-              let lastX = 0
 
-              setXValues(oldState => {
-                lastX = oldState[oldState.length - 1]
+              const statsEntry = {
+                cpu: stats.cpu,
+                memory: stats.memory,
+                upload: stats.network.upload,
+                download: stats.network.download,
+                timestampS: new Date(stats.timestamp).getTime() / 1000,
+                service: containerChannel.service as string,
+              }
 
-                const diff = statsTimestampS - lastX
-                const additionalTimestamps = []
-                for (let i = 0; i < diff; ++i) {
-                  additionalTimestamps.push(lastX + 1 + i)
-                }
-
-                return [...oldState, ...additionalTimestamps]
-              })
-
-              setCpuData(oldState => {
-                const newState = { ...oldState }
-
-                const emptyValues = []
-                const diff = statsTimestampS - lastX
-                for (let i = 1; i < diff; ++i) {
-                  emptyValues.push(null)
-                }
-                newState[containerChannel.service as string] = [
-                  ...(newState[containerChannel.service as string] || []),
-                  ...emptyValues,
-                  stats.cpu,
-                ]
-
-                return newState
-              })
+              setData(oldData => [...oldData, statsEntry])
             },
           ),
         ),
@@ -154,6 +155,25 @@ const PerformanceContainer = () => {
       unsubscribeFunctions.current.forEach(unsubscribe => unsubscribe())
   }, [allContainerEventsChannels, configuredNetwork])
 
+  const mouseLeave = useCallback(
+    (_e: MouseEvent) => {
+      console.debug('mouse leave')
+      frozen.current = false
+
+      return null
+    },
+    [since, now],
+  )
+  const mouseEnter = useCallback(
+    (_e: MouseEvent) => {
+      console.debug('mouse enter')
+      frozen.current = true
+
+      return null
+    },
+    [since, now],
+  )
+
   return (
     <>
       <PerformanceControls
@@ -164,19 +184,18 @@ const PerformanceContainer = () => {
       />
       <button
         style={{ color: 'white' }}
-        onClick={useCallback(
-          () =>
-            setFrozenCharts({
-              cpu: true,
-              memory: true,
-              network: true,
-            }),
-          [now],
-        )}
+        onClick={() => {
+          frozen.current = true
+        }}
       >
         stop
       </button>
-      <button style={{ color: 'white' }} onClick={() => setFrozenCharts({})}>
+      <button
+        style={{ color: 'white' }}
+        onClick={() => {
+          frozen.current = false
+        }}
+      >
         start
       </button>
 
@@ -186,6 +205,12 @@ const PerformanceContainer = () => {
             title: 'cpu',
             width: 500,
             height: 175,
+            cursor: {
+              bind: {
+                mouseenter: () => mouseEnter,
+                mouseleave: () => mouseLeave,
+              },
+            },
             scales: {
               '%': {
                 auto: false,
