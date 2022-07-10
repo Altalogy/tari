@@ -26,34 +26,30 @@ use std::collections::HashMap;
 
 use bollard::{
     image::{CreateImageOptions, ListImagesOptions, SearchImagesOptions},
-    models::ImageSummary,
+    models::{CreateImageInfo, ImageSummary},
 };
-use futures::StreamExt;
-use log::debug;
+use futures::{Stream, StreamExt, TryStreamExt};
+use log::{debug, error};
 use serde::{Deserialize, Serialize};
+use thiserror::Error;
 
 use self::quay_io::QUAY_IO_REPO_NAME;
 use crate::{
-    docker::{ImageType, TariWorkspace, DOCKER_INSTANCE},
+    docker::{DockerWrapperError, ImageType, TariWorkspace, DOCKER_INSTANCE},
     rest::quay_io::TARILABS_REPO_NAME,
 };
 
-pub async fn pull_image(full_image_name: String) {
-    let docker = DOCKER_INSTANCE.clone();
-    let opts = Some(CreateImageOptions {
-        from_image: full_image_name,
-        ..Default::default()
-    });
-    let mut stream = docker.create_image(opts, None, None);
-    while let Some(update) = stream.next().await {
-        match update {
-            Ok(progress) => println!("Image pull progress:{:?}", progress),
-            Err(_err) => (),
-        };
-    }
+#[derive(Debug, Error)]
+pub enum DockerImageError {
+    #[error("The image {0} is not found")]
+    ImageNotFound(String),
+    #[error("Something went wrong with the Docker API")]
+    DockerError(#[from] bollard::errors::Error),
+    #[error("Could not create an identity file")]
+    InvalidImageType,
 }
 
-pub async fn list_image(fully_qualified_image_name: String) -> Result<Vec<ImageSummary>, String> {
+pub async fn list_image(fully_qualified_image_name: String) -> Result<Vec<ImageSummary>, DockerImageError> {
     let docker = DOCKER_INSTANCE.clone();
     let mut fillter: HashMap<String, Vec<String>> = HashMap::new();
     fillter.insert("reference".to_string(), vec![fully_qualified_image_name.clone()]);
@@ -64,7 +60,11 @@ pub async fn list_image(fully_qualified_image_name: String) -> Result<Vec<ImageS
             ..Default::default()
         }))
         .await
-        .map_err(|_err| format!("image {} is not found. Error: ", fully_qualified_image_name))?;
+        .map_err(|err| {
+                error!("Error searching for{}. Err: {}", fully_qualified_image_name, err);
+                DockerImageError::ImageNotFound(fully_qualified_image_name)
+            }
+        )?;
     Ok(result)
 }
 
@@ -73,23 +73,4 @@ pub async fn list_image(fully_qualified_image_name: String) -> Result<Vec<ImageS
 async fn find_image_test() {
     let result = list_image("quay.io/tarilabs/tari_base_node:latest-amd64".to_string()).await;
     println!("result {:?}", result);
-}
-
-#[tokio::test]
-#[ignore]
-async fn pull_image_test() {
-    let docker = DOCKER_INSTANCE.clone();
-    let fully_qualified_image = TariWorkspace::fully_qualified_image(ImageType::Loki, None);
-    debug!("downloading image: {}", fully_qualified_image);
-    let opts = Some(CreateImageOptions {
-        from_image: fully_qualified_image,
-        ..Default::default()
-    });
-    let mut stream = docker.create_image(opts, None, None);
-    while let Some(update) = stream.next().await {
-        match update {
-            Ok(progress) => println!("Image pull progress:{:?}", progress),
-            Err(_err) => (),
-        };
-    }
 }

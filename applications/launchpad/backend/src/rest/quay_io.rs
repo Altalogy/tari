@@ -24,7 +24,7 @@
 use log::debug;
 use serde::{Deserialize, Serialize};
 
-use super::list_image;
+use super::{list_image, DockerImageError};
 use crate::docker::{ImageType, TariWorkspace, DOCKER_INSTANCE};
 
 pub const QUAY_IO_REPO_NAME: &str = "quay.io";
@@ -108,7 +108,7 @@ pub async fn get_tag_info(image: ImageType) -> Result<TagInfo, String> {
     }
 }
 
-pub async fn is_up_to_date(image: ImageType, manifest_digest: String) -> Result<bool, String> {
+pub async fn is_up_to_date(image: ImageType, manifest_digest: String) -> Result<bool, DockerImageError> {
     let docker = DOCKER_INSTANCE.clone();
     let registry = format!("{}/{}", QUAY_IO_REPO_NAME, TARILABS_REPO_NAME);
     let fully_qualified_image_name = TariWorkspace::fully_qualified_image(image, Some(&registry));
@@ -119,10 +119,7 @@ pub async fn is_up_to_date(image: ImageType, manifest_digest: String) -> Result<
         .collect();
 
     for image_id in image_ids {
-        let local_image = docker
-            .inspect_image(&image_id)
-            .await
-            .map_err(|_err| format!("Image id {} is not found. ", image_id))?;
+        let local_image = docker.inspect_image(&image_id).await?;
         let signagure = match local_image.repo_digests {
             Some(digests) => digests,
             None => return Ok(false),
