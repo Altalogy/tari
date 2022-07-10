@@ -359,8 +359,8 @@ pub async fn open_terminal(app: AppHandle<Wry>, platform: String) -> Result<(), 
             .spawn()
             .unwrap();
     } else if platform == "windows_nt" {
-        Command::new( "start" )
-            .args(["powershell"])
+        Command::new( "powershell" )
+            .args(["-command", "start", "powershell"])
             .spawn()
             .unwrap();
     } else if platform == "linux" {
