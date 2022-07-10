@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useRef, useState, useMemo } from 'react'
 import groupby from 'lodash.groupby'
+import { useTheme } from 'styled-components'
 import { listen } from '@tauri-apps/api/event'
 
 import uPlot from 'uplot'
 import UplotReact from 'uplot-react'
 
+import t from '../../../../locales'
 import colors from '../../../../styles/styles/colors'
 import { selectNetwork } from '../../../../store/baseNode/selectors'
 import { selectAllContainerEventsChannels } from '../../../../store/containers/selectors'
@@ -13,7 +15,13 @@ import { StatsEventPayload } from '../../../../store/containers/types'
 import { useAppSelector } from '../../../../store/hooks'
 import getStatsRepository from '../../../../persistence/statsRepository'
 import { Option } from '../../../../components/Select/types'
+import Text from '../../../../components/Text'
+import IconButton from '../../../../components/IconButton'
 import { Dictionary } from '../../../../types/general'
+import VisibleIcon from '../../../../styles/Icons/Eye'
+import HiddenIcon from '../../../../styles/Icons/EyeSlash'
+
+import { Legend, LegendItem, SeriesColorIndicator } from './styles'
 
 import PerformanceControls, {
   defaultRenderWindow,
@@ -45,13 +53,17 @@ const PerformanceChart = ({
   data,
   getter,
   title,
+  width,
 }: {
   since: Date
   now: Date
   data: MinimalStatsEntry[]
   getter: (se: MinimalStatsEntry) => number | null
   title: string
+  width: number
 }) => {
+  const theme = useTheme()
+
   const [latchedSinceS, setLatchedSinceS] = useState(since.getTime() / 1000)
   const [latchedNowS, setLatchedNowS] = useState(now.getTime() / 1000)
   const [frozen, setFrozen] = useState(false)
@@ -99,28 +111,27 @@ const PerformanceChart = ({
     return seriesData
   }, [xValues, getter])
 
-  const mouseLeave = useCallback(
-    (_e: MouseEvent) => {
-      setFrozen(false)
+  const mouseLeave = useCallback((_e: MouseEvent) => {
+    setFrozen(false)
 
-      return null
-    },
-    [since, now],
-  )
-  const mouseEnter = useCallback(
-    (_e: MouseEvent) => {
-      setFrozen(true)
+    return null
+  }, [])
+  const mouseEnter = useCallback((_e: MouseEvent) => {
+    setFrozen(true)
 
-      return null
-    },
-    [since, now],
-  )
+    return null
+  }, [])
+
+  const [hiddenSeries, setHiddenSeries] = useState<string[]>([])
 
   const options = useMemo(
     () => ({
       title,
-      width: 500,
+      width,
       height: 175,
+      legend: {
+        show: false,
+      },
       cursor: {
         bind: {
           mouseenter: () => mouseEnter,
@@ -136,23 +147,45 @@ const PerformanceChart = ({
       series: [
         {},
         ...Object.keys(chartData).map((key, id) => ({
+          show: !hiddenSeries.includes(key),
           label: key,
           scale: '%',
           stroke: chartColors[id],
         })),
       ],
     }),
-    [title, mouseEnter, mouseLeave, chartData],
+    [title, mouseEnter, mouseLeave, chartData, hiddenSeries, width],
   )
+
+  const toggleSeries = (name: string) => {
+    setHiddenSeries(hidden => {
+      if (hidden.includes(name)) {
+        return hidden.filter(h => h !== name)
+      }
+
+      return [...hidden, name]
+    })
+  }
 
   return (
     <div style={{ color: 'white' }}>
       <UplotReact
         options={options}
         data={[xValues, ...Object.values(chartData)]}
-        onCreate={_chart => null}
-        onDelete={_chart => null}
       />
+      <Legend>
+        {Object.keys(chartData).map((name, seriesId) => (
+          <LegendItem key={name}>
+            <SeriesColorIndicator color={chartColors[seriesId]} />
+            <Text type='smallMedium' color={theme.textSecondary}>
+              {t.common.containers[name]}
+            </Text>
+            <IconButton onClick={() => toggleSeries(name)}>
+              {hiddenSeries.includes(name) ? <VisibleIcon /> : <HiddenIcon />}
+            </IconButton>
+          </LegendItem>
+        ))}
+      </Legend>
     </div>
   )
 }
@@ -257,8 +290,14 @@ const PerformanceContainer = () => {
       unsubscribeFunctions.current.forEach(unsubscribe => unsubscribe())
   }, [allContainerEventsChannels, configuredNetwork])
 
+  const containerRef = useRef<HTMLDivElement | null>(null)
+  const width = useMemo(
+    () => containerRef.current?.getBoundingClientRect().width || 532,
+    [containerRef.current, now],
+  )
+
   return (
-    <>
+    <div ref={containerRef}>
       <PerformanceControls
         refreshRate={refreshRate}
         onRefreshRateChange={option => setRefreshRate(option)}
@@ -272,6 +311,7 @@ const PerformanceContainer = () => {
         data={data}
         title='cpu'
         getter={cpuGetter}
+        width={width}
       />
 
       <PerformanceChart
@@ -280,6 +320,7 @@ const PerformanceContainer = () => {
         data={data}
         title='memory'
         getter={memoryGetter}
+        width={width}
       />
 
       <PerformanceChart
@@ -288,8 +329,9 @@ const PerformanceContainer = () => {
         data={data}
         title='network download'
         getter={networkGetter}
+        width={width}
       />
-    </>
+    </div>
   )
 }
 
