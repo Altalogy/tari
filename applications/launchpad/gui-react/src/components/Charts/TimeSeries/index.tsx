@@ -22,7 +22,7 @@ import {
 // magic value coming from apex charts - rendered chart is this many pixels higher than set chart height
 const APEX_CHART_OFFSET = 15
 
-const graphColors = [
+const chartColors = [
   colors.secondary.infoText,
   colors.secondary.onTextLight,
   colors.secondary.warningDark,
@@ -111,7 +111,7 @@ const TimeSeriesChart = ({
           mouseLeave: () => onUserInteraction({ interacting: false }),
         },
       },
-      colors: graphColors,
+      colors: chartColors,
       dataLabels: {
         enabled: false,
       },
@@ -209,7 +209,7 @@ const TimeSeriesChart = ({
           .filter(s => !s.empty)
           .map(({ name, visible }, seriesId) => (
             <LegendItem key={name}>
-              <SeriesColorIndicator color={graphColors[seriesId]} />
+              <SeriesColorIndicator color={chartColors[seriesId]} />
               <Text type='smallMedium' color={theme.textSecondary}>
                 {t.common.containers[name]}
               </Text>
