@@ -61,10 +61,9 @@ pub async fn list_image(fully_qualified_image_name: String) -> Result<Vec<ImageS
         }))
         .await
         .map_err(|err| {
-                error!("Error searching for{}. Err: {}", fully_qualified_image_name, err);
-                DockerImageError::ImageNotFound(fully_qualified_image_name)
-            }
-        )?;
+            error!("Error searching for{}. Err: {}", fully_qualified_image_name, err);
+            DockerImageError::ImageNotFound(fully_qualified_image_name)
+        })?;
     Ok(result)
 }
 
