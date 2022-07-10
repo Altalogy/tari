@@ -220,6 +220,7 @@ const PerformanceContainer = () => {
     () => new Date(now.getTime() - Number(timeWindow.value)),
     [now],
   )
+
   const intervalRef = useRef<ReturnType<typeof setInterval> | undefined>()
 
   useEffect(() => {
@@ -234,6 +235,13 @@ const PerformanceContainer = () => {
   }, [refreshRate])
 
   const [data, setData] = useState<MinimalStatsEntry[]>([])
+  const counter = useRef(1)
+  useEffect(() => {
+    if (counter.current++ % 5 === 0) {
+      const sinceS = new Date(since).getTime() / 1000
+      setData(oldState => oldState.filter(d => d.timestampS > sinceS))
+    }
+  }, [since])
 
   useEffect(() => {
     // get data for the whole timeWindow whenever it changes
