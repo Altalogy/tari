@@ -1,16 +1,8 @@
-import {
-  Fragment,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  useMemo,
-} from 'react'
+import { useCallback, useEffect, useRef, useState, useMemo } from 'react'
 import groupby from 'lodash.groupby'
 import { useTheme } from 'styled-components'
 import { listen } from '@tauri-apps/api/event'
 
-import uPlot from 'uplot'
 import UplotReact from 'uplot-react'
 
 import t from '../../../../locales'
