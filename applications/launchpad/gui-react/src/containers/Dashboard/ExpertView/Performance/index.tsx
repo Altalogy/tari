@@ -95,11 +95,7 @@ const Tooltip = ({
             .filter(v => Boolean(v.value))
             .map(v => (
               <li key={`${v.service}${v.value}`}>
-                <Text
-                  type='smallMedium'
-                  as='span'
-                  color={theme.inverted.lightTagText}
-                >
+                <Text type='smallMedium' color={theme.inverted.lightTagText}>
                   {t.common.containers[v.service]}{' '}
                   <span style={{ color: theme.inverted.primary }}>
                     {v.value}
@@ -209,6 +205,7 @@ const PerformanceChart = ({
   const setTooltipValues = useCallback((u: any) => {
     const { left, top, idx } = u.cursor
     const x = u.data[0][idx]
+    const chartingAreaRect = u.root.getBoundingClientRect()
     const values: {
       service: string
       value: number | null
@@ -222,7 +219,13 @@ const PerformanceChart = ({
       })
     }
 
-    setTooltipState(st => ({ ...st, left, top, x: new Date(x * 1000), values }))
+    setTooltipState(st => ({
+      ...st,
+      left: left + chartingAreaRect.left,
+      top: top + chartingAreaRect.top,
+      x: new Date(x * 1000),
+      values,
+    }))
   }, [])
 
   const mouseLeave = useCallback((_e: MouseEvent) => {
@@ -354,7 +357,9 @@ const PerformanceChart = ({
 
   return (
     <ChartContainer>
-      <Text type='defaultHeavy'>{title}</Text>
+      <Text type='defaultHeavy'>
+        {title} [{unitToDisplay}]
+      </Text>
       <div style={{ position: 'relative' }}>
         <Tooltip
           display={Boolean(tooltipState?.show)}
@@ -502,7 +507,8 @@ const PerformanceContainer = () => {
       return 532
     }
 
-    return containerRef.current?.getBoundingClientRect().width || 532
+    const rect = containerRef.current?.getBoundingClientRect()
+    return rect?.width || 532
   }, [containerRef.current, now, expertView])
 
   return (

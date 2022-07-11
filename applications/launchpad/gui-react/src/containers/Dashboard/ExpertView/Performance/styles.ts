@@ -16,13 +16,14 @@ export const ChartContainer = styled.div<{ ref?: any }>`
 `
 
 export const TooltipWrapper = styled.div`
-  position: absolute;
+  position: fixed;
   background-color: ${({ theme }) => theme.inverted.background};
   border-radius: ${({ theme }) => theme.borderRadius()};
   padding: ${({ theme }) => theme.spacing()};
   transform: translate(-100%, -50%);
   margin-left: ${({ theme }) => theme.spacing()};
   z-index: 9001;
+  min-width: 150px;
   & ul {
     list-style-type: none;
     margin: 0;
