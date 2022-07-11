@@ -180,11 +180,9 @@ async fn make_transfer() {
         Ok(response) => response,
         Err(e) => {
             println!("{}", e);
-            assert!(false);
             std::process::exit(1);
         },
     };
-    assert!(true);
     println!("{:?}", response);
     println!("TRANSFER is successful: {:?}", response);
 }
