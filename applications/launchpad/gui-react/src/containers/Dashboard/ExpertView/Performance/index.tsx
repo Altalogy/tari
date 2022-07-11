@@ -61,6 +61,7 @@ const PerformanceChart = ({
   getter,
   title,
   width,
+  percentage,
 }: {
   since: Date
   now: Date
@@ -68,6 +69,7 @@ const PerformanceChart = ({
   getter: (se: MinimalStatsEntry) => number | null
   title: string
   width: number
+  percentage?: boolean
 }) => {
   const theme = useTheme()
 
@@ -136,9 +138,6 @@ const PerformanceChart = ({
       title,
       width,
       height: 175,
-      legend: {
-        show: false,
-      },
       cursor: {
         bind: {
           mouseenter: () => mouseEnter,
@@ -148,15 +147,17 @@ const PerformanceChart = ({
       scales: {
         '%': {
           auto: false,
-          range: [0, 100] as [number, number],
+          range: (_u: any, _dataMin: number, _dataMax: number) =>
+            [0, 100] as [number, number],
         },
       },
       series: [
         {},
         ...Object.keys(chartData).map((key, id) => ({
+          auto: false,
           show: !hiddenSeries.includes(key),
-          label: key,
           scale: '%',
+          label: key,
           stroke: chartColors[id],
         })),
       ],
@@ -205,7 +206,7 @@ const PerformanceChart = ({
         },
       ],
     }),
-    [title, mouseEnter, mouseLeave, chartData, hiddenSeries, width],
+    [title, mouseEnter, mouseLeave, chartData, hiddenSeries, width, percentage],
   )
 
   const toggleSeries = (name: string) => {
@@ -378,6 +379,7 @@ const PerformanceContainer = () => {
         title='cpu'
         getter={cpuGetter}
         width={width}
+        percentage
       />
 
       <PerformanceChart
