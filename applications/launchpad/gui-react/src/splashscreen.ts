@@ -2,7 +2,9 @@ let start: number | null = null
 let opacity = 1
 
 const fadeOut = (timestamp: number, splashscreenEl: HTMLElement) => {
-  if (!start) start = timestamp
+  if (!start) {
+    start = timestamp
+  }
   const progress = timestamp - start
   opacity = 1 - progress / 500
   splashscreenEl.style.opacity = opacity.toString()
