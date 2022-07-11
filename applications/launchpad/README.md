@@ -35,7 +35,7 @@ The front-end is a standard ReactJs application wrapped inside a [Tauri](https:/
 You can open a standard browser console in the front-end to debug front-end issues.
 
 
-** Tip: ** If you receive the following error 
+**Tip:** If you receive the following error 
 `Unable to create base node...` there was a problem packaging the assets for the app.
 
 ## Building a production release
@@ -63,7 +63,7 @@ You can edit the log configuration, `dibbler/config/log4rs.yml` to change the lo
 picked up on the fly and take effect within 30s.
 
 ##  Miscellaneous notes
-* 
+
 * The blockchain data is stores in docker volumes, and not on the host machine directly. This is due to crippling performance
 limitations one suffers when mounting host file system from Windows or MacOS into docker containers.
 This isn't a big drawback, since you seldom want or need to access the raw blockchain database files anyway. Are they're
