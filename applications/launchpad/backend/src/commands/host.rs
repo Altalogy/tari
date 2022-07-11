@@ -47,7 +47,7 @@ pub async fn open_terminal(_app: AppHandle<Wry>, platform: String) -> Result<(),
             .spawn()
             .unwrap();
     } else {
-      // Unsupported platform
+        // Unsupported platform
     };
     Ok(())
 }
