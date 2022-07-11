@@ -58,3 +58,10 @@ export const SeriesColorIndicator = styled.div<{ color: string }>`
   border-radius: 2px;
   background-color: ${({ color }) => color};
 `
+
+export const TitleContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  column-gap: ${({ theme }) => theme.spacing(0.5)};
+`

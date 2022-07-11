@@ -5,6 +5,7 @@ import UplotReact from 'uplot-react'
 
 import { chartColors } from '../../../../../styles/styles/colors'
 import IconButton from '../../../../../components/IconButton'
+import Loading from '../../../../../components/Loading'
 import { Dictionary } from '../../../../../types/general'
 import VisibleIcon from '../../../../../styles/Icons/Eye'
 import HiddenIcon from '../../../../../styles/Icons/EyeSlash'
@@ -20,6 +21,7 @@ import {
   Legend,
   LegendItem,
   SeriesColorIndicator,
+  TitleContainer,
 } from './styles'
 
 const PerformanceChart = ({
@@ -32,6 +34,7 @@ const PerformanceChart = ({
   percentage,
   unit,
   onFreeze,
+  loading,
 }: {
   since: Date
   now: Date
@@ -42,6 +45,7 @@ const PerformanceChart = ({
   percentage?: boolean
   unit?: string
   onFreeze: (frozen: boolean) => void
+  loading?: boolean
 }) => {
   const theme = useTheme()
   const unitToDisplay = percentage ? '%' : unit || ''
@@ -275,9 +279,12 @@ const PerformanceChart = ({
 
   return (
     <ChartContainer ref={chartContainerRef}>
-      <Text type='defaultHeavy'>
-        {title} [{unitToDisplay}]
-      </Text>
+      <TitleContainer>
+        <Text type='defaultHeavy'>
+          {title} [{unitToDisplay}]
+        </Text>
+        <Loading loading={loading} size='1em' style={{ marginTop: -2 }} />
+      </TitleContainer>
       <div style={{ position: 'relative' }}>
         <Tooltip
           display={Boolean(tooltipState?.display)}
