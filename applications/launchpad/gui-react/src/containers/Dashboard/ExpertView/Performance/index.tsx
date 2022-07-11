@@ -89,21 +89,31 @@ const Tooltip = ({
         top,
       }}
     >
-      {(values || [])
-        .filter(v => Boolean(v.value))
-        .map(v => (
-          <Fragment key={`${v.service}${v.value}`}>
-            <Text as='span' color={theme.inverted.lightTagText}>
-              {t.common.containers[v.service]}
-            </Text>{' '}
-            <Text as='span'>
-              {v.value}
-              {v.unit}
-            </Text>
-          </Fragment>
-        ))}
+      {Boolean(values) && (
+        <ul>
+          {(values || [])
+            .filter(v => Boolean(v.value))
+            .map(v => (
+              <li key={`${v.service}${v.value}`}>
+                <Text
+                  type='smallMedium'
+                  as='span'
+                  color={theme.inverted.lightTagText}
+                >
+                  {t.common.containers[v.service]}{' '}
+                  <span style={{ color: theme.inverted.primary }}>
+                    {v.value}
+                    {v.unit}
+                  </span>
+                </Text>
+              </li>
+            ))}
+        </ul>
+      )}
       {Boolean(x) && (
-        <Text color={theme.inverted.lightTagText}>{Format.dateTime(x!)}</Text>
+        <Text type='smallMedium' color={theme.inverted.lightTagText}>
+          {Format.dateTime(x!)}
+        </Text>
       )}
     </TooltipWrapper>
   )
@@ -208,7 +218,7 @@ const PerformanceChart = ({
       values.push({
         service: u.series[i].label,
         unit: u.series[i].unit,
-        value: u.data[i][idx].toFixed(2),
+        value: u.data[i][idx]?.toFixed(2),
       })
     }
 
@@ -250,7 +260,10 @@ const PerformanceChart = ({
         '%': {
           auto: false,
           range: (_u: any, _dataMin: number, _dataMax: number) => {
-            return [0, 100] as [number | null, number | null]
+            return [0, Math.max(100, chartData.max)] as [
+              number | null,
+              number | null,
+            ]
           },
         },
         y: {
@@ -302,7 +315,6 @@ const PerformanceChart = ({
         {
           scale: percentage ? '%' : 'y',
           show: true,
-          splits: percentage ? [0, 25, 50, 75, 100] : undefined,
           side: 3,
           values: (
             _uPlot: any,

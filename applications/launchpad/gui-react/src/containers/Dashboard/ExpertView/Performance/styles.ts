@@ -23,6 +23,16 @@ export const TooltipWrapper = styled.div`
   transform: translate(-100%, -50%);
   margin-left: ${({ theme }) => theme.spacing()};
   z-index: 9001;
+  & ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  & li {
+    display: flex;
+    column-gap: ${({ theme }) => theme.spacing(0.25)};
+  }
 `
 
 export const Legend = styled.div`
