@@ -23,7 +23,7 @@ export const TooltipWrapper = styled.div`
   transform: translate(-100%, -50%);
   margin-left: ${({ theme }) => theme.spacing()};
   z-index: 9001;
-  min-width: 150px;
+  min-width: 175px;
   & ul {
     list-style-type: none;
     margin: 0;

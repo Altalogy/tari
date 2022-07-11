@@ -31,6 +31,7 @@ const PerformanceChart = ({
   width,
   percentage,
   unit,
+  onFreeze,
 }: {
   since: Date
   now: Date
@@ -40,6 +41,7 @@ const PerformanceChart = ({
   width: number
   percentage?: boolean
   unit?: string
+  onFreeze: (frozen: boolean) => void
 }) => {
   const theme = useTheme()
   const unitToDisplay = percentage ? '%' : unit || ''
@@ -126,14 +128,28 @@ const PerformanceChart = ({
     }))
   }, [])
 
+  // keeping stable reference to onFreezeCallback to avoid changing
+  // mouseEnter and mouseLeave references
+  // if new references are passed to uPloat - it is rerendered
+  // and cursor disappears
+  const freezeCallback = useRef<((frozen: boolean) => void) | null>(null)
+  useEffect(() => {
+    freezeCallback.current = onFreeze
+  }, [onFreeze])
   const mouseLeave = useCallback((_e: MouseEvent) => {
     setFrozen(false)
+    if (freezeCallback.current) {
+      freezeCallback.current(false)
+    }
     setTooltipState(st => ({ ...st, display: false }))
 
     return null
   }, [])
   const mouseEnter = useCallback((_e: MouseEvent) => {
     setFrozen(true)
+    if (freezeCallback.current) {
+      freezeCallback.current(true)
+    }
     setTooltipState(st => ({ ...st, display: true }))
 
     return null

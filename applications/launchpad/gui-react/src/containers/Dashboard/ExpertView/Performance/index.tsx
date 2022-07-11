@@ -51,6 +51,15 @@ const PerformanceContainer = () => {
     () => new Date(now.getTime() - Number(timeWindow.value)),
     [now],
   )
+  const frozenSince = useRef<Date | null>(null)
+  const onFreeze = (frozen: boolean) => {
+    if (!frozen) {
+      frozenSince.current = null
+      return
+    }
+
+    frozenSince.current = since
+  }
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | undefined>()
 
@@ -69,17 +78,17 @@ const PerformanceContainer = () => {
   const counter = useRef(1)
   useEffect(() => {
     if (counter.current++ % 5 === 0) {
-      const sinceS = new Date(since).getTime() / 1000
-      setData(oldState => oldState.filter(d => d.timestampS > sinceS))
+      const sinceS = since.getTime() / 1000
+      const frozenSinceS =
+        (frozenSince.current && frozenSince.current.getTime() / 1000) || sinceS
+      const removeSince = Math.min(sinceS, frozenSinceS)
+      setData(oldState => oldState.filter(d => d.timestampS > removeSince))
     }
   }, [since])
 
   useEffect(() => {
     const getData = async () => {
-      const data = await statsRepository.getGroupedByContainer(
-        configuredNetwork,
-        since,
-      )
+      const data = await statsRepository.getEntries(configuredNetwork, since)
 
       setData(
         data.map(statsEntry => ({
@@ -156,6 +165,7 @@ const PerformanceContainer = () => {
         getter={CPU_GETTER}
         width={width}
         percentage
+        onFreeze={onFreeze}
       />
 
       <PerformanceChart
@@ -166,6 +176,7 @@ const PerformanceContainer = () => {
         getter={MEMORY_GETTER}
         width={width}
         unit={t.common.units.mib}
+        onFreeze={onFreeze}
       />
 
       <PerformanceChart
@@ -176,6 +187,7 @@ const PerformanceContainer = () => {
         getter={NETWORK_GETTER}
         width={width}
         unit={t.common.units.kbs}
+        onFreeze={onFreeze}
       />
     </div>
   )

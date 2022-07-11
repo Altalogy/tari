@@ -20,7 +20,7 @@ export interface StatsRepository {
     secondTimestamp: string,
     stats: SerializableContainerStats,
   ) => Promise<void>
-  getGroupedByContainer: (network: string, since: Date) => Promise<StatsEntry[]>
+  getEntries: (network: string, since: Date) => Promise<StatsEntry[]>
   removeOld: (age?: number) => Promise<void>
 }
 
@@ -48,22 +48,17 @@ const repositoryFactory: () => StatsRepository = () => {
       )
     },
     removeOld: async (age = 24 * 3600 * 1000) => {
-      console.time('remove old')
       const nowTS = new Date().getTime()
       const whenTS = new Date(nowTS - age)
       await db.execute('DELETE from stats WHERE "timestamp" < $1', [
         whenTS.toISOString(),
       ])
-      console.timeEnd('remove old')
     },
-    getGroupedByContainer: async (network, since) => {
-      console.time('select')
+    getEntries: async (network, since) => {
       const results: Omit<StatsEntry, 'timestampS'>[] = await db.select(
         'SELECT timestamp, service, cpu, memory, upload, download FROM stats WHERE network = $1 AND "timestamp" > $2 ORDER BY "timestamp"',
         [network, since.toISOString()],
       )
-      console.timeEnd('select')
-      console.debug(`selected ${results.length}`)
 
       return results.map(r => ({
         ...r,
