@@ -24,6 +24,9 @@ import {
   TitleContainer,
 } from './styles'
 
+const getTimestampInResolution = (timestampS: number, resolutionS: number) =>
+  Math.floor(timestampS / resolutionS) * resolutionS
+
 const PerformanceChart = ({
   since,
   now,
@@ -35,6 +38,7 @@ const PerformanceChart = ({
   unit,
   onFreeze,
   loading,
+  resolution = 1,
 }: {
   since: Date
   now: Date
@@ -46,6 +50,7 @@ const PerformanceChart = ({
   unit?: string
   onFreeze: (frozen: boolean) => void
   loading?: boolean
+  resolution?: number
 }) => {
   const theme = useTheme()
   const unitToDisplay = percentage ? '%' : unit || ''
@@ -75,8 +80,20 @@ const PerformanceChart = ({
 
   const xValues = useMemo(() => {
     const x = []
-    for (let i = 0; i < latchedNowS - latchedSinceS; ++i) {
-      x.push(latchedSinceS + i)
+    const latchedSinceInResolution = getTimestampInResolution(
+      latchedSinceS,
+      resolution,
+    )
+    const latchedNowInResolution = getTimestampInResolution(
+      latchedNowS,
+      resolution,
+    )
+    for (
+      let i = 0;
+      i < latchedNowInResolution - latchedSinceInResolution;
+      i += resolution
+    ) {
+      x.push(latchedSinceInResolution + i)
     }
 
     return x
@@ -91,14 +108,34 @@ const PerformanceChart = ({
       .sort()
       .forEach(key => {
         const yValues = new Array(xValues.length).fill(null)
-        grouped[key].forEach(v => {
-          const idx = v.timestampS - sinceS
-          if (idx < yValues.length) {
-            yValues[idx] = getter(v)
-            min = Math.min(min, yValues[idx])
-            max = Math.max(max, yValues[idx])
-          }
-        })
+        if (resolution === 1) {
+          grouped[key].forEach(v => {
+            const idx = v.timestampS - sinceS
+            if (idx < yValues.length) {
+              yValues[idx] = getter(v)
+              min = Math.min(min, yValues[idx])
+              max = Math.max(max, yValues[idx])
+            }
+          })
+        } else {
+          const groupedForResolution = groupby(grouped[key], v =>
+            getTimestampInResolution(v.timestampS, resolution),
+          )
+
+          Object.entries(groupedForResolution).forEach(
+            ([resolutionTimestamp, current]) => {
+              const sum = current.reduce((a, c) => a + (getter(c) || 0), 0)
+              const idx = (Number(resolutionTimestamp) - sinceS) / resolution
+
+              if (idx < yValues.length) {
+                yValues[idx] = sum / current.length
+                min = Math.min(min, yValues[idx])
+                max = Math.max(max, yValues[idx])
+              }
+            },
+          )
+        }
+
         seriesData[key] = yValues
       })
     return {
@@ -106,7 +143,7 @@ const PerformanceChart = ({
       min,
       max,
     }
-  }, [xValues, getter])
+  }, [xValues, getter, resolution])
   const [tooltipState, setTooltipState] = useState<TooltipProps | null>(null)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const setTooltipValues = useCallback((u: any) => {

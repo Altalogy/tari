@@ -14,6 +14,7 @@ import { Option } from '../../../../components/Select/types'
 import PerformanceControls, {
   defaultRenderWindow,
   defaultRefreshRate,
+  TimeWindowOption,
 } from './PerformanceControls'
 import PerformanceChart from './PerformanceChart'
 import { MinimalStatsEntry } from './types'
@@ -40,7 +41,8 @@ const PerformanceContainer = () => {
   const unsubscribeFunctions = useRef<(() => void)[]>()
 
   const [loadingData, setLoadingData] = useState(false)
-  const [timeWindow, setTimeWindow] = useState<Option>(defaultRenderWindow)
+  const [timeWindow, setTimeWindow] =
+    useState<TimeWindowOption>(defaultRenderWindow)
   const [refreshRate, setRefreshRate] = useState<Option>(defaultRefreshRate)
   const [now, setNow] = useState(() => {
     const n = new Date()
@@ -114,7 +116,7 @@ const PerformanceContainer = () => {
     getData(Number(timeWindow.value))
   }, [])
 
-  const onTimeWindowChange = (option: Option) => {
+  const onTimeWindowChange = (option: TimeWindowOption) => {
     setTimeWindow(option)
 
     getData(Number(option.value))
@@ -183,6 +185,7 @@ const PerformanceContainer = () => {
         percentage
         onFreeze={onFreeze}
         loading={loadingData}
+        resolution={timeWindow.resolution}
       />
 
       <PerformanceChart
@@ -195,6 +198,7 @@ const PerformanceContainer = () => {
         unit={t.common.units.mib}
         onFreeze={onFreeze}
         loading={loadingData}
+        resolution={timeWindow.resolution}
       />
 
       <PerformanceChart
@@ -207,6 +211,7 @@ const PerformanceContainer = () => {
         unit={t.common.units.kbs}
         onFreeze={onFreeze}
         loading={loadingData}
+        resolution={timeWindow.resolution}
       />
     </div>
   )

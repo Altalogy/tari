@@ -55,13 +55,10 @@ const repositoryFactory: () => StatsRepository = () => {
       ])
     },
     getEntries: async (network, since) => {
-      console.debug('getting endtires')
-      console.time('select')
       const results: Omit<StatsEntry, 'timestampS'>[] = await db.select(
         'SELECT timestamp, service, cpu, memory, upload, download FROM stats WHERE network = $1 AND "timestamp" > $2 ORDER BY "timestamp"',
         [network, since.toISOString()],
       )
-      console.timeEnd('select')
 
       return results.map(r => ({
         ...r,
