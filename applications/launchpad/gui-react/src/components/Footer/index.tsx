@@ -8,21 +8,19 @@ import Text from '../Text'
 import t from '../../locales'
 
 import { FooterTextWrapper, StyledFooter } from './styles'
-import Button from '../Button'
-import { openTerminalCmd } from '../../commands'
 
 const TerminalInstructions = {
   linux: {
     text: t.footer.toOpenTerminal,
-    keysImage: <KeyboardKeys keys={['Ctrl', 'Alt', 'T']} />,
+    keysImage: <KeyboardKeys keys={['Ctrl', 'T']} />,
   },
   darwin: {
     text: t.footer.toOpenTerminal,
     keysImage: <KeyboardKeys keys={['cmd', 'T']} />,
   },
   windows_nt: {
-    text: t.footer.toOpenCommandPrompt,
-    keysImage: <KeyboardKeys keys={['win', 'R']} />,
+    text: t.footer.toOpenTerminal,
+    keysImage: <KeyboardKeys keys={['Ctrl', 'T']} />,
   },
 }
 
@@ -83,7 +81,6 @@ const Footer = () => {
           >
             {t.footer.press} {TerminalInstructions[osType]?.keysImage}{' '}
             {TerminalInstructions[osType]?.text}
-            <Button onClick={() => openTerminalCmd()}>Open</Button>
           </Text>
         ) : null}
       </FooterTextWrapper>

@@ -349,24 +349,3 @@ async fn stop_service_impl(state: State<'_, AppState>, service_name: String) -> 
     workspace.stop_container(service_name.as_str(), true, &docker).await;
     Ok(())
 }
-
-// @TODO - move this to another file?
-#[tauri::command]
-pub async fn open_terminal(app: AppHandle<Wry>, platform: String) -> Result<(), ()> {
-    if platform == "darwin" {
-        Command::new( "open" )
-            .args(["-a", "Terminal", "/"])
-            .spawn()
-            .unwrap();
-    } else if platform == "windows_nt" {
-        Command::new( "powershell" )
-            .args(["-command", "start", "powershell"])
-            .spawn()
-            .unwrap();
-    } else if platform == "linux" {
-        Command::new( "gnome-terminal" )
-            .spawn()
-            .unwrap();
-    };
-    Ok(())
-}

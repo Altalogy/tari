@@ -19,10 +19,12 @@ export const isDockerInstalled = async (): Promise<boolean> => {
   return Boolean(dockerVerCmd.stdout.match(/docker version/i))
 }
 
+/**
+ * Open the Terminal
+ */
 export const openTerminalCmd = async () => {
   try {
     const detectedPlatform = await os.type()
-    console.log('detected platform', detectedPlatform)
 
     if (
       !['linux', 'windows_nt', 'darwin'].includes(
@@ -36,23 +38,6 @@ export const openTerminalCmd = async () => {
       | 'linux'
       | 'windows_nt'
       | 'darwin'
-
-    let command
-    switch (platform) {
-      case 'linux':
-        command = new Command('gnome-terminal', [])
-        break
-      case 'windows_nt':
-        command = new Command('start', ['powershell'])
-        break
-      case 'darwin':
-        command = new Command('open', ['-a', 'Terminal', '/'])
-        break
-      default:
-        return
-    }
-
-    console.log('command', command)
 
     invoke('open_terminal', {
       platform: platform,

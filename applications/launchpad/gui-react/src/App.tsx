@@ -39,7 +39,6 @@ const OnboardedAppContainer = ({
   const transactionsRepository = useTransactionsRepository()
   const dispatch = useAppDispatch()
 
-  useSystemEvents({ dispatch })
   useWalletEvents({ dispatch, transactionsRepository })
   useMiningScheduling()
 
@@ -51,12 +50,11 @@ const App = () => {
   const themeConfig = useAppSelector(selectThemeConfig)
   const onboardingComplete = useAppSelector(selectOnboardingComplete)
 
+  const [initialized, setInitialized] = useState(false)
+
   useHotkeys('ctrl+t,cmd+t', () => {
-    console.log('shortcut triggered')
     openTerminalCmd()
   })
-
-  const [initialized, setInitialized] = useState(false)
 
   useEffect(() => {
     const callInitActionInStore = async () => {

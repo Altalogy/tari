@@ -21,28 +21,38 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-/// ! This module defines all the Tauri commands we expose to the front-end.
-/// ! These are generally constructed as wrappers around the lower-level methods in the `docker` module.
-/// ! All the commands follow roughly the same pattern:
-/// ! - handle input parameters
-/// ! - call the the underlying function
-/// ! - Map results to JSON and errors to String.
-mod create_workspace;
-mod events;
-mod health_check;
-mod host;
-mod launch_docker;
-mod pull_images;
-mod service;
-mod shutdown;
-mod state;
+use std::{convert::TryFrom, path::PathBuf, time::Duration};
 
-pub use create_workspace::create_new_workspace;
-pub use events::events;
-pub use health_check::status;
-pub use host::open_terminal;
-pub use launch_docker::launch_docker;
-pub use pull_images::{pull_images, DEFAULT_IMAGES};
-pub use service::{create_default_workspace, start_service, stop_service, ServiceSettings};
-pub use shutdown::shutdown;
-pub use state::AppState;
+use log::*;
+use tauri::{
+  api::path::home_dir,
+  AppHandle,
+  Wry
+};
+use std::process::Command;
+
+use crate::{
+    commands::AppState
+};
+
+#[tauri::command]
+pub async fn open_terminal(_app: AppHandle<Wry>, platform: String) -> Result<(), ()> {
+    let terminal_path = home_dir().unwrap().display().to_string();
+    if platform == "darwin" {
+        Command::new( "open" )
+            .args(["-a", "Terminal", &terminal_path])
+            .spawn()
+            .unwrap();
+    } else if platform == "windows_nt" {
+        Command::new( "powershell" )
+            .args(["-command", "start", "powershell"])
+            .spawn()
+            .unwrap();
+    } else if platform == "linux" {
+        Command::new( "gnome-terminal" )
+            .args([["--working-directory=", &terminal_path].join("")])
+            .spawn()
+            .unwrap();
+    };
+    Ok(())
+}
