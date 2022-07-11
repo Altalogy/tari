@@ -23,31 +23,7 @@ import { TBotMessage, TBotMessageHOCProps } from '../../TBot/TBotPrompt/types'
 import { useTheme } from 'styled-components'
 import { SyncType, useBaseNodeSync } from '../../../useBaseNodeSync'
 import Loading from '../../Loading'
-
-/**
- * Convert from seconds into hours-minutes-seconds
- * @param {number} time - time in seconds
- * @param {string}
- */
-const humanizeTime = (time: number) => {
-  const h = Math.floor(time / 3600)
-  const m = Math.floor((time % 3600) / 60)
-  const s = Math.floor((time % 3600) % 60)
-  let result = ''
-
-  if (h > 0) {
-    result += `${h}h `
-  }
-  if (m > 0) {
-    result += `${m} min `
-  }
-
-  if (m < 3) {
-    result += `${s} s`
-  }
-
-  return result
-}
+import { humanizeEstimatedTime } from '../../../utils/Format'
 
 /**
  * Renders the progress bar and remaining time
@@ -92,7 +68,8 @@ const Progress = ({
             </CalcRemainTimeCont>
           ) : (
             <>
-              {humanizeTime(time)} {t.common.adjectives.remaining.toLowerCase()}
+              {humanizeEstimatedTime(time)}{' '}
+              {t.common.adjectives.remaining.toLowerCase()}
             </>
           )}
         </Text>
