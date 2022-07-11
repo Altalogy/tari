@@ -29,6 +29,7 @@ import { Dictionary } from '../../../../types/general'
 import VisibleIcon from '../../../../styles/Icons/Eye'
 import HiddenIcon from '../../../../styles/Icons/EyeSlash'
 import * as Format from '../../../../utils/Format'
+import useIntersectionObserver from '../../../../utils/useIntersectionObserver'
 
 import {
   ChartContainer,
@@ -136,6 +137,9 @@ const PerformanceChart = ({
 }) => {
   const theme = useTheme()
   const unitToDisplay = percentage ? '%' : unit || ''
+  const chartContainerRef = useRef<HTMLDivElement | undefined>()
+  const observerEntry = useIntersectionObserver(chartContainerRef, {})
+  const inView = Boolean(observerEntry?.isIntersecting)
 
   const [latchedSinceS, setLatchedSinceS] = useState(since.getTime() / 1000)
   const [latchedNowS, setLatchedNowS] = useState(now.getTime() / 1000)
@@ -356,7 +360,7 @@ const PerformanceChart = ({
   }
 
   return (
-    <ChartContainer>
+    <ChartContainer ref={chartContainerRef}>
       <Text type='defaultHeavy'>
         {title} [{unitToDisplay}]
       </Text>
@@ -368,10 +372,12 @@ const PerformanceChart = ({
           values={tooltipState?.values}
           x={tooltipState?.x}
         />
-        <UplotReact
-          options={options}
-          data={[xValues, ...Object.values(chartData.seriesData)]}
-        />
+        {inView && (
+          <UplotReact
+            options={options}
+            data={[xValues, ...Object.values(chartData.seriesData)]}
+          />
+        )}
         <Legend>
           {Object.keys(chartData.seriesData).map((name, seriesId) => (
             <LegendItem key={name}>
