@@ -1,12 +1,7 @@
-import { useCallback, useEffect, useRef, useState, useMemo } from 'react'
-import groupby from 'lodash.groupby'
-import { useTheme } from 'styled-components'
+import { useEffect, useRef, useState, useMemo } from 'react'
 import { listen } from '@tauri-apps/api/event'
 
-import UplotReact from 'uplot-react'
-
 import t from '../../../../locales'
-import colors from '../../../../styles/styles/colors'
 import { selectNetwork } from '../../../../store/baseNode/selectors'
 import { selectExpertView } from '../../../../store/app/selectors'
 import { selectAllContainerEventsChannels } from '../../../../store/containers/selectors'
@@ -15,378 +10,18 @@ import { StatsEventPayload } from '../../../../store/containers/types'
 import { useAppSelector } from '../../../../store/hooks'
 import getStatsRepository from '../../../../persistence/statsRepository'
 import { Option } from '../../../../components/Select/types'
-import Text from '../../../../components/Text'
-import IconButton from '../../../../components/IconButton'
-import { Dictionary } from '../../../../types/general'
-import VisibleIcon from '../../../../styles/Icons/Eye'
-import HiddenIcon from '../../../../styles/Icons/EyeSlash'
-import * as Format from '../../../../utils/Format'
-import useIntersectionObserver from '../../../../utils/useIntersectionObserver'
-
-import {
-  ChartContainer,
-  Legend,
-  LegendItem,
-  SeriesColorIndicator,
-  TooltipWrapper,
-} from './styles'
 
 import PerformanceControls, {
   defaultRenderWindow,
   defaultRefreshRate,
 } from './PerformanceControls'
+import PerformanceChart from './PerformanceChart'
+import { MinimalStatsEntry } from './types'
 
-type MinimalStatsEntry = {
-  cpu: number | null
-  memory: number | null
-  download: number | null
-  service: string
-  timestampS: number
-}
-
-const chartColors = [
-  colors.secondary.infoText,
-  colors.secondary.onTextLight,
-  colors.secondary.warningDark,
-  colors.graph.fuchsia,
-  colors.secondary.warning,
-  colors.tari.purple,
-  colors.graph.yellow,
-  colors.graph.lightGreen,
-]
-
-const Tooltip = ({
-  display,
-  left,
-  top,
-  values,
-  x,
-}: {
-  display?: boolean
-  left?: number
-  top?: number
-  values?: {
-    service: string
-    value: number | null
-    unit: string
-  }[]
-  x?: Date
-}) => {
-  const theme = useTheme()
-
-  return (
-    <TooltipWrapper
-      style={{
-        display: display ? 'block' : 'none',
-        left,
-        top,
-      }}
-    >
-      {Boolean(values) && (
-        <ul>
-          {(values || [])
-            .filter(v => Boolean(v.value))
-            .map(v => (
-              <li key={`${v.service}${v.value}`}>
-                <Text type='smallMedium' color={theme.inverted.lightTagText}>
-                  {t.common.containers[v.service]}{' '}
-                  <span style={{ color: theme.inverted.primary }}>
-                    {v.value}
-                    {v.unit}
-                  </span>
-                </Text>
-              </li>
-            ))}
-        </ul>
-      )}
-      {Boolean(x) && (
-        <Text type='smallMedium' color={theme.inverted.lightTagText}>
-          {Format.dateTime(x!)}
-        </Text>
-      )}
-    </TooltipWrapper>
-  )
-}
-
-const PerformanceChart = ({
-  since,
-  now,
-  data,
-  getter,
-  title,
-  width,
-  percentage,
-  unit,
-}: {
-  since: Date
-  now: Date
-  data: MinimalStatsEntry[]
-  getter: (se: MinimalStatsEntry) => number | null
-  title: string
-  width: number
-  percentage?: boolean
-  unit?: string
-}) => {
-  const theme = useTheme()
-  const unitToDisplay = percentage ? '%' : unit || ''
-  const chartContainerRef = useRef<HTMLDivElement | undefined>()
-  const observerEntry = useIntersectionObserver(chartContainerRef, {})
-  const inView = Boolean(observerEntry?.isIntersecting)
-
-  const [latchedSinceS, setLatchedSinceS] = useState(since.getTime() / 1000)
-  const [latchedNowS, setLatchedNowS] = useState(now.getTime() / 1000)
-  const [frozen, setFrozen] = useState(false)
-
-  useEffect(() => {
-    if (frozen) {
-      return
-    }
-
-    setLatchedSinceS(since.getTime() / 1000)
-  }, [frozen, since])
-
-  useEffect(() => {
-    if (frozen) {
-      return
-    }
-
-    setLatchedNowS(now.getTime() / 1000)
-  }, [frozen, now])
-
-  const xValues = useMemo(() => {
-    const x = []
-    for (let i = 0; i < latchedNowS - latchedSinceS; ++i) {
-      x.push(latchedSinceS + i)
-    }
-
-    return x
-  }, [latchedNowS, latchedSinceS])
-  const chartData = useMemo(() => {
-    const grouped = groupby(data, 'service')
-    const seriesData: Dictionary<number[]> = {}
-    const sinceS = xValues[0]
-    let min = 0
-    let max = 0
-    Object.keys(grouped)
-      .sort()
-      .forEach(key => {
-        const yValues = new Array(xValues.length).fill(null)
-        grouped[key].forEach(v => {
-          const idx = v.timestampS - sinceS
-          if (idx < yValues.length) {
-            yValues[idx] = getter(v)
-            min = Math.min(min, yValues[idx])
-            max = Math.max(max, yValues[idx])
-          }
-        })
-        seriesData[key] = yValues
-      })
-    return {
-      seriesData,
-      min,
-      max,
-    }
-  }, [xValues, getter])
-  const [tooltipState, setTooltipState] = useState<{
-    show?: boolean
-    left?: number
-    top?: number
-    x?: Date
-    values?: {
-      service: string
-      unit: string
-      value: number | null
-    }[]
-  } | null>(null)
-  const setTooltipValues = useCallback((u: any) => {
-    const { left, top, idx } = u.cursor
-    const x = u.data[0][idx]
-    const chartingAreaRect = u.root.getBoundingClientRect()
-    const values: {
-      service: string
-      value: number | null
-      unit: string
-    }[] = []
-    for (let i = 1; i < u.data.length; i++) {
-      values.push({
-        service: u.series[i].label,
-        unit: u.series[i].unit,
-        value: u.data[i][idx]?.toFixed(2),
-      })
-    }
-
-    setTooltipState(st => ({
-      ...st,
-      left: left + chartingAreaRect.left,
-      top: top + chartingAreaRect.top,
-      x: new Date(x * 1000),
-      values,
-    }))
-  }, [])
-
-  const mouseLeave = useCallback((_e: MouseEvent) => {
-    setFrozen(false)
-    setTooltipState(st => ({ ...st, show: false }))
-
-    return null
-  }, [])
-  const mouseEnter = useCallback((_e: MouseEvent) => {
-    setFrozen(true)
-    setTooltipState(st => ({ ...st, show: true }))
-
-    return null
-  }, [])
-
-  const [hiddenSeries, setHiddenSeries] = useState<string[]>([])
-
-  const options = useMemo(
-    () => ({
-      width,
-      height: 175,
-      legend: {
-        show: false,
-      },
-      hooks: {
-        setCursor: [setTooltipValues],
-      },
-      cursor: {
-        bind: {
-          mouseenter: () => mouseEnter,
-          mouseleave: () => mouseLeave,
-        },
-      },
-      scales: {
-        '%': {
-          auto: false,
-          range: (_u: any, _dataMin: number, _dataMax: number) => {
-            return [0, Math.max(100, chartData.max)] as [
-              number | null,
-              number | null,
-            ]
-          },
-        },
-        y: {
-          auto: false,
-          min: chartData.min,
-          max: chartData.max,
-          range: (_u: any, dataMin: number, dataMax: number) =>
-            [dataMin, dataMax] as [number | null, number | null],
-        },
-      },
-      series: [
-        {},
-        ...Object.keys(chartData.seriesData).map((key, id) => ({
-          unit: unitToDisplay,
-          auto: false,
-          show: !hiddenSeries.includes(key),
-          scale: percentage ? '%' : 'y',
-          label: key,
-          stroke: chartColors[id],
-          fill: `${chartColors[id]}33`,
-        })),
-      ],
-      axes: [
-        {
-          grid: {
-            show: true,
-            stroke: theme.inverted.resetBackground,
-            width: 0.5,
-          },
-          ticks: {
-            show: true,
-            stroke: theme.inverted.resetBackground,
-            width: 0.5,
-          },
-          show: true,
-          side: 2,
-          labelSize: 8 + 12 + 8,
-          stroke: theme.inverted.secondary,
-          values: (
-            _uPlot: any,
-            splits: number[],
-            _axisIdx: number,
-            _foundSpace: number,
-            _foundIncr: number,
-          ) => {
-            return splits.map(split => Format.localHour(new Date(split * 1000)))
-          },
-        },
-        {
-          scale: percentage ? '%' : 'y',
-          show: true,
-          side: 3,
-          values: (
-            _uPlot: any,
-            splits: number[],
-            _axisIdx: number,
-            _foundSpace: number,
-            _foundIncr: number,
-          ) => {
-            return splits
-          },
-          stroke: theme.inverted.secondary,
-          grid: {
-            show: true,
-            stroke: theme.inverted.resetBackground,
-            width: 0.5,
-          },
-          ticks: {
-            show: true,
-            stroke: theme.inverted.resetBackground,
-            width: 0.5,
-          },
-        },
-      ],
-    }),
-    [mouseEnter, mouseLeave, chartData, hiddenSeries, width, percentage],
-  )
-
-  const toggleSeries = (name: string) => {
-    setHiddenSeries(hidden => {
-      if (hidden.includes(name)) {
-        return hidden.filter(h => h !== name)
-      }
-
-      return [...hidden, name]
-    })
-  }
-
-  return (
-    <ChartContainer ref={chartContainerRef}>
-      <Text type='defaultHeavy'>
-        {title} [{unitToDisplay}]
-      </Text>
-      <div style={{ position: 'relative' }}>
-        <Tooltip
-          display={Boolean(tooltipState?.show)}
-          left={tooltipState?.left}
-          top={tooltipState?.top}
-          values={tooltipState?.values}
-          x={tooltipState?.x}
-        />
-        {inView && (
-          <UplotReact
-            options={options}
-            data={[xValues, ...Object.values(chartData.seriesData)]}
-          />
-        )}
-        <Legend>
-          {Object.keys(chartData.seriesData).map((name, seriesId) => (
-            <LegendItem key={name}>
-              <SeriesColorIndicator color={chartColors[seriesId]} />
-              <Text type='smallMedium' color={theme.textSecondary}>
-                {t.common.containers[name]}
-              </Text>
-              <IconButton onClick={() => toggleSeries(name)}>
-                {hiddenSeries.includes(name) ? <VisibleIcon /> : <HiddenIcon />}
-              </IconButton>
-            </LegendItem>
-          ))}
-        </Legend>
-      </div>
-    </ChartContainer>
-  )
-}
+const CPU_GETTER = (se: MinimalStatsEntry) => se.cpu
+const MEMORY_GETTER = (se: MinimalStatsEntry) => se.memory
+const NETWORK_GETTER = (se: MinimalStatsEntry) =>
+  (se.download || 0) / (1024 * 1024)
 
 /**
  * @name PerformanceContainer
@@ -395,10 +30,6 @@ const PerformanceChart = ({
  * delegates chart rendering etc to other components
  *
  */
-const cpuGetter = (se: MinimalStatsEntry) => se.cpu
-const memoryGetter = (se: MinimalStatsEntry) => se.memory
-const networkGetter = (se: MinimalStatsEntry) =>
-  (se.download || 0) / (1024 * 1024)
 const PerformanceContainer = () => {
   const configuredNetwork = useAppSelector(selectNetwork)
   const expertView = useAppSelector(selectExpertView)
@@ -406,7 +37,7 @@ const PerformanceContainer = () => {
   const allContainerEventsChannels = useAppSelector(
     selectAllContainerEventsChannels,
   )
-  const unsubscribeFunctions = useRef<any[]>()
+  const unsubscribeFunctions = useRef<(() => void)[]>()
 
   const [timeWindow, setTimeWindow] = useState<Option>(defaultRenderWindow)
   const [refreshRate, setRefreshRate] = useState<Option>(defaultRefreshRate)
@@ -444,8 +75,6 @@ const PerformanceContainer = () => {
   }, [since])
 
   useEffect(() => {
-    // get data for the whole timeWindow whenever it changes
-    // also set the `last` timestamp that is present in the dataset
     const getData = async () => {
       const data = await statsRepository.getGroupedByContainer(
         configuredNetwork,
@@ -500,7 +129,8 @@ const PerformanceContainer = () => {
 
   const containerRef = useRef<HTMLDivElement | null>(null)
   const width = useMemo(() => {
-    // TODO force small
+    // collapse immediately after expertView value changes to 'open'
+    // this way charts become smaller bfeore animation
     if (expertView === 'open') {
       return 532
     }
@@ -523,7 +153,7 @@ const PerformanceContainer = () => {
         now={now}
         data={data}
         title={t.common.nouns.cpu}
-        getter={cpuGetter}
+        getter={CPU_GETTER}
         width={width}
         percentage
       />
@@ -533,7 +163,7 @@ const PerformanceContainer = () => {
         now={now}
         data={data}
         title={t.expertView.performance.memoryChartTitle}
-        getter={memoryGetter}
+        getter={MEMORY_GETTER}
         width={width}
         unit={t.common.units.mib}
       />
@@ -543,7 +173,7 @@ const PerformanceContainer = () => {
         now={now}
         data={data}
         title={t.expertView.performance.networkChartTitle}
-        getter={networkGetter}
+        getter={NETWORK_GETTER}
         width={width}
         unit={t.common.units.kbs}
       />

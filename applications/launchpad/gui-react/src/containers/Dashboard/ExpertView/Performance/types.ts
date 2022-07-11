@@ -32,3 +32,11 @@ export type PerformanceChartProps = {
   title: string
   unit?: string
 }
+
+export type MinimalStatsEntry = {
+  cpu: number | null
+  memory: number | null
+  download: number | null
+  service: string
+  timestampS: number
+}
