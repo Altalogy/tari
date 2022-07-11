@@ -270,6 +270,7 @@ const PerformanceChart = ({
           scale: percentage ? '%' : 'y',
           label: key,
           stroke: chartColors[id],
+          fill: `${chartColors[id]}33`,
         })),
       ],
       axes: [
@@ -518,6 +519,7 @@ const PerformanceContainer = () => {
         title='memory'
         getter={memoryGetter}
         width={width}
+        unit='kiB'
       />
 
       <PerformanceChart
@@ -527,6 +529,7 @@ const PerformanceContainer = () => {
         title='network download'
         getter={networkGetter}
         width={width}
+        unit='MiB/s'
       />
     </div>
   )
