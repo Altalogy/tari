@@ -21,35 +21,28 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-use std::{convert::TryFrom, path::PathBuf, time::Duration};
+use std::{convert::TryFrom, path::PathBuf, process::Command, time::Duration};
 
 use log::*;
-use tauri::{
-  api::path::home_dir,
-  AppHandle,
-  Wry
-};
-use std::process::Command;
+use tauri::{api::path::home_dir, AppHandle, Wry};
 
-use crate::{
-    commands::AppState
-};
+use crate::commands::AppState;
 
 #[tauri::command]
 pub async fn open_terminal(_app: AppHandle<Wry>, platform: String) -> Result<(), ()> {
     let terminal_path = home_dir().unwrap().display().to_string();
     if platform == "darwin" {
-        Command::new( "open" )
+        Command::new("open")
             .args(["-a", "Terminal", &terminal_path])
             .spawn()
             .unwrap();
     } else if platform == "windows_nt" {
-        Command::new( "powershell" )
+        Command::new("powershell")
             .args(["-command", "start", "powershell"])
             .spawn()
             .unwrap();
     } else if platform == "linux" {
-        Command::new( "gnome-terminal" )
+        Command::new("gnome-terminal")
             .args([["--working-directory=", &terminal_path].join("")])
             .spawn()
             .unwrap();

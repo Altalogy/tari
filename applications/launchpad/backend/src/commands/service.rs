@@ -21,7 +21,7 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-use std::{convert::TryFrom, path::PathBuf, time::Duration};
+use std::{convert::TryFrom, path::PathBuf, process::Command, time::Duration};
 
 use bollard::Docker;
 use derivative::Derivative;
@@ -29,7 +29,6 @@ use futures::StreamExt;
 use log::*;
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Manager, State, Wry};
-use std::process::Command;
 
 use crate::{
     commands::{create_workspace::copy_config_file, AppState},

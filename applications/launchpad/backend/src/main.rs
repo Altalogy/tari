@@ -59,7 +59,6 @@ use crate::{
     grpc::WalletTransaction,
 };
 
-
 fn main() {
     env_logger::init();
     let context = tauri::generate_context!();
