@@ -20,6 +20,7 @@ import IconButton from '../../../../components/IconButton'
 import { Dictionary } from '../../../../types/general'
 import VisibleIcon from '../../../../styles/Icons/Eye'
 import HiddenIcon from '../../../../styles/Icons/EyeSlash'
+import * as Format from '../../../../utils/Format'
 
 import { Legend, LegendItem, SeriesColorIndicator } from './styles'
 
@@ -152,6 +153,50 @@ const PerformanceChart = ({
           scale: '%',
           stroke: chartColors[id],
         })),
+      ],
+      axes: [
+        {
+          grid: {
+            show: true,
+            stroke: theme.inverted.resetBackground,
+            width: 0.5,
+          },
+          ticks: {
+            show: true,
+            stroke: theme.inverted.resetBackground,
+            width: 0.5,
+          },
+          show: true,
+          side: 2,
+          labelSize: 8 + 12 + 8,
+          stroke: theme.inverted.secondary,
+          values: (
+            _uPlot: any,
+            splits: number[],
+            _axisIdx: number,
+            _foundSpace: number,
+            _foundIncr: number,
+          ) => {
+            return splits.map(split => Format.localHour(new Date(split * 1000)))
+          },
+        },
+        {
+          scale: '%',
+          show: true,
+          splits: [0, 25, 50, 75, 100],
+          side: 3,
+          stroke: theme.inverted.secondary,
+          grid: {
+            show: true,
+            stroke: theme.inverted.resetBackground,
+            width: 0.5,
+          },
+          ticks: {
+            show: true,
+            stroke: theme.inverted.resetBackground,
+            width: 0.5,
+          },
+        },
       ],
     }),
     [title, mouseEnter, mouseLeave, chartData, hiddenSeries, width],
