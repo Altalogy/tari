@@ -7067,6 +7067,7 @@ dependencies = [
  "log",
  "rand 0.8.5",
  "regex",
+ "reqwest",
  "serde",
  "serde_json",
  "strum 0.23.0",
