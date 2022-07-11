@@ -46,6 +46,8 @@ pub async fn open_terminal(_app: AppHandle<Wry>, platform: String) -> Result<(),
             .args([["--working-directory=", &terminal_path].join("")])
             .spawn()
             .unwrap();
+    } else {
+      // Unsupported platform
     };
     Ok(())
 }
