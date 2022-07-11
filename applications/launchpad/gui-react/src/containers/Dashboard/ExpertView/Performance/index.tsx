@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useRef, useState, useMemo } from 'react'
+import {
+  Fragment,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useMemo,
+} from 'react'
 import groupby from 'lodash.groupby'
 import { useTheme } from 'styled-components'
 import { listen } from '@tauri-apps/api/event'
@@ -28,6 +35,7 @@ import {
   Legend,
   LegendItem,
   SeriesColorIndicator,
+  TooltipWrapper,
 } from './styles'
 
 import PerformanceControls, {
@@ -54,6 +62,53 @@ const chartColors = [
   colors.graph.lightGreen,
 ]
 
+const Tooltip = ({
+  display,
+  left,
+  top,
+  values,
+  x,
+}: {
+  display?: boolean
+  left?: number
+  top?: number
+  values?: {
+    service: string
+    value: number | null
+    unit: string
+  }[]
+  x?: Date
+}) => {
+  const theme = useTheme()
+
+  return (
+    <TooltipWrapper
+      style={{
+        display: display ? 'block' : 'none',
+        left,
+        top,
+      }}
+    >
+      {(values || [])
+        .filter(v => Boolean(v.value))
+        .map(v => (
+          <Fragment key={`${v.service}${v.value}`}>
+            <Text as='span' color={theme.inverted.lightTagText}>
+              {t.common.containers[v.service]}
+            </Text>{' '}
+            <Text as='span'>
+              {v.value}
+              {v.unit}
+            </Text>
+          </Fragment>
+        ))}
+      {Boolean(x) && (
+        <Text color={theme.inverted.lightTagText}>{Format.dateTime(x!)}</Text>
+      )}
+    </TooltipWrapper>
+  )
+}
+
 const PerformanceChart = ({
   since,
   now,
@@ -62,6 +117,7 @@ const PerformanceChart = ({
   title,
   width,
   percentage,
+  unit,
 }: {
   since: Date
   now: Date
@@ -70,8 +126,10 @@ const PerformanceChart = ({
   title: string
   width: number
   percentage?: boolean
+  unit?: string
 }) => {
   const theme = useTheme()
+  const unitToDisplay = percentage ? '%' : unit || ''
 
   const [latchedSinceS, setLatchedSinceS] = useState(since.getTime() / 1000)
   const [latchedNowS, setLatchedNowS] = useState(now.getTime() / 1000)
@@ -127,14 +185,45 @@ const PerformanceChart = ({
       max,
     }
   }, [xValues, getter])
+  const [tooltipState, setTooltipState] = useState<{
+    show?: boolean
+    left?: number
+    top?: number
+    x?: Date
+    values?: {
+      service: string
+      unit: string
+      value: number | null
+    }[]
+  } | null>(null)
+  const setTooltipValues = useCallback((u: any) => {
+    const { left, top, idx } = u.cursor
+    const x = u.data[0][idx]
+    const values: {
+      service: string
+      value: number | null
+      unit: string
+    }[] = []
+    for (let i = 1; i < u.data.length; i++) {
+      values.push({
+        service: u.series[i].label,
+        unit: u.series[i].unit,
+        value: u.data[i][idx].toFixed(2),
+      })
+    }
+
+    setTooltipState(st => ({ ...st, left, top, x: new Date(x * 1000), values }))
+  }, [])
 
   const mouseLeave = useCallback((_e: MouseEvent) => {
     setFrozen(false)
+    setTooltipState(st => ({ ...st, show: false }))
 
     return null
   }, [])
   const mouseEnter = useCallback((_e: MouseEvent) => {
     setFrozen(true)
+    setTooltipState(st => ({ ...st, show: true }))
 
     return null
   }, [])
@@ -143,11 +232,13 @@ const PerformanceChart = ({
 
   const options = useMemo(
     () => ({
-      title,
       width,
       height: 175,
       legend: {
         show: false,
+      },
+      hooks: {
+        setCursor: [setTooltipValues],
       },
       cursor: {
         bind: {
@@ -173,6 +264,7 @@ const PerformanceChart = ({
       series: [
         {},
         ...Object.keys(chartData.seriesData).map((key, id) => ({
+          unit: unitToDisplay,
           auto: false,
           show: !hiddenSeries.includes(key),
           scale: percentage ? '%' : 'y',
@@ -234,7 +326,7 @@ const PerformanceChart = ({
         },
       ],
     }),
-    [title, mouseEnter, mouseLeave, chartData, hiddenSeries, width, percentage],
+    [mouseEnter, mouseLeave, chartData, hiddenSeries, width, percentage],
   )
 
   const toggleSeries = (name: string) => {
@@ -249,7 +341,15 @@ const PerformanceChart = ({
 
   return (
     <ChartContainer>
-      <div>
+      <Text type='defaultHeavy'>{title}</Text>
+      <div style={{ position: 'relative' }}>
+        <Tooltip
+          display={Boolean(tooltipState?.show)}
+          left={tooltipState?.left}
+          top={tooltipState?.top}
+          values={tooltipState?.values}
+          x={tooltipState?.x}
+        />
         <UplotReact
           options={options}
           data={[xValues, ...Object.values(chartData.seriesData)]}

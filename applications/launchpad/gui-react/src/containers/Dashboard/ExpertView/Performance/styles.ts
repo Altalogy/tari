@@ -2,6 +2,7 @@ import styled from 'styled-components'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const ChartContainer = styled.div<{ ref?: any }>`
+  position: relative;
   color: ${({ theme }) => theme.inverted.primary};
   background-color: ${({ theme }) => theme.inverted.backgroundSecondary};
   padding: ${({ theme }) => theme.spacing()};
@@ -12,6 +13,16 @@ export const ChartContainer = styled.div<{ ref?: any }>`
   display: flex;
   flex-direction: column;
   align-items: center;
+`
+
+export const TooltipWrapper = styled.div`
+  position: absolute;
+  background-color: ${({ theme }) => theme.inverted.background};
+  border-radius: ${({ theme }) => theme.borderRadius()};
+  padding: ${({ theme }) => theme.spacing()};
+  transform: translate(-100%, -50%);
+  margin-left: ${({ theme }) => theme.spacing()};
+  z-index: 9001;
 `
 
 export const Legend = styled.div`
