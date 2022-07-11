@@ -3,7 +3,7 @@ import groupby from 'lodash.groupby'
 import { useTheme } from 'styled-components'
 import UplotReact from 'uplot-react'
 
-import colors from '../../../../../styles/styles/colors'
+import { chartColors } from '../../../../../styles/styles/colors'
 import IconButton from '../../../../../components/IconButton'
 import { Dictionary } from '../../../../../types/general'
 import VisibleIcon from '../../../../../styles/Icons/Eye'
@@ -14,24 +14,13 @@ import Text from '../../../../../components/Text'
 import t from '../../../../../locales'
 import { MinimalStatsEntry } from '../types'
 
-import Tooltip from './Tooltip'
+import Tooltip, { TooltipProps } from './Tooltip'
 import {
   ChartContainer,
   Legend,
   LegendItem,
   SeriesColorIndicator,
 } from './styles'
-
-const chartColors = [
-  colors.secondary.infoText,
-  colors.secondary.onTextLight,
-  colors.secondary.warningDark,
-  colors.graph.fuchsia,
-  colors.secondary.warning,
-  colors.tari.purple,
-  colors.graph.yellow,
-  colors.graph.lightGreen,
-]
 
 const PerformanceChart = ({
   since,
@@ -112,32 +101,19 @@ const PerformanceChart = ({
       max,
     }
   }, [xValues, getter])
-  const [tooltipState, setTooltipState] = useState<{
-    show?: boolean
-    left?: number
-    top?: number
-    x?: Date
-    values?: {
-      service: string
-      unit: string
-      value: number | null
-    }[]
-  } | null>(null)
+  const [tooltipState, setTooltipState] = useState<TooltipProps | null>(null)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const setTooltipValues = useCallback((u: any) => {
     const { left, top, idx } = u.cursor
     const x = u.data[0][idx]
     const chartingAreaRect = u.root.getBoundingClientRect()
-    const values: {
-      service: string
-      value: number | null
-      unit: string
-    }[] = []
+    const values: TooltipProps['values'] = []
     for (let i = 1; i < u.data.length; i++) {
       values.push({
         service: u.series[i].label,
         unit: u.series[i].unit,
         value: u.data[i][idx]?.toFixed(2),
+        color: chartColors[i - 1],
       })
     }
 
@@ -152,13 +128,13 @@ const PerformanceChart = ({
 
   const mouseLeave = useCallback((_e: MouseEvent) => {
     setFrozen(false)
-    setTooltipState(st => ({ ...st, show: false }))
+    setTooltipState(st => ({ ...st, display: false }))
 
     return null
   }, [])
   const mouseEnter = useCallback((_e: MouseEvent) => {
     setFrozen(true)
-    setTooltipState(st => ({ ...st, show: true }))
+    setTooltipState(st => ({ ...st, display: true }))
 
     return null
   }, [])
@@ -288,7 +264,7 @@ const PerformanceChart = ({
       </Text>
       <div style={{ position: 'relative' }}>
         <Tooltip
-          display={Boolean(tooltipState?.show)}
+          display={Boolean(tooltipState?.display)}
           left={tooltipState?.left}
           top={tooltipState?.top}
           values={tooltipState?.values}

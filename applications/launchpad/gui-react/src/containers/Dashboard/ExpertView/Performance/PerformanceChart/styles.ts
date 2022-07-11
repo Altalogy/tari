@@ -32,6 +32,7 @@ export const TooltipWrapper = styled.div`
 
   & li {
     display: flex;
+    align-items: center;
     column-gap: ${({ theme }) => theme.spacing(0.25)};
   }
 `

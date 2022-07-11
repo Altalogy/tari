@@ -4,25 +4,22 @@ import Text from '../../../../../components/Text'
 import * as Format from '../../../../../utils/Format'
 import t from '../../../../../locales'
 
-import { TooltipWrapper } from './styles'
+import { TooltipWrapper, SeriesColorIndicator } from './styles'
 
-const Tooltip = ({
-  display,
-  left,
-  top,
-  values,
-  x,
-}: {
+export type TooltipProps = {
   display?: boolean
   left?: number
   top?: number
+  x?: Date
   values?: {
     service: string
-    value: number | null
     unit: string
+    value: number | null
+    color: string
   }[]
-  x?: Date
-}) => {
+}
+
+const Tooltip = ({ display, left, top, values, x }: TooltipProps) => {
   const theme = useTheme()
 
   return (
@@ -39,6 +36,7 @@ const Tooltip = ({
             .filter(v => Boolean(v.value))
             .map(v => (
               <li key={`${v.service}${v.value}`}>
+                <SeriesColorIndicator color={v.color} />
                 <Text type='smallMedium' color={theme.inverted.lightTagText}>
                   {t.common.containers[v.service]}{' '}
                   <span style={{ color: theme.inverted.primary }}>
