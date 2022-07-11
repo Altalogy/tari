@@ -22,7 +22,12 @@ import VisibleIcon from '../../../../styles/Icons/Eye'
 import HiddenIcon from '../../../../styles/Icons/EyeSlash'
 import * as Format from '../../../../utils/Format'
 
-import { Legend, LegendItem, SeriesColorIndicator } from './styles'
+import {
+  ChartContainer,
+  Legend,
+  LegendItem,
+  SeriesColorIndicator,
+} from './styles'
 
 import PerformanceControls, {
   defaultRenderWindow,
@@ -213,7 +218,7 @@ const PerformanceChart = ({
   }
 
   return (
-    <div style={{ color: 'white' }}>
+    <ChartContainer>
       <UplotReact
         options={options}
         data={[xValues, ...Object.values(chartData)]}
@@ -231,7 +236,7 @@ const PerformanceChart = ({
           </LegendItem>
         ))}
       </Legend>
-    </div>
+    </ChartContainer>
   )
 }
 

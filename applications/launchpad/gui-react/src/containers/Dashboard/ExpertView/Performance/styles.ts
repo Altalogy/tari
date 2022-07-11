@@ -2,11 +2,13 @@ import styled from 'styled-components'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const ChartContainer = styled.div<{ ref?: any }>`
+  color: ${({ theme }) => theme.inverted.primary};
   background-color: ${({ theme }) => theme.inverted.backgroundSecondary};
   padding: ${({ theme }) => theme.spacing()};
   padding-left: ${({ theme }) => theme.spacing(0.5)};
   border-radius: ${({ theme }) => theme.borderRadius()};
   max-width: 100%;
+  margin-top: ${({ theme }) => theme.spacing()};
 `
 
 export const Legend = styled.div`
