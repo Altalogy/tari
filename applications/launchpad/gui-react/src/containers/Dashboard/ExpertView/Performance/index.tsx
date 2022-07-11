@@ -530,7 +530,7 @@ const PerformanceContainer = () => {
         since={since}
         now={now}
         data={data}
-        title='cpu'
+        title={t.common.nouns.cpu}
         getter={cpuGetter}
         width={width}
         percentage
@@ -540,20 +540,20 @@ const PerformanceContainer = () => {
         since={since}
         now={now}
         data={data}
-        title='memory'
+        title={t.expertView.performance.memoryChartTitle}
         getter={memoryGetter}
         width={width}
-        unit='kiB'
+        unit={t.common.units.mib}
       />
 
       <PerformanceChart
         since={since}
         now={now}
         data={data}
-        title='network download'
+        title={t.expertView.performance.networkChartTitle}
         getter={networkGetter}
         width={width}
-        unit='MiB/s'
+        unit={t.common.units.kbs}
       />
     </div>
   )
