@@ -9,6 +9,7 @@ import UplotReact from 'uplot-react'
 import t from '../../../../locales'
 import colors from '../../../../styles/styles/colors'
 import { selectNetwork } from '../../../../store/baseNode/selectors'
+import { selectExpertView } from '../../../../store/app/selectors'
 import { selectAllContainerEventsChannels } from '../../../../store/containers/selectors'
 import { extractStatsFromEvent } from '../../../../store/containers/thunks'
 import { StatsEventPayload } from '../../../../store/containers/types'
@@ -219,23 +220,25 @@ const PerformanceChart = ({
 
   return (
     <ChartContainer>
-      <UplotReact
-        options={options}
-        data={[xValues, ...Object.values(chartData)]}
-      />
-      <Legend>
-        {Object.keys(chartData).map((name, seriesId) => (
-          <LegendItem key={name}>
-            <SeriesColorIndicator color={chartColors[seriesId]} />
-            <Text type='smallMedium' color={theme.textSecondary}>
-              {t.common.containers[name]}
-            </Text>
-            <IconButton onClick={() => toggleSeries(name)}>
-              {hiddenSeries.includes(name) ? <VisibleIcon /> : <HiddenIcon />}
-            </IconButton>
-          </LegendItem>
-        ))}
-      </Legend>
+      <div>
+        <UplotReact
+          options={options}
+          data={[xValues, ...Object.values(chartData)]}
+        />
+        <Legend>
+          {Object.keys(chartData).map((name, seriesId) => (
+            <LegendItem key={name}>
+              <SeriesColorIndicator color={chartColors[seriesId]} />
+              <Text type='smallMedium' color={theme.textSecondary}>
+                {t.common.containers[name]}
+              </Text>
+              <IconButton onClick={() => toggleSeries(name)}>
+                {hiddenSeries.includes(name) ? <VisibleIcon /> : <HiddenIcon />}
+              </IconButton>
+            </LegendItem>
+          ))}
+        </Legend>
+      </div>
     </ChartContainer>
   )
 }
@@ -252,6 +255,7 @@ const memoryGetter = (se: MinimalStatsEntry) => se.memory
 const networkGetter = (se: MinimalStatsEntry) => se.download
 const PerformanceContainer = () => {
   const configuredNetwork = useAppSelector(selectNetwork)
+  const expertView = useAppSelector(selectExpertView)
   const statsRepository = useMemo(getStatsRepository, [])
   const allContainerEventsChannels = useAppSelector(
     selectAllContainerEventsChannels,
@@ -349,10 +353,14 @@ const PerformanceContainer = () => {
   }, [allContainerEventsChannels, configuredNetwork])
 
   const containerRef = useRef<HTMLDivElement | null>(null)
-  const width = useMemo(
-    () => containerRef.current?.getBoundingClientRect().width || 532,
-    [containerRef.current, now],
-  )
+  const width = useMemo(() => {
+    // TODO force small
+    if (expertView === 'open') {
+      return 532
+    }
+
+    return containerRef.current?.getBoundingClientRect().width || 532
+  }, [containerRef.current, now, expertView])
 
   return (
     <div ref={containerRef}>

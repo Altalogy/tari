@@ -9,12 +9,16 @@ export const ChartContainer = styled.div<{ ref?: any }>`
   border-radius: ${({ theme }) => theme.borderRadius()};
   max-width: 100%;
   margin-top: ${({ theme }) => theme.spacing()};
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 `
 
 export const Legend = styled.div`
   display: flex;
   align-items: center;
   flex-wrap: wrap;
+  margin-left: ${({ theme }) => theme.spacing()};
   column-gap: ${({ theme }) => theme.spacing()};
 `
 
