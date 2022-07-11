@@ -105,6 +105,8 @@ const PerformanceChart = ({
     const grouped = groupby(data, 'service')
     const seriesData: Dictionary<number[]> = {}
     const sinceS = xValues[0]
+    let min = 0
+    let max = 0
     Object.keys(grouped)
       .sort()
       .forEach(key => {
@@ -113,11 +115,17 @@ const PerformanceChart = ({
           const idx = v.timestampS - sinceS
           if (idx < yValues.length) {
             yValues[idx] = getter(v)
+            min = Math.min(min, yValues[idx])
+            max = Math.max(max, yValues[idx])
           }
         })
         seriesData[key] = yValues
       })
-    return seriesData
+    return {
+      seriesData,
+      min,
+      max,
+    }
   }, [xValues, getter])
 
   const mouseLeave = useCallback((_e: MouseEvent) => {
@@ -138,6 +146,9 @@ const PerformanceChart = ({
       title,
       width,
       height: 175,
+      legend: {
+        show: false,
+      },
       cursor: {
         bind: {
           mouseenter: () => mouseEnter,
@@ -147,16 +158,24 @@ const PerformanceChart = ({
       scales: {
         '%': {
           auto: false,
-          range: (_u: any, _dataMin: number, _dataMax: number) =>
-            [0, 100] as [number, number],
+          range: (_u: any, _dataMin: number, _dataMax: number) => {
+            return [0, 100] as [number | null, number | null]
+          },
+        },
+        y: {
+          auto: false,
+          min: chartData.min,
+          max: chartData.max,
+          range: (_u: any, dataMin: number, dataMax: number) =>
+            [dataMin, dataMax] as [number | null, number | null],
         },
       },
       series: [
         {},
-        ...Object.keys(chartData).map((key, id) => ({
+        ...Object.keys(chartData.seriesData).map((key, id) => ({
           auto: false,
           show: !hiddenSeries.includes(key),
-          scale: '%',
+          scale: percentage ? '%' : 'y',
           label: key,
           stroke: chartColors[id],
         })),
@@ -188,10 +207,19 @@ const PerformanceChart = ({
           },
         },
         {
-          scale: '%',
+          scale: percentage ? '%' : 'y',
           show: true,
-          splits: [0, 25, 50, 75, 100],
+          splits: percentage ? [0, 25, 50, 75, 100] : undefined,
           side: 3,
+          values: (
+            _uPlot: any,
+            splits: number[],
+            _axisIdx: number,
+            _foundSpace: number,
+            _foundIncr: number,
+          ) => {
+            return splits
+          },
           stroke: theme.inverted.secondary,
           grid: {
             show: true,
@@ -224,10 +252,10 @@ const PerformanceChart = ({
       <div>
         <UplotReact
           options={options}
-          data={[xValues, ...Object.values(chartData)]}
+          data={[xValues, ...Object.values(chartData.seriesData)]}
         />
         <Legend>
-          {Object.keys(chartData).map((name, seriesId) => (
+          {Object.keys(chartData.seriesData).map((name, seriesId) => (
             <LegendItem key={name}>
               <SeriesColorIndicator color={chartColors[seriesId]} />
               <Text type='smallMedium' color={theme.textSecondary}>
@@ -253,7 +281,8 @@ const PerformanceChart = ({
  */
 const cpuGetter = (se: MinimalStatsEntry) => se.cpu
 const memoryGetter = (se: MinimalStatsEntry) => se.memory
-const networkGetter = (se: MinimalStatsEntry) => se.download
+const networkGetter = (se: MinimalStatsEntry) =>
+  (se.download || 0) / (1024 * 1024)
 const PerformanceContainer = () => {
   const configuredNetwork = useAppSelector(selectNetwork)
   const expertView = useAppSelector(selectExpertView)
