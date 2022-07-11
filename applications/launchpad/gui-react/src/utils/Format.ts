@@ -57,6 +57,36 @@ export const humanizeTime = (time: number): string => {
 }
 
 /**
+ * Convert milliseconds to the "estimated time".
+ * It will display only significant time components: hours, minutes, seconds,
+ * depending on the time value.
+ * For instance, it will display seconds if remaining less than 3 minutes.
+ * @param {time} time - the time in milliseconds
+ *
+ * @example
+ * humanizeEstimatedTime(4500)
+ */
+export const humanizeEstimatedTime = (time: number): string => {
+  const h = Math.floor(time / 3600)
+  const m = Math.floor((time % 3600) / 60)
+  const s = Math.floor((time % 3600) % 60)
+  let result = ''
+
+  if (h > 0) {
+    result += `${h}h `
+  }
+  if (m > 0) {
+    result += `${m} min `
+  }
+
+  if (m < 3) {
+    result += `${s} s`
+  }
+
+  return result.trim()
+}
+
+/**
  * Convert Tauri to micro Tauri (uT) value
  * @param {number} amount amount in Tari
  * @returns {number}
@@ -72,4 +102,21 @@ export const toMicroT = (amount: number): number => {
  */
 export const toT = (amount: number): number => {
   return amount / 1000000
+}
+
+/**
+ * Format the coin amount
+ * @param {number} amount
+ * @returns {string}
+ */
+export const formatAmount = (amount: string | number): string => {
+  if (Number(amount) === 0) {
+    return '00,000'
+  } else {
+    try {
+      return Number(amount).toLocaleString([], { maximumFractionDigits: 2 })
+    } catch (err) {
+      return '-'
+    }
+  }
 }

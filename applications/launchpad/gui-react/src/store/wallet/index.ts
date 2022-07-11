@@ -5,12 +5,16 @@ import { unlockWallet, start, stop, updateWalletBalance } from './thunks'
 
 export const initialState: WalletState = {
   unlocked: false,
-  address: '',
+  address: {
+    uri: '',
+    emoji: '',
+  },
   tari: {
     balance: 0,
     available: 0,
     pending: true,
   },
+  lastTxHistoryUpdateAt: undefined,
 }
 
 const walletSlice = createSlice({
@@ -19,6 +23,9 @@ const walletSlice = createSlice({
   reducers: {
     tariBalancePending(state) {
       state.tari.pending = true
+    },
+    newTxInHistory(state) {
+      state.lastTxHistoryUpdateAt = new Date()
     },
   },
   extraReducers: builder => {
@@ -50,6 +57,7 @@ export const actions = {
   start,
   stop,
   updateWalletBalance,
+  newTxInHistory: walletSlice.actions.newTxInHistory,
 }
 
 export default walletSlice.reducer

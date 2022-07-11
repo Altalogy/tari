@@ -20,6 +20,8 @@ const translations: { [key: string]: { [key: string]: string } } = {
     docker: 'Docker',
     expertView: 'Expert view',
     baseNode: 'Base Node',
+    tariWallet: 'Tari Wallet',
+    moneroWallet: 'Monero Wallet',
     mining: 'Mining',
     problem: 'Problem',
     settings: 'Settings',
@@ -31,6 +33,7 @@ const translations: { [key: string]: { [key: string]: string } } = {
     memory: 'Memory',
     error: 'Error',
     today: 'Today',
+    results: 'Results',
   },
   weekdayCapitals: {
     sunday: 'S',
@@ -56,9 +59,12 @@ const translations: { [key: string]: { [key: string]: string } } = {
     copied: 'Copied',
     recommended: 'Recommended',
     remaining: 'Remaining',
+    processing: 'Processing',
+    cancelled: 'Cancelled',
   },
   conjunctions: {
     or: 'or',
+    of: 'of',
   },
   phrases: {
     actionRequired: 'Action required',
@@ -69,6 +75,10 @@ const translations: { [key: string]: { [key: string]: string } } = {
     readyToGo: 'Ready to go',
     readyToSet: 'Ready to set',
     gotIt: 'Got it',
+    pleaseWait: 'Please wait',
+    yourJobIsDoneHere: 'Your job is done here',
+    calculatingTheRemainingTime:
+      'Calculating remaining time (this may take a few minutes)',
   },
   containers: {
     [Container.Tor]: 'Tor',

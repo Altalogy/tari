@@ -7,7 +7,7 @@ export const StyledBox = styled.div`
   color: ${({ theme }) => theme.secondary};
   padding: ${({ theme }) => theme.spacingVertical()}
     ${({ theme }) => theme.spacingHorizontal()};
-  margin: ${({ theme }) => theme.spacingVertical()} 0;
+  margin: ${({ theme }) => theme.spacingVertical(0.6)} 0;
   box-sizing: border-box;
   display: flex;
   justify-content: space-between;
@@ -19,4 +19,13 @@ export const FeedbackContainer = styled.div`
   left: 50%;
   bottom: 120%;
   transform: translateX(-50%);
+`
+
+export const ValueContainer = styled.div`
+  overflow-x: hidden;
+  text-overflow: ellipsis;
+  word-break: keep-all;
+  -webkit-user-select: none;
+  cursor: default;
+  font-family: 'AvenirMedium';
 `

@@ -21,6 +21,7 @@ mod commands;
 mod docker;
 mod error;
 mod grpc;
+mod rest;
 use docker::{shutdown_all_containers, DockerWrapper, ImageType, Workspaces, DOCKER_INSTANCE};
 use tari_app_grpc::tari_rpc::wallet_client;
 use tauri::{
@@ -40,7 +41,7 @@ use tauri::{
 use tauri_plugin_sql::{Migration, MigrationKind, TauriSql};
 
 use crate::{
-    api::{image_info, network_list, wallet_balance, wallet_events, wallet_identity},
+    api::{base_node_sync_progress, image_info, network_list, wallet_balance, wallet_events, wallet_identity},
     commands::{
         create_default_workspace,
         create_new_workspace,
@@ -128,6 +129,18 @@ fn main() {
             sql: include_str!("../migrations/2022-06-21.include-event-in-transaction-id.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 4,
+            description: "update transactions table",
+            sql: include_str!("../migrations/2022-07-06.remove-event-in-transaction-id.sql"),
+            kind: MigrationKind::Up,
+        },
+        Migration {
+            version: 5,
+            description: "change transactions table",
+            sql: include_str!("../migrations/2022-07-08.change-isCoinbase-type-in-transactions.sql"),
+            kind: MigrationKind::Up,
+        },
     ];
 
     tauri::Builder::default()
@@ -147,7 +160,8 @@ fn main() {
             shutdown,
             wallet_events,
             wallet_balance,
-            wallet_identity
+            wallet_identity,
+            base_node_sync_progress
         ])
         .on_window_event(on_event)
         .run(context)

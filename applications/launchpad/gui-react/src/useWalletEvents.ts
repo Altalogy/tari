@@ -5,6 +5,7 @@ import { listen } from '@tauri-apps/api/event'
 import { TransactionsRepository } from './persistence/transactionsRepository'
 import { AppDispatch } from './store'
 import { actions as miningActions } from './store/mining'
+import { actions as walletActions } from './store/wallet'
 import { toT } from './utils/Format'
 
 export enum TransactionEvent {
@@ -15,6 +16,7 @@ export enum TransactionEvent {
   Mined = 'mined',
   Cancelled = 'cancelled',
   NewBlockMined = 'new_block_mined',
+  Unknown = 'unknown',
 }
 
 export enum TransactionDirection {
@@ -60,20 +62,30 @@ export const useWalletEvents = ({
           event: string
           payload: WalletTransactionEvent
         }) => {
-          /**
-           * @TODO add 'if' statement that will filter uninteresting events.
-           * For addMindexTx, we need only 'mined' with 'is_coinbase === true' (?)
-           * (waiting for confirmation)
-           */
-          // if (payload.is_coinbase && status.toLowerCase() === 'mined confirmed') {
-          dispatch(
-            miningActions.addMinedTx({
-              amount: toT(payload.amount),
-              node: 'tari',
-              txId: payload.tx_id,
-            }),
-          )
-          transactionsRepository.add(payload)
+          // Ignore 'empty/improper' events:
+          if (
+            payload.tx_id &&
+            payload.status !== 'not_supported' &&
+            payload.event !== 'unknown'
+          ) {
+            if (payload.is_coinbase && payload.event === 'mined') {
+              dispatch(
+                miningActions.addMinedTx({
+                  amount: toT(payload.amount),
+                  node: 'tari',
+                  txId: payload.tx_id,
+                }),
+              )
+            }
+
+            if (payload.event === 'cancelled') {
+              transactionsRepository.delete
+            } else {
+              transactionsRepository.addOrReplace(payload)
+            }
+
+            dispatch(walletActions.newTxInHistory())
+          }
           // }
         },
       )
