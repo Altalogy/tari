@@ -15,10 +15,6 @@ import {
 import { Option as OptionProp, SelectStylesOverrideProps } from './types'
 
 /**
- * @TODO go back to import SelectProps from './types' - it was switched, because eslint was giving some react/prop-types error
- */
-
-/**
  * @name Select
  *
  * Renders a tari-styled single select

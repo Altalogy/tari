@@ -1,9 +1,9 @@
 import { useAppSelector } from '../../../store/hooks'
 import CenteredLayout from '../../../components/CenteredLayout'
 import {
-  selectWalletAddress,
   selectIsRunning,
   selectWalletEmojiAddress,
+  selectWalletPublicKey,
 } from '../../../store/wallet/selectors'
 import TariWallet from '../TariWallet'
 import WalletBalance from '../WalletBalance'
@@ -13,7 +13,7 @@ import useWalletBalance from './useWalletBalance'
 import RecentTransactions from '../RecentTransactions'
 
 const WalletContent = () => {
-  const walletAddress = useAppSelector(selectWalletAddress)
+  const walletAddress = useAppSelector(selectWalletPublicKey)
   const emojiId = useAppSelector(selectWalletEmojiAddress)
   const running = useAppSelector(selectIsRunning)
   const { balance, available, pending: balancePending } = useWalletBalance()

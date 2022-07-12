@@ -75,10 +75,6 @@ const MiningBoxMerged = () => {
 
   if (mergedSetupRequired) {
     currentStatus = MiningBoxStatus.SetupRequired
-    /**
-     * @TODO - switch between the following when onboarding is added
-     */
-    // boxContent = <SetupMerged mergedSetupRequired={mergedSetupRequired} />
     boxContent = (
       <SetupMergedWithForm
         mergedSetupRequired={mergedSetupRequired}

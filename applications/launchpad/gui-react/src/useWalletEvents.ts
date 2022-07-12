@@ -9,6 +9,7 @@ import { actions as walletActions } from './store/wallet'
 import { toT } from './utils/Format'
 
 export enum TransactionEvent {
+  Initialized = 'initialized', // Used by send modal to tx to db and start tracking
   Received = 'received',
   Sent = 'sent',
   Queued = 'queued',
@@ -86,7 +87,6 @@ export const useWalletEvents = ({
 
             dispatch(walletActions.newTxInHistory())
           }
-          // }
         },
       )
       isAlreadyInvoked = true

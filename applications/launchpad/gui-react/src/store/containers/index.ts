@@ -102,8 +102,6 @@ const containersSlice = createSlice({
     })
     builder.addCase(start.fulfilled, (state, action) => {
       if (!state.containers[action.payload.id]) {
-        // TODO throw an error - we *must* already have some system event for this container, right?
-
         return
       }
 

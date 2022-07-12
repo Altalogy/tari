@@ -145,3 +145,9 @@ pub async fn delete_seed_words() -> Result<(), String> {
         Err("Wallet is not running".to_string())
     }
 }
+
+#[tauri::command]
+pub async fn transaction_fee() -> Result<u32, String> {
+    // @TODO - replace with real transaction fees [microT]
+    Ok(1790)
+}

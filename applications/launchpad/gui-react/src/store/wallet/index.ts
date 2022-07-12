@@ -8,6 +8,7 @@ export const initialState: WalletState = {
   address: {
     uri: '',
     emoji: '',
+    publicKey: '',
   },
   tari: {
     balance: 0,

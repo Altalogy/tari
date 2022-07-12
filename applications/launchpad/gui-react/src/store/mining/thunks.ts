@@ -198,7 +198,7 @@ export const addMinedTx = createAsyncThunk<
   }
 
   /**
-   * @TODO - replace hard-coded currency after the app handles both currencies. (#298)
+   * @TODO - replace hard-coded currency after the app handles both currencies.
    */
   thunkApi.dispatch(
     notifyUserAboutMinedTariBlock({
