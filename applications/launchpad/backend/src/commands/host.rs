@@ -60,7 +60,7 @@ pub async fn open_terminal(_app: AppHandle<Wry>, platform: String) -> Result<(),
             .spawn()
             .map_err(|e| {
                 error!("Failed to start powershell Error: {}", e);
-                format!("Terminal cannot be opened. cmd: -command start powershell")
+                format!("Terminal cannot be opened. cmd: powershell -command start powershell")
             })?;
     } else if platform.to_lowercase().trim() == "linux" {
         Command::new("gnome-terminal")
@@ -69,7 +69,7 @@ pub async fn open_terminal(_app: AppHandle<Wry>, platform: String) -> Result<(),
             .spawn()
             .map_err(|e| {
                 error!("Failed to open terminal with path {}. Error: {}", terminal_path, e);
-                format!("Terminal cannot be opened. cmd: open -a Terminal {}", terminal_path)
+                format!("Terminal cannot be opened. cmd: gnome-terminal --working-directory {}", terminal_path)
             })?;
     } else {
         return Err(format!("Unsupported platform: {}", platform));
