@@ -29,25 +29,51 @@ use tauri::{api::path::home_dir, AppHandle, Wry};
 use crate::commands::AppState;
 
 #[tauri::command]
-pub async fn open_terminal(_app: AppHandle<Wry>, platform: String) -> Result<(), ()> {
-    let terminal_path = home_dir().unwrap().display().to_string();
-    if platform == "darwin" {
-        Command::new("open")
-            .args(["-a", "Terminal", &terminal_path])
-            .spawn()
-            .unwrap();
-    } else if platform == "windows_nt" {
-        Command::new("powershell")
-            .args(["-command", "start", "powershell"])
-            .spawn()
-            .unwrap();
-    } else if platform == "linux" {
-        Command::new("gnome-terminal")
-            .args([["--working-directory=", &terminal_path].join("")])
-            .spawn()
-            .unwrap();
+pub async fn open_terminal(_app: AppHandle<Wry>, platform: String) -> Result<(), String> {
+    let terminal_path = if let Some(home_dir_path) = home_dir() {
+        match home_dir_path.into_os_string().into_string() {
+            Ok(path) => path,
+            Err(_oss_err) => {
+                error!("Failed to convert home directory path to string");
+                return Err("Failed to convert home directory path to string".to_string());
+            },
+        }
     } else {
-        // Unsupported platform
+        return Err("Failed to get home directory".to_string());
     };
+
+    if platform.to_lowercase().trim() == "darwin" {
+        Command::new("open")
+            .arg("-a")
+            .arg("Terminal")
+            .arg(&terminal_path)
+            .spawn()
+            .map_err(|e| {
+                error!("Failed to open terminal with path {}. Error: {}", terminal_path, e);
+                format!("Terminal cannot be opened. cmd: open -a Terminal {}", terminal_path)
+            })?;
+    } else if platform.to_lowercase().trim() == "windows_nt" {
+        Command::new("powershell")
+            .arg("-command")
+            .arg("start")
+            .arg("powershell")
+            .spawn()
+            .map_err(|e| {
+                error!("Failed to start powershell Error: {}", e);
+                format!("Terminal cannot be opened. cmd: -command start powershell")
+            })?;
+    } else if platform.to_lowercase().trim() == "linux" {
+        Command::new("gnome-terminal")
+            .arg("--working-directory")
+            .arg(&terminal_path)
+            .spawn()
+            .map_err(|e| {
+                error!("Failed to open terminal with path {}. Error: {}", terminal_path, e);
+                format!("Terminal cannot be opened. cmd: open -a Terminal {}", terminal_path)
+            })?;
+    } else {
+        return Err(format!("Unsupported platform: {}", platform));
+    };
+
     Ok(())
 }
