@@ -7,9 +7,13 @@ import Modal from '../../components/Modal'
 import Text from '../../components/Text'
 
 import t from '../../locales'
-import { selectNetwork } from '../../store/baseNode/selectors'
-import { useAppSelector } from '../../store/hooks'
-import { selectWalletAddress } from '../../store/wallet/selectors'
+import {
+  selectBaseNodeIdentity,
+  selectNetwork,
+  selectRunning,
+} from '../../store/baseNode/selectors'
+import { useAppDispatch, useAppSelector } from '../../store/hooks'
+import { actions as baseNodeActions } from '../../store/baseNode'
 import {
   ModalContainer,
   Content,
@@ -28,22 +32,27 @@ import { BaseNodeQRModalProps } from './types'
  */
 const BaseNodeQRModal = ({ open, onClose }: BaseNodeQRModalProps) => {
   const theme = useTheme()
-  const address = useAppSelector(selectWalletAddress)
   const network = useAppSelector(selectNetwork)
+  const baseNodeIdentity = useAppSelector(selectBaseNodeIdentity)
+  const isBaseNodeRunning = useAppSelector(selectRunning)
 
-  /**
-   * @TODO Get following publicKey and baseNodeId from backend.
-   */
-  const publicKey = 'TODO_PUBLIC_KEY'
-  const baseNodeId = 'TODO_BASE_NODE_ID'
+  const dispatch = useAppDispatch()
 
   const [qrUrl, setQrUrl] = useState('')
 
   useEffect(() => {
-    setQrUrl(
-      `tari://${network}/base_nodes/add?name=${baseNodeId}&peer=${publicKey}::${address}`,
-    )
-  }, [address, network])
+    if (baseNodeIdentity) {
+      setQrUrl(
+        `tari://${network}/base_nodes/add?name=${baseNodeIdentity.nodeId}&peer=${baseNodeIdentity.publicKey}::${baseNodeIdentity.publicAddress}`,
+      )
+    }
+  }, [baseNodeIdentity, network])
+
+  useEffect(() => {
+    if (isBaseNodeRunning && open) {
+      dispatch(baseNodeActions.getBaseNodeIdentity())
+    }
+  }, [isBaseNodeRunning, open])
 
   return (
     <Modal open={open} onClose={onClose} size='small'>

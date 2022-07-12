@@ -2,7 +2,6 @@ import { useState } from 'react'
 
 import { useAppSelector, useAppDispatch } from '../../store/hooks'
 import {
-  selectState,
   selectPending,
   selectRunning,
   selectNetwork,
