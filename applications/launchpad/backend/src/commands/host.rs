@@ -69,7 +69,10 @@ pub async fn open_terminal(_app: AppHandle<Wry>, platform: String) -> Result<(),
             .spawn()
             .map_err(|e| {
                 error!("Failed to open terminal with path {}. Error: {}", terminal_path, e);
-                format!("Terminal cannot be opened. cmd: gnome-terminal --working-directory {}", terminal_path)
+                format!(
+                    "Terminal cannot be opened. cmd: gnome-terminal --working-directory {}",
+                    terminal_path
+                )
             })?;
     } else {
         return Err(format!("Unsupported platform: {}", platform));
