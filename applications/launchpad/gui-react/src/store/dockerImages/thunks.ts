@@ -33,6 +33,15 @@ export const getDockerImageList = createAsyncThunk<
   }
 })
 
+export const pullImages = createAsyncThunk<void, void, { state: RootState }>(
+  'dockerImages/pullImages',
+  async (_, thunkApi) => {
+    thunkApi.getState().dockerImages.images.map(image => {
+      thunkApi.dispatch(pullImage({ dockerImage: image.containerName }))
+    })
+  },
+)
+
 export const pullImage = createAsyncThunk<
   { dockerImage: string },
   { dockerImage: string },

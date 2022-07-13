@@ -108,7 +108,6 @@ pub fn network_list() -> Vec<String> {
 /// Provide information about docker images and service recipes in Tari "ecosystem"
 #[tauri::command]
 pub async fn image_info(settings: ServiceSettings) -> ImageListDto {
-    error!("Image infooo");
     let registry = settings.docker_registry.as_ref().map(String::as_str);
     let mut images: Vec<ImageInfo> = vec![];
     for image in DEFAULT_IMAGES {

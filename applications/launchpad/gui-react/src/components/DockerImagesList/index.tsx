@@ -167,18 +167,20 @@ const DockerImagesList = ({
                     </TextProgessContainer>
                   )}
                   {dockerImage.progress !== undefined && (
-                    <Text
-                      color={
-                        inverted ? theme.inverted.primary : theme.secondary
-                      }
-                      style={{
-                        fontSize: '9px',
-                        whiteSpace: 'pre-line',
-                        lineHeight: '10px',
-                      }}
-                    >
-                      {dockerImage.progress?.split(']').join(']\n')}
-                    </Text>
+                    <TextProgessContainer>
+                      <Text
+                        color={
+                          inverted ? theme.inverted.primary : theme.secondary
+                        }
+                        style={{
+                          fontSize: '9px',
+                          whiteSpace: 'pre-line',
+                          lineHeight: '10px',
+                        }}
+                      >
+                        {dockerImage.progress?.split(']').join(']\n')}
+                      </Text>
+                    </TextProgessContainer>
                   )}
                 </ProgressContainer>
               </DockerStatusWrapper>

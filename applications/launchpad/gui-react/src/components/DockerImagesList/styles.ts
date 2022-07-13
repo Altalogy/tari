@@ -49,7 +49,6 @@ export const ProgressContainer = styled.div`
 export const TextProgessContainer = styled.span`
   font-size: 12px;
   text-overflow: ellipsis;
-  white-space: nowrap;
   max-width: 100%;
   overflow: hidden;
 `

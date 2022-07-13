@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit'
 
 import { DockerImagesState } from './types'
-import { getDockerImageList, pullImage } from './thunks'
+import { getDockerImageList, pullImage, pullImages } from './thunks'
 
 import t from '../../locales'
 
@@ -108,6 +108,7 @@ export const actions = {
   ...slice.actions,
   getDockerImageList,
   pullImage,
+  pullImages,
 }
 
 const reducer = slice.reducer
