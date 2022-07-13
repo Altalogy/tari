@@ -23,70 +23,186 @@
 use std::{
     cell::RefCell,
     sync::{Arc, Mutex, RwLock},
-    time::{Instant, SystemTime, UNIX_EPOCH},
+    time::{Duration, Instant, SystemTime, UNIX_EPOCH},
 };
 
-use log::debug;
+use log::{debug, warn};
 use serde::Serialize;
-use tokio::time::{sleep, Duration};
+use tari_app_grpc::tari_rpc::{SyncProgressResponse, SyncState};
 
-use super::{SyncProgress, SyncProgressInfo, SyncType, BLOCKS_SYNC_EXPECTED_TIME_SEC};
-use crate::grpc::HEADERS_SYNC_EXPECTED_TIME_SEC;
+use crate::grpc::SyncType;
 
-fn calculate_remaining_time_in_sec(current_progress: f32, elapsed_time_in_sec: f32) -> f32 {
-    elapsed_time_in_sec * (100.0 - current_progress) / current_progress
+pub const BLOCKS_SYNC_EXPECTED_TIME: Duration = Duration::from_secs(4 * 3600);
+pub const HEADERS_SYNC_EXPECTED_TIME: Duration = Duration::from_secs(2 * 3600);
+
+#[derive(Serialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct SyncProgressInfo {
+    pub sync_type: SyncType,
+    pub header_progress: u64,
+    pub block_progress: u64,
+    pub total_blocks: u64,
+    pub estimated_time_sec: u64,
+    pub done: bool,
 }
 
-#[tokio::test]
-async fn progress_info_test() {
-    let local = 250;
-    let tip = 1250;
-    let sleep_sec = 5;
-    let mut progress_info = SyncProgress::new(SyncType::Header, 0, 0);
-    assert!(!progress_info.started);
-    progress_info.start(local, tip);
-    assert!(progress_info.started);
-    let max_time_interval = HEADERS_SYNC_EXPECTED_TIME_SEC / 10;
-    for i in 1..11 {
-        let local_height = local + i * (tip - local) / 10;
-        println!("iteration: {}, blocks: {}", i, local_height);
-        sleep(Duration::from_secs(sleep_sec)).await;
-        progress_info.sync(local_height, tip);
-        let progress = SyncProgressInfo::from(progress_info.clone());
-        println!("Progress: {:?}", progress);
-        assert_eq!(
-            HEADERS_SYNC_EXPECTED_TIME_SEC - i * max_time_interval,
-            progress.max_estimated_time_sec
-        );
-        assert_eq!((10 - i) * sleep_sec, progress.min_estimated_time_sec);
-        assert_eq!(i * sleep_sec, progress.elapsed_time_sec);
-        assert_eq!(local + i * 100, progress.synced_items);
-        let actual_total_items = progress.total_items - progress.starting_items_index;
-        let actual_synced_items = progress.synced_items - progress.starting_items_index;
-        let progress_percentage = actual_synced_items as f32 / actual_total_items as f32;
-        assert_eq!(i as f32 / 10.0, progress_percentage);
+pub struct SyncProgress {
+    sync_type: SyncType,
+    header_sync: ItemCount,
+    blocks_sync: ItemCount,
+}
+
+struct ItemCount {
+    total_items: u64,
+    start_item: u64,
+    current: u64,
+    started: Instant,
+    initial_estimate: Duration,
+    completed: Option<Duration>,
+}
+
+impl ItemCount {
+    pub fn new(start_item: u64, total_items: u64, initial_estimate: Duration) -> Self {
+        Self {
+            total_items,
+            start_item,
+            current: 0,
+            started: Instant::now(),
+            initial_estimate,
+            completed: None,
+        }
+    }
+
+    pub fn update(&mut self, new_current: u64) {
+        self.current = new_current;
+        if self.is_done() && self.completed.is_none() {
+            self.completed = Some(self.started.elapsed());
+        }
+    }
+
+    pub fn is_done(&self) -> bool {
+        self.current >= self.total_items
+    }
+
+    pub fn set_done(&mut self) {
+        self.update(self.total_items);
+    }
+
+    pub fn estimate_remaining_time(&self) -> Duration {
+        if self.is_done() {
+            return Duration::from_secs(0);
+        }
+        let frac_complete = self.progress();
+        // Use the first 1% to calibrate
+        if frac_complete < 0.01 {
+            self.initial_estimate
+        } else {
+            let elapsed = self.started.elapsed();
+            Duration::from_secs_f64(elapsed.as_secs_f64() / frac_complete)
+        }
+    }
+
+    pub fn progress(&self) -> f64 {
+        let total_items_to_sync = self.total_items.saturating_sub(self.start_item).max(1);
+        self.current.saturating_sub(self.start_item) as f64 / total_items_to_sync as f64
+    }
+
+    pub fn total_sync_time(&self) -> Option<Duration> {
+        self.completed
     }
 }
 
-#[tokio::test]
-async fn tip_height_is_changed_test() {
-    let mut header_progress = SyncProgress::new(SyncType::Header, 0, 0);
-    assert!(!header_progress.started);
-    header_progress.start(250, 1250);
-    assert!(header_progress.started);
-    sleep(Duration::from_secs(5)).await;
-    header_progress.sync(750, 1250);
-    let progress = SyncProgressInfo::from(header_progress.clone());
-    assert_eq!(5, progress.min_estimated_time_sec);
-    assert_eq!(HEADERS_SYNC_EXPECTED_TIME_SEC / 2, progress.max_estimated_time_sec);
-    assert_eq!(750, progress.synced_items);
-    assert_eq!(5, progress.elapsed_time_sec);
-    sleep(Duration::from_secs(5)).await;
-    header_progress.sync(1250, 2250);
-    let progress = SyncProgressInfo::from(header_progress.clone());
-    println!("Progress: {:?}", progress);
-    assert_eq!(10, progress.min_estimated_time_sec);
-    assert_eq!(HEADERS_SYNC_EXPECTED_TIME_SEC / 2, progress.max_estimated_time_sec);
-    assert_eq!(1250, progress.synced_items);
-    assert_eq!(10, progress.elapsed_time_sec);
+impl SyncProgress {
+    pub fn new(starting_block: u64, total_count: u64) -> Self {
+        Self {
+            sync_type: SyncType::Startup,
+            header_sync: ItemCount::new(starting_block, total_count, HEADERS_SYNC_EXPECTED_TIME),
+            blocks_sync: ItemCount::new(starting_block, total_count, BLOCKS_SYNC_EXPECTED_TIME),
+        }
+    }
+
+    fn reset(item: &mut ItemCount, current: u64, total: u64) {
+        item.start_item = current;
+        item.current = current;
+        item.total_items = total;
+        item.started = Instant::now();
+    }
+
+    pub fn update(&mut self, progress: SyncProgressResponse) {
+        // Update state machine based on local sync type, reported sync type combo
+        match (&self.sync_type, progress.state()) {
+            (SyncType::Startup, SyncState::Header) => {
+                Self::reset(&mut self.header_sync, progress.local_height, progress.tip_height);
+                Self::reset(&mut self.blocks_sync, 0, progress.tip_height);
+                self.sync_type = SyncType::Header;
+            },
+            (SyncType::Startup, SyncState::Block) => {
+                Self::reset(&mut self.blocks_sync, progress.local_height, progress.tip_height);
+                self.header_sync.set_done();
+                self.sync_type = SyncType::Block;
+            },
+            (SyncType::Startup, SyncState::Done) => {
+                self.header_sync.set_done();
+                self.blocks_sync.set_done();
+                self.sync_type = SyncType::Done;
+            },
+            (SyncType::Header, SyncState::Header) => {
+                self.header_sync.update(progress.local_height);
+            },
+            (SyncType::Header, SyncState::Block) => {
+                self.header_sync.set_done();
+                self.sync_type = SyncType::Block;
+                Self::reset(&mut self.blocks_sync, progress.local_height, progress.tip_height);
+                self.blocks_sync.update(progress.local_height)
+            },
+            (SyncType::Block, SyncState::Block) => {
+                self.blocks_sync.update(progress.local_height);
+            },
+            // Oh no, we've gone back to header syncs
+            (SyncType::Block | SyncType::Done, SyncState::Header) => {
+                self.sync_type = SyncType::Header;
+                self.header_sync.total_items = progress.tip_height;
+                self.blocks_sync.total_items = progress.tip_height;
+                self.header_sync.update(progress.local_height);
+                // Leave block sync where it was
+            },
+            // Oh no, we've gone back to block syncs
+            (SyncType::Done, SyncState::Block) => {
+                self.sync_type = SyncType::Block;
+                self.blocks_sync.total_items = progress.tip_height;
+                self.blocks_sync.update(progress.local_height);
+            },
+            (_, SyncState::Done) => {
+                if !self.header_sync.is_done() {
+                    self.header_sync.set_done();
+                }
+                if !self.blocks_sync.is_done() {
+                    self.blocks_sync.set_done();
+                }
+                self.sync_type = SyncType::Done;
+            },
+            _ => {
+                // no-op
+            },
+        }
+    }
+
+    pub fn is_done(&self) -> bool {
+        self.header_sync.is_done() && self.blocks_sync.is_done()
+    }
+
+    pub fn estimated_time_remaining(&self) -> Duration {
+        self.blocks_sync.estimate_remaining_time() + self.header_sync.estimate_remaining_time()
+    }
+
+    pub fn progress_info(&self) -> SyncProgressInfo {
+        SyncProgressInfo {
+            sync_type: self.sync_type.clone(),
+            header_progress: (self.header_sync.progress() * 100.0) as u64,
+            block_progress: (self.blocks_sync.progress() * 100.0) as u64,
+            total_blocks: self.blocks_sync.total_items,
+            estimated_time_sec: self.estimated_time_remaining().as_secs(),
+            done: self.is_done(),
+        }
+    }
 }
