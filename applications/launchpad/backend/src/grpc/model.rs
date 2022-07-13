@@ -38,6 +38,7 @@ pub const BLOCKS_SYNC_EXPECTED_TIME_SEC: u64 = 7200;
 pub const HEADERS_SYNC_EXPECTED_TIME_SEC: u64 = 1800;
 pub const HEADER: i32 = 2;
 pub const BLOCK: i32 = 4;
+pub const DONE: i32 = 5;
 
 pub const STANDARD_MIMBLEWIMBLE: i32 = 0;
 pub const ONE_SIDED: i32 = 1;
@@ -132,6 +133,7 @@ pub struct SyncProgress {
 pub enum SyncType {
     Block,
     Header,
+    Done,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -169,12 +171,11 @@ impl From<SyncProgressResponse> for BlockStateInfo {
         BlockStateInfo {
             tip_height: value.tip_height,
             local_height: value.local_height,
-            sync_type: if value.state == HEADER as i32 {
-                Some(SyncType::Header)
-            } else if value.state == BLOCK as i32 {
-                Some(SyncType::Block)
-            } else {
-                None
+            sync_type: match value.state as i32 {
+                HEADER => Some(SyncType::Header),
+                BLOCK => Some(SyncType::Block),
+                DONE => Some(SyncType::Done),
+                _ => None,
             },
         }
     }
@@ -268,6 +269,7 @@ impl SyncProgress {
         let expected_time_in_sec = match self.sync_type {
             SyncType::Block => BLOCKS_SYNC_EXPECTED_TIME_SEC,
             SyncType::Header => HEADERS_SYNC_EXPECTED_TIME_SEC,
+            SyncType::Done => 0,
         } as f32;
         let elapsed_time_in_sec = self.start_time.elapsed().as_secs_f32();
         let current_progress = self.calculate_progress_rate();

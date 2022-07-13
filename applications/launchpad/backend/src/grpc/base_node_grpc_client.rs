@@ -30,7 +30,7 @@ use futures::{
     StreamExt,
     TryStreamExt,
 };
-use log::{error, info};
+use log::*;
 use tari_app_grpc::tari_rpc::{
     base_node_client::BaseNodeClient,
     wallet_client::WalletClient,
@@ -107,21 +107,16 @@ impl GrpcBaseNodeClient {
                         return;
                     },
                 };
-
-                info!("Response: {:?}", response);
-
-                match response.clone().state() {
-                    tari_app_grpc::tari_rpc::SyncState::Done => {
-                        info!("GONGRATS....Base node is synced.");
-                        return;
-                    },
-                    tari_app_grpc::tari_rpc::SyncState::Header | tari_app_grpc::tari_rpc::SyncState::Block => {
-                        sender.try_send(BlockStateInfo::from(response)).unwrap()
-                    },
-                    sync_state => info!("Syncing is being started. Current state: {:?}", sync_state),
+                let done = matches!(response.state() , tari_app_grpc::tari_rpc::SyncState::Done);
+                debug!("Response: {:?}", response);
+                    sender.try_send(BlockStateInfo::from(response)).unwrap();
+                if done {
+                    info!("Blockchain has synced.");
+                    break;
                 }
                 sleep(Duration::from_secs(10)).await;
             }
+            info!("Closing blockchain sync stream.");
         });
         Ok(receiver)
     }

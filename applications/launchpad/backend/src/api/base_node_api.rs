@@ -60,7 +60,7 @@ pub async fn base_node_sync_progress(app: AppHandle<Wry>) -> Result<(), String> 
                             header_progress.start(message.local_height, message.tip_height);
                         }
                     },
-                    SyncType::Block => {
+                    SyncType::Block | SyncType::Done => {
                         if block_progress.started {
                             let progress = SyncProgressInfo::from(block_progress.clone());
                             if let Err(err) = app_clone.emit_all(ONBOARDING_PROGRESS_DESTINATION, progress) {
@@ -69,7 +69,7 @@ pub async fn base_node_sync_progress(app: AppHandle<Wry>) -> Result<(), String> 
                         } else {
                             block_progress.start(message.local_height, message.tip_height);
                         }
-                    },
+                    }
                 }
             }
         }
