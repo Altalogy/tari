@@ -14,6 +14,7 @@ import { Option } from '../../../../components/Select/types'
 import PerformanceControls, {
   defaultRenderWindow,
   defaultRefreshRate,
+  TimeWindowOption,
 } from './PerformanceControls'
 import PerformanceChart from './PerformanceChart'
 import { MinimalStatsEntry } from './types'
@@ -39,7 +40,9 @@ const PerformanceContainer = () => {
   )
   const unsubscribeFunctions = useRef<(() => void)[]>()
 
-  const [timeWindow, setTimeWindow] = useState<Option>(defaultRenderWindow)
+  const [loadingData, setLoadingData] = useState(false)
+  const [timeWindow, setTimeWindow] =
+    useState<TimeWindowOption>(defaultRenderWindow)
   const [refreshRate, setRefreshRate] = useState<Option>(defaultRefreshRate)
   const [now, setNow] = useState(() => {
     const n = new Date()
@@ -86,9 +89,14 @@ const PerformanceContainer = () => {
     }
   }, [since])
 
-  useEffect(() => {
-    const getData = async () => {
-      const data = await statsRepository.getEntries(configuredNetwork, since)
+  const getData = async (timeWindowMs: number) => {
+    const windowStart = new Date(new Date().getTime() - timeWindowMs)
+    setLoadingData(true)
+    try {
+      const data = await statsRepository.getEntries(
+        configuredNetwork,
+        windowStart,
+      )
 
       setData(
         data.map(statsEntry => ({
@@ -99,10 +107,20 @@ const PerformanceContainer = () => {
           service: statsEntry.service,
         })),
       )
+    } finally {
+      setLoadingData(false)
     }
+  }
 
-    getData()
-  }, [timeWindow])
+  useEffect(() => {
+    getData(Number(timeWindow.value))
+  }, [])
+
+  const onTimeWindowChange = (option: TimeWindowOption) => {
+    setTimeWindow(option)
+
+    getData(Number(option.value))
+  }
 
   useEffect(() => {
     const subscribeToAllChannels = async () => {
@@ -154,7 +172,7 @@ const PerformanceContainer = () => {
         refreshRate={refreshRate}
         onRefreshRateChange={option => setRefreshRate(option)}
         timeWindow={timeWindow}
-        onTimeWindowChange={option => setTimeWindow(option)}
+        onTimeWindowChange={onTimeWindowChange}
       />
 
       <PerformanceChart
@@ -166,6 +184,8 @@ const PerformanceContainer = () => {
         width={width}
         percentage
         onFreeze={onFreeze}
+        loading={loadingData}
+        resolution={timeWindow.resolution}
       />
 
       <PerformanceChart
@@ -177,6 +197,8 @@ const PerformanceContainer = () => {
         width={width}
         unit={t.common.units.mib}
         onFreeze={onFreeze}
+        loading={loadingData}
+        resolution={timeWindow.resolution}
       />
 
       <PerformanceChart
@@ -188,6 +210,8 @@ const PerformanceContainer = () => {
         width={width}
         unit={t.common.units.kbs}
         onFreeze={onFreeze}
+        loading={loadingData}
+        resolution={timeWindow.resolution}
       />
     </div>
   )
