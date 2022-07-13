@@ -91,6 +91,18 @@ declare module 'styled-components' {
     walletCopyBoxBorder: string
     balanceBoxBorder: string
     walletBottomBox: string
+    modalBackdrop: string
+    settingsMenuItem: string
+    settingsMenuItemActive: string
+    settingsCopyBoxBackground: string
+    scrollBarTrack: string
+    scrollBarThumb: string
+    scrollBarHover: string
+    calendarText: string
+    calendarTextSecondary: string
+    calendarNumber: string
+    tbotMessage: string
+    tbotContentBackground: string
 
     inverted: {
       controlBackground: string
@@ -151,6 +163,18 @@ declare module 'styled-components' {
       walletCopyBoxBorder: string
       balanceBoxBorder: string
       walletBottomBox: string
+      modalBackdrop: string
+      settingsMenuItem: string
+      settingsMenuItemActive: string
+      settingsCopyBoxBackground: string
+      scrollBarTrack: string
+      scrollBarThumb: string
+      scrollBarHover: string
+      calendarText: string
+      calendarTextSecondary: string
+      calendarTextSecondary: styles.colors.light.graySecondary
+      tbotMessage: string
+      tbotContentBackground: string
     }
   }
 }

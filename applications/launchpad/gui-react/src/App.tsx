@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import styled, { ThemeProvider } from 'styled-components'
 import { useHotkeys } from 'react-hotkeys-hook'
+import 'uplot/dist/uPlot.min.css'
 
 import { useAppSelector, useAppDispatch } from './store/hooks'
 import useTransactionsRepository from './persistence/transactionsRepository'
+import getStatsRepository from './persistence/statsRepository'
 import { init } from './store/app'
 import {
   selectOnboardingComplete,
@@ -38,9 +40,13 @@ const OnboardedAppContainer = ({
 }) => {
   const transactionsRepository = useTransactionsRepository()
   const dispatch = useAppDispatch()
+  const statsRepository = useMemo(getStatsRepository, [])
 
   useWalletEvents({ dispatch, transactionsRepository })
   useMiningScheduling()
+  useEffect(() => {
+    statsRepository.removeOld()
+  }, [])
 
   return children
 }

@@ -15,6 +15,7 @@ const colors = {
     backgroundImage: '#F6F5F8',
     background: '#FAFAFA',
     gray: '#E5E5E5',
+    graySecondary: '#EEECF1',
   },
   tari: {
     purpleDark: '#662FA1',
@@ -39,6 +40,7 @@ const colors = {
     actionBackground: '#76A59D',
     borderLight: '#DBDBDD',
     greenMedium: '#5F9C91',
+    tbotBubble: 'rgba(32, 5, 61, 0.02)',
   },
   darkMode: {
     modalBackground: '#141414',
@@ -52,6 +54,7 @@ const colors = {
     disabledText: '#47434A',
     baseNodeStart: '#455E5B',
     baseNodeEnd: '#55208E',
+    message: '#262626',
   },
   graph: {
     fuchsia: '#EF5DA8',
@@ -59,5 +62,16 @@ const colors = {
     lightGreen: '#78E590',
   },
 }
+
+export const chartColors = [
+  colors.secondary.infoText,
+  colors.secondary.onTextLight,
+  colors.secondary.warningDark,
+  colors.graph.fuchsia,
+  colors.secondary.warning,
+  colors.tari.purple,
+  colors.graph.yellow,
+  colors.graph.lightGreen,
+]
 
 export default colors
