@@ -103,7 +103,7 @@ pub struct BlockStateInfo {
     pub sync_type: Option<SyncType>,
 }
 
-#[derive(Debug, Clone, Serialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 pub enum SyncType {
     Startup,
     Block,

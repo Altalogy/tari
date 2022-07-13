@@ -152,7 +152,8 @@ impl SyncProgress {
             (SyncType::Header, SyncState::Block) => {
                 self.header_sync.set_done();
                 self.sync_type = SyncType::Block;
-                Self::reset(&mut self.blocks_sync, progress.local_height, progress.tip_height);
+                let last_block = self.blocks_sync.current;
+                Self::reset(&mut self.blocks_sync, last_block, progress.tip_height);
                 self.blocks_sync.update(progress.local_height)
             },
             (SyncType::Block, SyncState::Block) => {
@@ -204,5 +205,146 @@ impl SyncProgress {
             estimated_time_sec: self.estimated_time_remaining().as_secs(),
             done: self.is_done(),
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use std::{ops::Sub, time::Duration};
+
+    use tari_app_grpc::tari_rpc::{SyncProgressResponse, SyncState};
+
+    use crate::grpc::{
+        model::BLOCK,
+        SyncProgress,
+        SyncProgressInfo,
+        SyncType,
+        BLOCKS_SYNC_EXPECTED_TIME,
+        DONE,
+        HEADER,
+        HEADERS_SYNC_EXPECTED_TIME,
+    };
+
+    fn almost_equal(a: Duration, b: Duration) -> bool {
+        let diff = if a > b { a - b } else { b - a };
+        diff.as_millis() < 10
+    }
+
+    fn confirm_progress(
+        progress: SyncProgressInfo,
+        sync_type: SyncType,
+        header_prog: u64,
+        block_prog: u64,
+        total_blocks: u64,
+        time: Option<u64>,
+        done: bool,
+    ) {
+        assert_eq!(progress.sync_type, sync_type);
+        assert_eq!(progress.header_progress, header_prog, "Header progress");
+        assert_eq!(progress.block_progress, block_prog, "Block progress");
+        assert_eq!(progress.total_blocks, total_blocks, "Total blocks");
+        if let Some(t) = time {
+            assert_eq!(progress.estimated_time_sec, t);
+        }
+        assert_eq!(progress.done, done, "Done values don't match");
+    }
+
+    #[test]
+    fn initial_time_estimate() {
+        let progress = SyncProgress::new(0, 50);
+        assert!(matches!(progress.sync_type, SyncType::Startup));
+        assert_eq!(
+            progress.estimated_time_remaining(),
+            BLOCKS_SYNC_EXPECTED_TIME + HEADERS_SYNC_EXPECTED_TIME
+        );
+    }
+
+    #[test]
+    fn instant_header_sync_time_estimate() {
+        let mut progress = SyncProgress::new(0, 50);
+        progress.update(SyncProgressResponse {
+            state: BLOCK,
+            tip_height: 50,
+            local_height: 0,
+        });
+        assert!(matches!(progress.sync_type, SyncType::Block));
+        assert!(almost_equal(
+            progress.estimated_time_remaining(),
+            BLOCKS_SYNC_EXPECTED_TIME
+        ));
+    }
+
+    #[test]
+    fn sync_flow() {
+        let mut progress = SyncProgress::new(0, 50);
+        progress.update(SyncProgressResponse {
+            state: HEADER,
+            tip_height: 20,
+            local_height: 0,
+        });
+
+        progress.update(SyncProgressResponse {
+            state: HEADER,
+            tip_height: 20,
+            local_height: 1,
+        });
+        confirm_progress(progress.progress_info(), SyncType::Header, 5, 0, 20, None, false);
+
+        progress.update(SyncProgressResponse {
+            state: HEADER,
+            tip_height: 20,
+            local_height: 20,
+        });
+        confirm_progress(progress.progress_info(), SyncType::Header, 100, 0, 20, None, false);
+
+        progress.update(SyncProgressResponse {
+            state: BLOCK,
+            tip_height: 20,
+            local_height: 7,
+        });
+        confirm_progress(progress.progress_info(), SyncType::Block, 100, 35, 20, None, false);
+
+        progress.update(SyncProgressResponse {
+            state: BLOCK,
+            tip_height: 20,
+            local_height: 20,
+        });
+        confirm_progress(progress.progress_info(), SyncType::Block, 100, 100, 20, None, true);
+
+        progress.update(SyncProgressResponse {
+            state: DONE,
+            tip_height: 0,
+            local_height: 0,
+        });
+        confirm_progress(progress.progress_info(), SyncType::Done, 100, 100, 20, None, true);
+    }
+
+    #[test]
+    fn restart_sync() {
+        // Scenario: 50 blocks
+        // Sync 30 headers. Then stop the app.
+        // Test that we can start up where we left off
+        let mut progress = SyncProgress::new(30, 50);
+        progress.update(SyncProgressResponse {
+            state: HEADER,
+            tip_height: 50,
+            local_height: 30,
+        });
+        confirm_progress(progress.progress_info(), SyncType::Header, 0, 0, 50, None, false);
+
+        progress.update(SyncProgressResponse {
+            state: HEADER,
+            tip_height: 50,
+            local_height: 40,
+        });
+        confirm_progress(progress.progress_info(), SyncType::Header, 50, 0, 50, None, false);
+
+        // If we have already started syncing blocks by next update, we correctly capture this
+        progress.update(SyncProgressResponse {
+            state: BLOCK,
+            tip_height: 50,
+            local_height: 5,
+        });
+        confirm_progress(progress.progress_info(), SyncType::Block, 100, 10, 50, None, false);
     }
 }
