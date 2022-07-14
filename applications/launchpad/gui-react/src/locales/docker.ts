@@ -15,7 +15,7 @@ export default {
   },
   tBot: {
     newVersionAvailable: {
-      part1: 'There is newer version of wallet image ready to pull.',
+      part1: 'There is a newer version of wallet image ready to pull.',
       part2:
         'Docker images within a running container do not update automatically. Once you have used an image to create a container, it continues running that version, even after new releases come out.',
     },
