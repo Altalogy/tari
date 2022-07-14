@@ -42,6 +42,8 @@ pub const BLOCK: i32 = 4;
 pub const STANDARD_MIMBLEWIMBLE: i32 = 0;
 pub const ONE_SIDED: i32 = 1;
 
+pub const SYNC_DONE_STATUS: &str = "done";
+
 #[derive(Debug, Clone, Serialize)]
 pub struct WalletTransaction {
     pub event: String,
@@ -102,6 +104,7 @@ pub struct BlockStateInfo {
     pub tip_height: u64,
     pub local_height: u64,
     pub sync_type: Option<SyncType>,
+    pub status: Option<String>,
 }
 
 #[derive(Serialize, Clone, Debug)]
@@ -169,6 +172,7 @@ impl From<SyncProgressResponse> for BlockStateInfo {
         BlockStateInfo {
             tip_height: value.tip_height,
             local_height: value.local_height,
+            status: None,
             sync_type: if value.state == HEADER as i32 {
                 Some(SyncType::Header)
             } else if value.state == BLOCK as i32 {
