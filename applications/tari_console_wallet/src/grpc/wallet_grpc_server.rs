@@ -1098,7 +1098,7 @@ impl wallet_server::Wallet for WalletGrpcServer {
 
     async fn seed_words(&self, _: Request<tari_rpc::Empty>) -> Result<Response<SeedWordsResponse>, Status> {
         let cli = Cli::parse();
-        let file_path = cli.seed_words_file_name.clone().unwrap();
+        let file_path = cli.seed_words_file_name.unwrap();
 
         if !file_path.is_file() {
             return Err(Status::not_found("file not found"));
@@ -1125,7 +1125,7 @@ impl wallet_server::Wallet for WalletGrpcServer {
         _: Request<tari_rpc::Empty>,
     ) -> Result<Response<FileDeletedResponse>, Status> {
         let cli = Cli::parse();
-        let file_path = cli.seed_words_file_name.clone().unwrap();
+        let file_path = cli.seed_words_file_name.unwrap();
 
         if !file_path.is_file() {
             return Err(Status::not_found("file not found"));
