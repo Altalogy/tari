@@ -23,11 +23,9 @@ import MoneroURLs from './MoneroURLs'
 import { AddressDescription, NarrowInlineInput } from './styles'
 
 const isAuthenticationApplied = (values: SettingsInputs): boolean => {
-  const { authentication } = values.mining.merged
+  const { useAuth } = values.mining.merged
 
-  return Boolean(
-    authentication && (authentication.username || authentication.password),
-  )
+  return useAuth
 }
 
 const MiningSettings = ({
@@ -143,11 +141,14 @@ const MiningSettings = ({
             <Label $noMargin>{t.mining.settings.moneroAuthApplied}</Label>
           </div>
           <IconButton
-            onClick={() =>
+            onClick={() => {
               setValue('mining.merged.authentication', undefined, {
                 shouldDirty: true,
               })
-            }
+              setValue('mining.merged.useAuth', false, {
+                shouldDirty: true,
+              })
+            }}
             style={{ color: theme.warningDark }}
           >
             <SvgTrash2 width='16' height='16' color={theme.warningDark} />

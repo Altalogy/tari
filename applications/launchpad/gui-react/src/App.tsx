@@ -81,7 +81,6 @@ const App = () => {
   useDockerEvents({ dispatch })
   useDockerImageDownloadListener({ dispatch })
 
-  // TODO could return loader instead of null if not initialized
   return (
     <ThemeProvider theme={themeConfig}>
       <AppContainer>
