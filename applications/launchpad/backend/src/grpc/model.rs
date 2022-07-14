@@ -42,6 +42,8 @@ pub const BLOCK: i32 = 4;
 pub const STANDARD_MIMBLEWIMBLE: i32 = 0;
 pub const ONE_SIDED: i32 = 1;
 
+pub const SYNC_DONE_STATUS: &str = "done";
+
 #[derive(Debug, Clone, Serialize)]
 pub struct WalletTransaction {
     pub event: String,
@@ -102,6 +104,7 @@ pub struct BlockStateInfo {
     pub tip_height: u64,
     pub local_height: u64,
     pub sync_type: Option<SyncType>,
+    pub status: Option<String>,
 }
 
 #[derive(Serialize, Clone, Debug)]
@@ -113,6 +116,7 @@ pub struct SyncProgressInfo {
     pub elapsed_time_sec: u64,
     pub min_estimated_time_sec: u64,
     pub max_estimated_time_sec: u64,
+    pub status: Option<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -169,6 +173,7 @@ impl From<SyncProgressResponse> for BlockStateInfo {
         BlockStateInfo {
             tip_height: value.tip_height,
             local_height: value.local_height,
+            status: None,
             sync_type: if value.state == HEADER as i32 {
                 Some(SyncType::Header)
             } else if value.state == BLOCK as i32 {
@@ -296,6 +301,7 @@ impl SyncProgressInfo {
                 SyncType::Header => HEADERS_SYNC_EXPECTED_TIME_SEC,
                 _ => BLOCKS_SYNC_EXPECTED_TIME_SEC,
             },
+            status: None,
         }
     }
 }
@@ -310,6 +316,7 @@ impl From<SyncProgress> for SyncProgressInfo {
             elapsed_time_sec: source.start_time.elapsed().as_secs(),
             max_estimated_time_sec: source.max_remaining_time,
             min_estimated_time_sec: source.min_remaining_time,
+            status: None,
         }
     }
 }

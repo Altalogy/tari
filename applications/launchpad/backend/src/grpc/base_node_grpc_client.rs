@@ -55,6 +55,7 @@ use super::{error::GrpcError, BlockStateInfo};
 use crate::{
     docker::{DockerWrapperError, LaunchpadConfig, BASE_NODE_GRPC_ADDRESS_URL},
     error::LauncherError,
+    grpc::SYNC_DONE_STATUS,
 };
 
 type Inner = BaseNodeClient<tonic::transport::Channel>;
@@ -112,8 +113,9 @@ impl GrpcBaseNodeClient {
 
                 match response.clone().state() {
                     tari_app_grpc::tari_rpc::SyncState::Done => {
-                        info!("GONGRATS....Base node is synced.");
-                        return;
+                        let mut sync_is_done = BlockStateInfo::from(response);
+                        sync_is_done.status = Option::Some(SYNC_DONE_STATUS.to_string());
+                        sender.try_send(BlockStateInfo::from(sync_is_done)).unwrap()
                     },
                     tari_app_grpc::tari_rpc::SyncState::Header | tari_app_grpc::tari_rpc::SyncState::Block => {
                         sender.try_send(BlockStateInfo::from(response)).unwrap()
