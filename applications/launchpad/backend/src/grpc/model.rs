@@ -116,6 +116,7 @@ pub struct SyncProgressInfo {
     pub elapsed_time_sec: u64,
     pub min_estimated_time_sec: u64,
     pub max_estimated_time_sec: u64,
+    pub status: Option<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -300,6 +301,7 @@ impl SyncProgressInfo {
                 SyncType::Header => HEADERS_SYNC_EXPECTED_TIME_SEC,
                 _ => BLOCKS_SYNC_EXPECTED_TIME_SEC,
             },
+            status: None,
         }
     }
 }
@@ -314,6 +316,7 @@ impl From<SyncProgress> for SyncProgressInfo {
             elapsed_time_sec: source.start_time.elapsed().as_secs(),
             max_estimated_time_sec: source.max_remaining_time,
             min_estimated_time_sec: source.min_remaining_time,
+            status: None,
         }
     }
 }

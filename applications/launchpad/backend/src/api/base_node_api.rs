@@ -30,7 +30,7 @@ use tauri::{AppHandle, Manager, Wry};
 use crate::{
     commands::status,
     docker::ImageType,
-    grpc::{BaseNodeIdentity, GrpcBaseNodeClient, SyncProgress, SyncProgressInfo, SyncType},
+    grpc::{BaseNodeIdentity, GrpcBaseNodeClient, SyncProgress, SyncProgressInfo, SyncType, SYNC_DONE_STATUS},
 };
 
 pub const ONBOARDING_PROGRESS_DESTINATION: &str = "tari://onboarding_progress";
@@ -50,6 +50,16 @@ pub async fn base_node_sync_progress(app: AppHandle<Wry>) -> Result<(), String> 
             if let Some(sync_type) = message.sync_type {
                 match sync_type {
                     SyncType::Header => {
+                        if message.status.is_some() {
+                            header_progress.sync(message.local_height, message.tip_height);
+                            let mut progress = SyncProgressInfo::from(header_progress.clone());
+                            progress.status = Some(SYNC_DONE_STATUS.to_string());
+                            if let Err(err) = app_clone.emit_all(ONBOARDING_PROGRESS_DESTINATION, progress) {
+                                warn!("Could not emit event to front-end, {:?}", err);
+                            }
+                            break;
+                        }
+
                         if header_progress.started {
                             header_progress.sync(message.local_height, message.tip_height);
                             let progress = SyncProgressInfo::from(header_progress.clone());
@@ -61,6 +71,15 @@ pub async fn base_node_sync_progress(app: AppHandle<Wry>) -> Result<(), String> 
                         }
                     },
                     SyncType::Block => {
+                        if message.status.is_some() {
+                            block_progress.sync(message.local_height, message.tip_height);
+                            let mut progress = SyncProgressInfo::from(block_progress.clone());
+                            progress.status = Some(SYNC_DONE_STATUS.to_string());
+                            if let Err(err) = app_clone.emit_all(ONBOARDING_PROGRESS_DESTINATION, progress) {
+                                warn!("Could not emit event to front-end, {:?}", err);
+                            }
+                            break;
+                        }
                         if block_progress.started {
                             let progress = SyncProgressInfo::from(block_progress.clone());
                             if let Err(err) = app_clone.emit_all(ONBOARDING_PROGRESS_DESTINATION, progress) {
