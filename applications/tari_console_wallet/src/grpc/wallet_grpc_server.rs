@@ -1098,16 +1098,19 @@ impl wallet_server::Wallet for WalletGrpcServer {
 
     async fn seed_words(&self, _: Request<tari_rpc::Empty>) -> Result<Response<SeedWordsResponse>, Status> {
         let cli = Cli::parse();
-        let file_name = cli
-            .seed_words_file_name
-            .clone()
-            .unwrap()
-            .into_os_string()
-            .into_string()
-            .unwrap();
-        println!("Seed words file name: {}", file_name);
-        let contents = fs::read_to_string(file_name)?;
-        println!("content: {}", contents);
+        let file_path = cli.seed_words_file_name.clone().unwrap();
+
+        if !file_path.is_file() {
+            return Err(Status::not_found("file not found"));
+        }
+
+        let file_name = file_path.clone().into_os_string().into_string().unwrap();
+
+        if file_name.is_empty() {
+            return Err(Status::not_found("seed_words_file_name is empty"));
+        }
+
+        let contents = fs::read_to_string(file_path)?;
         let words = contents
             .split(" ")
             .collect::<Vec<&str>>()
@@ -1122,14 +1125,18 @@ impl wallet_server::Wallet for WalletGrpcServer {
         _: Request<tari_rpc::Empty>,
     ) -> Result<Response<FileDeletedResponse>, Status> {
         let cli = Cli::parse();
-        let file_name = cli
-            .seed_words_file_name
-            .clone()
-            .unwrap()
-            .into_os_string()
-            .into_string()
-            .unwrap();
-        fs::remove_file(file_name).expect("Something went wrong deleting the file");
+        let file_path = cli.seed_words_file_name.clone().unwrap();
+
+        if !file_path.is_file() {
+            return Err(Status::not_found("file not found"));
+        }
+
+        let file_name = file_path.clone().into_os_string().into_string().unwrap();
+
+        if file_name.is_empty() {
+            return Err(Status::not_found("seed_words_file_name is empty"));
+        }
+        fs::remove_file(file_path)?;
         Ok(Response::new(FileDeletedResponse {}))
     }
 }
