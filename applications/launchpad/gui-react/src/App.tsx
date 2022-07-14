@@ -14,6 +14,7 @@ import {
 import { useSystemEvents } from './useSystemEvents'
 import { useWalletEvents } from './useWalletEvents'
 import { useDockerEvents } from './useDockerEvents'
+import { useDockerImageDownloadListener } from './hooks/useDockerImageDownloadListener'
 import HomePage from './pages/home'
 import './styles/App.css'
 
@@ -78,6 +79,7 @@ const App = () => {
 
   useSystemEvents({ dispatch })
   useDockerEvents({ dispatch })
+  useDockerImageDownloadListener({ dispatch })
 
   // TODO could return loader instead of null if not initialized
   return (

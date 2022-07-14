@@ -42,7 +42,7 @@ pub use events::events;
 pub use health_check::status;
 pub use host::open_terminal;
 pub use launch_docker::launch_docker;
-pub use pull_images::{pull_images, DEFAULT_IMAGES};
+pub use pull_images::{pull_image, pull_images, DEFAULT_IMAGES};
 pub use service::{create_default_workspace, start_service, stop_service, ServiceSettings};
 pub use shutdown::shutdown;
 pub use state::AppState;
