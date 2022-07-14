@@ -7,6 +7,7 @@ export type SyncType = 'Startup' | 'Header' | 'Block'
 export type BaseNodeSyncProgress = {
   estimatedTimeSec: number
   syncType: SyncType
+  headerProgress: number
   blockProgress: number
   totalBlocks: number
   done: boolean
@@ -67,7 +68,10 @@ export const useBaseNodeSync = (started: boolean) => {
         }) => {
           try {
             setProgress({
-              progress: payload.blockProgress,
+              progress:
+                payload.syncType === 'Block'
+                  ? payload.blockProgress
+                  : payload.headerProgress,
               remainingTime: payload.estimatedTimeSec,
               syncType: payload.syncType,
               finished: payload.done,
