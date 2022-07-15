@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import {
   Controller,
   Control,
@@ -42,6 +43,14 @@ const MiningSettings = ({
   setOpenMiningAuthForm: (value: boolean) => void
 }) => {
   const theme = useTheme()
+
+  const [isAuthApplied, setIsAuthApplied] = useState(
+    isAuthenticationApplied(values),
+  )
+
+  useEffect(() => {
+    setIsAuthApplied(isAuthenticationApplied(values))
+  }, [values])
 
   return (
     <>
@@ -126,7 +135,7 @@ const MiningSettings = ({
         />
       </NarrowInlineInput>
 
-      {isAuthenticationApplied(values) ? (
+      {isAuthApplied ? (
         <RowSpacedBetween>
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <SvgShieldCheck
@@ -148,6 +157,7 @@ const MiningSettings = ({
               setValue('mining.merged.useAuth', false, {
                 shouldDirty: true,
               })
+              setIsAuthApplied(false)
             }}
             style={{ color: theme.warningDark }}
           >
