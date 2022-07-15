@@ -69,6 +69,7 @@ use crate::{
     grpc::WalletTransaction,
 };
 
+#[warn(clippy::too-many-lines)]
 fn main() {
     env_logger::init();
     let context = tauri::generate_context!();
