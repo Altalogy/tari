@@ -46,6 +46,10 @@ pub enum DockerWrapperError {
     IdentityError(#[from] ExitError),
     #[error("The specified image type is not supported")]
     InvalidImageType,
+    #[error("Invalid {0} password")]
+    InvalidPassword(String),
+    #[error("Container status not found")]
+    ContainerStatusError,
 }
 
 impl DockerWrapperError {

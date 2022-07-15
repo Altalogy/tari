@@ -425,13 +425,15 @@ impl LaunchpadConfig {
     fn wallet_environment(&self) -> Vec<String> {
         let mut env = self.common_envars();
         if let Some(config) = &self.wallet {
+            info!("Starting wallet with config: {:?}", config);
             env.append(&mut vec![
                 "APP_NAME=wallet".to_string(),
                 "APP_EXEC=tari_console_wallet".to_string(),
                 format!("WAIT_FOR_TOR={}", config.delay.as_secs() + 3),
                 "SHELL=/bin/bash".to_string(),
                 "TERM=linux".to_string(),
-                format!("TARI_WALLET_PASSWORD={}", config.password),
+                // format!("TARI_WALLET_PASSWORD={}", config.password),
+                format!("TARI_WALLET_PASSWORD={}", "abc"),
                 format!(
                     "TARI_WALLET__P2P__TRANSPORT__TOR__CONTROL_AUTH=password={}",
                     self.tor_control_password

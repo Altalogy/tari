@@ -76,10 +76,10 @@ pub enum ContainerStatus {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct ContainerState {
-    name: String,
-    id: ContainerId,
-    info: ContainerCreateResponse,
-    status: ContainerStatus,
+    pub name: String,
+    pub id: ContainerId,
+    pub info: ContainerCreateResponse,
+    pub status: ContainerStatus,
 }
 
 impl ContainerState {

@@ -31,18 +31,26 @@ mod workspace;
 mod wrapper;
 
 pub mod helpers;
-use std::{collections::HashMap, sync::RwLock};
+use std::{collections::HashMap, sync::RwLock, thread::sleep, time::Duration};
 
 use bollard::{
-    container::{Config, CreateContainerOptions, ListContainersOptions, NetworkingConfig, RemoveContainerOptions},
+    container::{
+        Config,
+        CreateContainerOptions,
+        ListContainersOptions,
+        LogOutput,
+        LogsOptions,
+        NetworkingConfig,
+        RemoveContainerOptions,
+    },
     image,
-    models::{ContainerCreateResponse, EndpointSettings, HostConfig},
+    models::{ContainerCreateResponse, ContainerStateStatusEnum, EndpointSettings, HostConfig},
     Docker,
 };
 pub use container::{add_container, change_container_status, container_state, filter, remove_container};
 pub use error::DockerWrapperError;
 pub use filesystem::create_workspace_folders;
-use futures::StreamExt;
+use futures::{StreamExt, TryStreamExt};
 use log::{debug, info};
 pub use models::{ContainerId, ContainerState, ContainerStatus, ImageType, LogMessage, TariNetwork};
 pub use settings::{
@@ -74,6 +82,8 @@ lazy_static! {
 }
 
 pub static DEFAULT_WORKSPACE_NAME: &str = "default";
+
+pub const INVALID_WALLET_PASSWORD_MESSAGE: &str = "Your password was incorrect or required, but not provided.";
 
 fn tari_blockchain_volume_name(tari_workspace: String, tari_network: TariNetwork) -> String {
     format!("{}_{}_volume", tari_workspace, tari_network.lower_case())
@@ -171,4 +181,112 @@ pub async fn shutdown_all_containers(workspace_name: String, docker: &Docker) ->
         }
     }
     Ok(())
+}
+
+pub async fn check_status(image: ImageType, docker: &Docker) -> Result<ContainerStateStatusEnum, DockerWrapperError> {
+    if let Some(state) = container_state(image.container_name()) {
+        let container_id = state.id.clone();
+        let container_state = docker.inspect_container(container_id.as_str(), None).await?.state;
+        if let Some(state) = container_state {
+            match state.status {
+                Some(status) => Ok(status),
+                None => Err(DockerWrapperError::ContainerStatusError),
+            }
+        } else {
+            Err(DockerWrapperError::UnexpectedError)
+        }
+    } else {
+        Err(DockerWrapperError::ContainerNotFound(
+            image.container_name().to_string(),
+        ))
+    }
+}
+
+pub async fn validate_wallet_password() -> Result<(), DockerWrapperError> {
+    let docker = &DOCKER_INSTANCE.clone();
+    let wallet_container_name = ImageType::Wallet.container_name();
+    if let Some(state) = container_state(wallet_container_name) {
+        let container_state = check_status(ImageType::Wallet, docker).await?;
+        if container_state == ContainerStateStatusEnum::EXITED {
+            let options = LogsOptions::<String> {
+                follow: false,
+                stdout: true,
+                stderr: true,
+                ..Default::default()
+            };
+            let logs = docker
+                .logs(state.id().as_str(), Some(options))
+                .try_collect::<Vec<_>>()
+                .await
+                .unwrap();
+            if logs
+                .iter()
+                .map(LogOutput::to_string)
+                .any(|s| s.contains(INVALID_WALLET_PASSWORD_MESSAGE))
+            {
+                return Err(DockerWrapperError::InvalidPassword(wallet_container_name.to_string()));
+            }
+        }
+        Ok(())
+    } else {
+        Err(DockerWrapperError::ContainerNotFound(wallet_container_name.to_string()))
+    }
+}
+
+#[tokio::test]
+async fn read_wallet_logs_test() {
+    let docker = DOCKER_INSTANCE.clone();
+    let options = LogsOptions::<String> {
+        follow: false,
+        stdout: true,
+        stderr: true,
+        ..Default::default()
+    };
+
+    let mut res = docker
+        .logs(
+            "ead2e1b177561bd028334ecad04be78b3a6f5b1f50f13084a0b1bccd2ec70f79",
+            Some(options),
+        )
+        .try_collect::<Vec<_>>()
+        .await
+        .unwrap();
+
+    if let stream = res {
+        for log in stream {
+            println!("{}", log);
+        }
+    }
+}
+
+#[tokio::test]
+async fn wallet_status_test() {
+    let docker = DOCKER_INSTANCE.clone();
+    let status = docker
+        .inspect_container("ead2e1b177561bd028334ecad04be78b3a6f5b1f50f13084a0b1bccd2ec70f79", None)
+        .await
+        .unwrap()
+        .state
+        .unwrap()
+        .status
+        .unwrap()
+        .to_string();
+    println!("{:?}", status);
+}
+
+#[tokio::test]
+#[ignore = "start docker instance and launchpad manually"]
+async fn check_wallet_status() {
+    info!("Checking status of wallet container");
+    for _i in 1..20 {
+        sleep(Duration::from_secs(1));
+        let status = validate_wallet_password().await;
+        match status {
+            Ok(()) => println!("Wallet is running"),
+            Err(e) => {
+                println!("Invalid password: {}", e.chained_message());
+                break;
+            },
+        }
+    }
 }
