@@ -103,5 +103,5 @@ pub async fn open_terminal(_app: AppHandle<Wry>, platform: String) -> Result<(),
 pub async fn check_internet_connection() -> Result<bool, String> {
     // @TODO - add https://crates.io/crates/online
     // Return 'true' if online, 'false' if offline
-    Ok(false)
+    Ok(true)
 }

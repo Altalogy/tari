@@ -16,7 +16,7 @@ export const useInternetCheck = ({ dispatch }: { dispatch: AppDispatch }) => {
       } catch (_) {
         // Do not propagate further
       }
-    }, 5000)
+    }, 10000)
 
     return () => clearInterval(interval)
   }, [])
