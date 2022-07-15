@@ -51,11 +51,11 @@ use crate::{
         wallet_identity,
     },
     commands::{
+        check_docker,
         create_default_workspace,
         create_new_workspace,
         events,
         launch_docker,
-        check_docker,
         open_terminal,
         pull_image,
         pull_images,

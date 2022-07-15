@@ -21,15 +21,18 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-use std::{convert::TryFrom, path::PathBuf, process::{Command, Stdio}, time::Duration};
+use std::{
+    convert::TryFrom,
+    path::PathBuf,
+    process::{Command, Stdio},
+    time::Duration,
+};
 
 use bollard::Docker;
 use log::*;
 use tauri::{api::path::home_dir, AppHandle, Wry};
 
-use crate::docker::DOCKER_INSTANCE;
-
-use crate::commands::AppState;
+use crate::{commands::AppState, docker::DOCKER_INSTANCE};
 
 #[tauri::command]
 pub async fn check_docker(_app: AppHandle<Wry>) -> Result<String, String> {
