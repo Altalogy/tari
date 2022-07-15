@@ -21,12 +21,25 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-use std::{convert::TryFrom, path::PathBuf, process::Command, time::Duration};
+use std::{convert::TryFrom, path::PathBuf, process::{Command, Stdio}, time::Duration};
 
+use bollard::Docker;
 use log::*;
 use tauri::{api::path::home_dir, AppHandle, Wry};
 
+use crate::docker::DOCKER_INSTANCE;
+
 use crate::commands::AppState;
+
+#[tauri::command]
+pub async fn check_docker(_app: AppHandle<Wry>) -> Result<String, String> {
+    let version = &DOCKER_INSTANCE.clone().version().await.map_err(|e| {
+        error!("Failed check docker version: {}", e);
+        format!("The docker version cannot be run")
+    })?;
+
+    Ok(format!("{:?}", version))
+}
 
 #[tauri::command]
 pub async fn open_terminal(_app: AppHandle<Wry>, platform: String) -> Result<(), String> {

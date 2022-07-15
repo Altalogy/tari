@@ -45,9 +45,17 @@ const OnboardingContainer = () => {
   messagesRef.current = messages
 
   const checkDocker = async () => {
-    const isDocker = await isDockerInstalled()
-    setDockerInstalled(isDocker)
-    hideSplashscreen()
+    let isDocker
+    try {
+      isDocker = await isDockerInstalled()
+
+      setDockerInstalled(isDocker)
+    } catch (err) {
+      isDocker = false
+      setDockerInstalled(false)
+    } finally {
+      hideSplashscreen()
+    }
 
     if (
       isDocker &&
@@ -139,7 +147,7 @@ const OnboardingContainer = () => {
       return
     }
 
-    if (dockerInstalled === false) {
+    if (!dockerInstalled) {
       pushMessages(OnboardingMessagesDockerInstall(onDockerInstallDone))
     } else if (dockerInstalled === true) {
       pushMessages([
@@ -161,7 +169,6 @@ const OnboardingContainer = () => {
   const onMessageRender = (index: number) => {
     setTBotIndex(index)
   }
-  /** END OF MOCK FOR DOCKER INSTALLATION */
 
   const onSkip = () => {
     setCurrent(messages.length)
