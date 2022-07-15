@@ -28,20 +28,22 @@ use std::{
     time::Duration,
 };
 
-use bollard::Docker;
+use bollard::{Docker, system::Version};
 use log::*;
 use tauri::{api::path::home_dir, AppHandle, Wry};
 
 use crate::{commands::AppState, docker::DOCKER_INSTANCE};
 
+const LOG_TARGET: &str = "tari_launchpad::host";
+
 #[tauri::command]
-pub async fn check_docker(_app: AppHandle<Wry>) -> Result<String, String> {
-    let version = &DOCKER_INSTANCE.clone().version().await.map_err(|e| {
+pub async fn check_docker() -> Result<Version, String> {
+    let version: Version = DOCKER_INSTANCE.clone().version().await.map_err(|e| {
         error!("Failed check docker version: {}", e);
-        format!("The docker version cannot be run")
+         "The docker version cannot be run"
     })?;
 
-    Ok(format!("{:?}", version))
+    Ok(version)
 }
 
 #[tauri::command]
