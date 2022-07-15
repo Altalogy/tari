@@ -15,6 +15,7 @@ export const initialState: WalletState = {
     pending: true,
   },
   lastTxHistoryUpdateAt: undefined,
+  recoveryPhraseCreated: false,
 }
 
 const walletSlice = createSlice({
@@ -26,6 +27,9 @@ const walletSlice = createSlice({
     },
     newTxInHistory(state) {
       state.lastTxHistoryUpdateAt = new Date()
+    },
+    setRecoveryPhraseAsCreated(state) {
+      state.recoveryPhraseCreated = true
     },
   },
   extraReducers: builder => {
@@ -58,6 +62,7 @@ export const actions = {
   stop,
   updateWalletBalance,
   newTxInHistory: walletSlice.actions.newTxInHistory,
+  setRecoveryPhraseAsCreated: walletSlice.actions.setRecoveryPhraseAsCreated,
 }
 
 export default walletSlice.reducer

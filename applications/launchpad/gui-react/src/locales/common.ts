@@ -27,6 +27,7 @@ const translations: { [key: string]: { [key: string]: string } } = {
     problem: 'Problem',
     settings: 'Settings',
     wallet: 'Wallet',
+    security: 'Security',
     performance: 'Performance',
     containers: 'Containers',
     logs: 'Logs',
@@ -55,6 +56,7 @@ const translations: { [key: string]: { [key: string]: string } } = {
     saturday: 'Sat',
   },
   adjectives: {
+    created: 'Created',
     running: 'Running',
     paused: 'Paused',
     copied: 'Copied',
@@ -62,6 +64,7 @@ const translations: { [key: string]: { [key: string]: string } } = {
     remaining: 'Remaining',
     processing: 'Processing',
     cancelled: 'Cancelled',
+    loading: 'Loading',
   },
   conjunctions: {
     or: 'or',

@@ -111,6 +111,7 @@ const ICONS = [
   'Plus',
   'Presentation',
   'Presentation1',
+  'Printer',
   'Programming',
   'Question',
   'Report',

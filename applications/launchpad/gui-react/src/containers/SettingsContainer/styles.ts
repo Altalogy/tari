@@ -123,3 +123,13 @@ export const SwitchBg = styled.div<{ $transparent?: boolean }>`
   padding: ${({ theme }) => theme.spacingVertical(0.5)};
   border-radius: ${({ theme }) => theme.borderRadius(0.67)};
 `
+
+export const RowFlex = styled.div`
+  display: flex;
+  align-tiems: center;
+  column-gap: ${({ theme }) => theme.spacingHorizontal(0.5)};
+`
+
+export const StyledList = styled.ul`
+  padding-left: 20px;
+`

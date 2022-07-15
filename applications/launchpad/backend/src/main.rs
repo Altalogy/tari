@@ -43,6 +43,8 @@ use tauri_plugin_sql::{Migration, MigrationKind, TauriSql};
 use crate::{
     api::{
         base_node_sync_progress,
+        delete_seed_words,
+        get_seed_words,
         image_info,
         network_list,
         node_identity,
@@ -149,7 +151,9 @@ fn main() {
             pull_images,
             create_new_workspace,
             create_default_workspace,
+            delete_seed_words,
             events,
+            get_seed_words,
             check_docker,
             launch_docker,
             check_internet_connection,
