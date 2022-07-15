@@ -50,6 +50,7 @@ const OnboardingContainer = () => {
       isDocker = await isDockerInstalled()
 
       setDockerInstalled(isDocker)
+      hideSplashscreen()
     } catch (err) {
       isDocker = false
       setDockerInstalled(false)
