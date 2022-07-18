@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { hideSplashscreen } from '../../splashscreen'
 import { isDockerInstalled } from '../../commands'
 
-import Button from '../../components/Button'
+// import Button from '../../components/Button'
 import TBotPrompt from '../../components/TBot/TBotPrompt'
 import { TBotMessage } from '../../components/TBot/TBotPrompt/types'
 import {
@@ -16,7 +16,7 @@ import {
 import {
   setExpertSwitchDisabled,
   setExpertView,
-  setOnboardingComplete,
+  // setOnboardingComplete,
 } from '../../store/app'
 import { selectOnboardingCheckpoint } from '../../store/app/selectors'
 import { OnboardingCheckpoints } from '../../store/app/types'
