@@ -425,7 +425,6 @@ impl LaunchpadConfig {
     fn wallet_environment(&self) -> Vec<String> {
         let mut env = self.common_envars();
         if let Some(config) = &self.wallet {
-            info!("Starting wallet with config: {:?}", config);
             env.append(&mut vec![
                 "APP_NAME=wallet".to_string(),
                 "APP_EXEC=tari_console_wallet".to_string(),
