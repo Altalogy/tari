@@ -35,6 +35,7 @@ import {
 import MoneroAuthentication from './MiningSettings/MoneroAuthentication'
 import { useTheme } from 'styled-components'
 import BaseNodeQRModal from '../BaseNodeQRModal'
+import SecuritySettings from './SecuritySettings'
 
 const renderSettings = (
   settings: Settings,
@@ -71,6 +72,8 @@ const renderSettings = (
           setOpenMiningAuthForm={props.setOpenMiningAuthForm}
         />
       )
+    case Settings.Security:
+      return <SecuritySettings />
     default:
       return null
   }

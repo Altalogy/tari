@@ -14,4 +14,5 @@ export type WalletState = {
     pending: boolean
   }
   lastTxHistoryUpdateAt?: Date
+  recoveryPhraseCreated: boolean
 }

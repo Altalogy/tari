@@ -54,3 +54,6 @@ export const selectWalletContainerLastAction = createSelector(
     },
   },
 )
+
+export const selectRecoveryPhraseCreated = (state: RootState) =>
+  state.wallet.recoveryPhraseCreated

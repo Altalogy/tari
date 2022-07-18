@@ -30,7 +30,7 @@ use log::{debug, error, info, warn};
 use serde::Serialize;
 use tari_app_grpc::tari_rpc::wallet_client;
 use tauri::{http::status, AppHandle, Manager, Wry};
-pub use wallet_api::{transfer, wallet_balance, wallet_events, wallet_identity};
+pub use wallet_api::{delete_seed_words, get_seed_words, transfer, wallet_balance, wallet_events, wallet_identity};
 
 use crate::{
     commands::{status, AppState, ServiceSettings, DEFAULT_IMAGES},
