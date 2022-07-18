@@ -3,7 +3,6 @@ import styled from 'styled-components'
 export const StyledSendForm = styled.form`
   display: flex;
   flex-direction: column;
-  padding: ${({ theme }) => theme.spacing(1.67)};
   height: 100%;
   overflow: auto;
   box-sizing: border-box;
@@ -11,6 +10,8 @@ export const StyledSendForm = styled.form`
 
 export const SendFormContent = styled.div`
   flex: 1;
+  padding: ${({ theme }) => theme.spacing(1.67)};
+  padding-bottom: ${({ theme }) => theme.spacing(0.67)};
 `
 
 export const TagWrapper = styled.div`
@@ -21,8 +22,11 @@ export const TagWrapper = styled.div`
 
 export const FormButtons = styled.div`
   display: flex;
+  position: relative;
   justify-content: space-between;
+  padding: ${({ theme }) => `${theme.spacing(0.67)} ${theme.spacing(1.67)}`};
   column-gap: ${({ theme }) => theme.spacingHorizontal(1)};
+  border-top: 1px solid ${({ theme }) => theme.selectBorderColor};
 `
 
 export const TagBox = styled.div`
@@ -69,3 +73,15 @@ export const ResultHeader = styled.div`
 `
 
 export const CtaButtonContainer = styled.div``
+
+export const ErrorContainer = styled.div`
+  cursor: pointer;
+  position: absolute;
+  left: 0;
+  width: 100%;
+  color: #fff;
+  background: ${({ theme }) => theme.warningDark};
+  padding: ${({ theme }) => `${theme.spacing(0.67)} ${theme.spacing(1.67)}`};
+  box-sizing: border-box;
+  bottom: 100%;
+`

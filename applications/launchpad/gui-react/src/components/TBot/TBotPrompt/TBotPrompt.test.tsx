@@ -9,8 +9,6 @@ import TBotPrompt from '.'
 import { tauriIPCMock } from '../../../../__tests__/mocks/mockTauriIPC'
 import { clearMocks } from '@tauri-apps/api/mocks'
 
-// @TODO: update test coverage, open issue https://github.com/Altalogy/tari/issues/226
-
 beforeAll(() => {
   window.crypto = {
     // @ts-expect-error: ignore this

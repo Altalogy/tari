@@ -44,9 +44,6 @@ export interface MoneroUrl {
   url: string
 }
 
-/**
- * @TODO - omit password? Probably we don't want to store password in global state.
- */
 export interface MergedMiningNodeState extends MiningNodeState {
   address?: string
   threads: number

@@ -6,9 +6,10 @@ import { actions as containersActions } from '../containers'
 
 import * as walletService from './walletService'
 import { temporaryActions } from '../temporary'
+import { convertU8ToString } from '../../utils/Format'
 
 const getWalletDataWithPolling = async (): Promise<
-  [walletService.WalletIdentityDto, walletService.WalletBalanceDto]
+  [walletService.WalletIdentityDto, walletService.WalletBalance]
 > => {
   let watchdog = 0
 
@@ -38,7 +39,7 @@ const getWalletDataWithPolling = async (): Promise<
 
 export const unlockWallet = createAsyncThunk<
   {
-    address: { uri: string; emoji: string }
+    address: { uri: string; emoji: string; publicKey: string }
     tari: { balance: number; available: number }
   },
   void,
@@ -65,6 +66,7 @@ export const unlockWallet = createAsyncThunk<
       address: {
         uri: walletIdentity.publicAddress,
         emoji: walletIdentity.emojiId,
+        publicKey: convertU8ToString(walletIdentity.publicKey.toString()),
       },
       tari: {
         balance:

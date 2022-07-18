@@ -51,6 +51,7 @@ export interface TransactionsRepository {
   getMinedTransactionsDataSpan: () => Promise<{ from: Date; to: Date }>
   list: (limit: number, page?: number) => Promise<TransactionDBRecord[]>
   count: () => Promise<number>
+  findById: (txId: string) => Promise<TransactionDBRecord | undefined>
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -234,6 +235,21 @@ const repositoryFactory: (
     }
 
     return result.length
+  },
+
+  findById: async (txId: string) => {
+    const db = await getDb()
+
+    const result: TransactionDBRecord[] = await db.select(
+      'SELECT * FROM transactions WHERE id = $1',
+      [txId],
+    )
+
+    if (result?.length > 0) {
+      return result[0]
+    }
+
+    return
   },
 })
 

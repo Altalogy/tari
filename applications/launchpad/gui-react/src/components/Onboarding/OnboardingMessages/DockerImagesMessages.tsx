@@ -74,22 +74,23 @@ export const DownloadImagesMessage = ({
 
   useEffect(() => {
     dispatch(setExpertSwitchDisabled(false))
-    dispatch(dockerImagesActions.pullImages())
     setFetching(true)
+    dispatch(dockerImagesActions.pullImages())
   }, [])
 
   useEffect(() => {
     const anyNotUpToDate = dockerImages.find(f => !f.updated)
 
-    if (fetching && !accomplished) {
-      const anyError = dockerImages.find(f => Boolean(f.error))
-      const anyInProgess = dockerImages.find(f => !f.updated && f.pending)
+    const anyError = dockerImages.find(f => Boolean(f.error))
+    const anyInProgess = dockerImages.find(f => !f.updated && f.pending)
 
+    if (fetching && !accomplished) {
       if (anyError) {
-        /**
-         * @TODO handle no space error?
-         */
-        onError('server_error')
+        if (anyError.error?.toLowerCase().includes('no space left')) {
+          setStatus('no_space_error')
+        } else {
+          setStatus('server_error')
+        }
         setFetching(false)
       } else if (!anyInProgess) {
         setStatus('success')
@@ -106,7 +107,7 @@ export const DownloadImagesMessage = ({
       setFetching(false)
       return
     }
-  }, [dockerImages])
+  }, [dockerImages, fetching])
 
   useEffect(() => {
     if (['no_space_error', 'server_error'].includes(status)) {
@@ -156,8 +157,9 @@ export const DownloadImagesErrorMessage = ({
     }
 
     if (status === 'in_progress' && !fetching) {
-      dispatch(dockerImagesActions.pullImages())
+      dispatch(setExpertSwitchDisabled(false))
       setFetching(true)
+      dispatch(dockerImagesActions.pullImages())
     }
   }, [status])
 
@@ -167,20 +169,21 @@ export const DownloadImagesErrorMessage = ({
       const anyInProgess = dockerImages.find(f => !f.updated && f.pending)
 
       if (anyError) {
-        /**
-         * @TODO handle no space error?
-         */
-        onError('server_error')
+        if (anyError.error?.toLowerCase().includes('no space left')) {
+          setStatus('no_space_error')
+        } else {
+          setStatus('server_error')
+        }
         setAccomplished(true)
+        setFetching(false)
       } else if (!anyInProgess) {
         setStatus('success')
         setAccomplished(true)
         onSuccess()
+        setFetching(false)
       }
-
-      setFetching(false)
     }
-  }, [dockerImages])
+  }, [dockerImages, fetching])
 
   const text =
     errorType === 'no_space_error' ? (
@@ -192,9 +195,6 @@ export const DownloadImagesErrorMessage = ({
         </Text>{' '}
         <Text as='span' type='defaultHeavy'>
           {t.onboarding.dockerImages.errors.serverError.part2}
-        </Text>{' '}
-        <Text as='span' type='defaultHeavy'>
-          (#NUMBER)
         </Text>{' '}
         <Text as='span' type='defaultHeavy'>
           {t.onboarding.dockerImages.errors.serverError.part3}

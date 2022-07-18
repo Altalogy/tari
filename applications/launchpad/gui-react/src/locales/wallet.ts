@@ -89,9 +89,6 @@ const translations = {
       regular:
         'Wallet ID is public and you can freely share it with others. That way, people can send you some Tari coins.',
     },
-    /**
-     * @TODO text for the transactionFee help
-     */
     transactionFee: {
       message:
         'The transaction fee is distributed to the thousands of computers (also known as “miners”) who ensure that your transactions are fast and secure.',

@@ -140,6 +140,15 @@ const slice = createSlice({
         {},
       )
     })
+    builder.addCase(pullImage.pending, (state, payload) => {
+      const imageIdx = state.images.findIndex(
+        img => img.containerName === payload.meta.arg.dockerImage,
+      )
+
+      if (imageIdx > -1) {
+        state.images[imageIdx].pending = true
+      }
+    })
     builder.addCase(pullImage.fulfilled, (state, action) => {
       const imageIdx = state.images.findIndex(
         img => img.containerName === action.payload.dockerImage,

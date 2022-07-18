@@ -16,6 +16,8 @@ export const selectWalletAddress = (state: RootState) =>
   state.wallet.address.uri
 export const selectWalletEmojiAddress = (state: RootState) =>
   state.wallet.address.emoji
+export const selectWalletPublicKey = (state: RootState) =>
+  state.wallet.address.publicKey
 
 export const selectTariBalance = (state: RootState) => state.wallet.tari
 

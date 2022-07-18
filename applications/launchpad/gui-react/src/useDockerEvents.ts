@@ -29,7 +29,6 @@ export const useDockerEvents = ({ dispatch }: { dispatch: AppDispatch }) => {
           event: string
           payload: DockerImagePullStatusEvent
         }) => {
-          // TODO fill this in properly when https://github.com/Altalogy/tari/issues/311 is done
           dispatch(actions.setProgress(payload))
         },
       )

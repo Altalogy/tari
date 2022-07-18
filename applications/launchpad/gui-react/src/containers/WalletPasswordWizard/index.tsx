@@ -15,9 +15,6 @@ import { WalletPasswordInputs } from './WalletPasswordForm/types'
  * @prop {string} [submitBtnText] - the text of the submit button.
  * @prop {() => void} [onSuccess] - after the password is successfully set.
  *
- * @TODO - add handling exceptions in the `onSubmit` fnc after the wallet password logic
- * reaches the final form.
- *
  * @example
  * <WalletPasswordWizard
  *   submitBtnText='Set password'

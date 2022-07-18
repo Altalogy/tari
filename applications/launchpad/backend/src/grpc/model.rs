@@ -22,8 +22,9 @@
 
 use std::{convert::TryFrom, time::Instant};
 
+use derivative::Derivative;
 use log::info;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use tari_app_grpc::tari_rpc::{
     GetBalanceResponse,
     GetIdentityResponse,
@@ -69,12 +70,12 @@ pub struct WalletBalance {
     pending_outgoing_balance: u64,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Derivative, Deserialize, Clone, Serialize)]
 pub struct TransferFunds {
     pub payments: Vec<Payment>,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Deserialize, Clone, Serialize)]
 pub struct Payment {
     pub address: String,
     pub amount: u64,

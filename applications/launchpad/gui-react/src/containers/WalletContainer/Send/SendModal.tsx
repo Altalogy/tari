@@ -1,13 +1,18 @@
+import { useEffect, useRef, useState } from 'react'
 import { useTheme } from 'styled-components'
 import { useForm, Controller, SubmitHandler } from 'react-hook-form'
+import { invoke } from '@tauri-apps/api'
 
 import Button from '../../../components/Button'
 import Input from '../../../components/Inputs/Input'
 import Modal from '../../../components/Modal'
 import Text from '../../../components/Text'
+import Textarea from '../../../components/Inputs/Textarea'
+import AmountInput from '../../../components/Inputs/AmountInput'
+import Tag from '../../../components/Tag'
 
 import t from '../../../locales'
-import { formatAmount } from '../../../utils/Format'
+import { formatAmount, toMicroT, toT } from '../../../utils/Format'
 
 import { SendForm, SendModalProps } from './types'
 import {
@@ -21,19 +26,38 @@ import {
   ResultModal,
   ResultModalContent,
   ResultHeader,
+  ErrorContainer,
 } from './styles'
-import Textarea from '../../../components/Inputs/Textarea'
-import AmountInput from '../../../components/Inputs/AmountInput'
+
 import SvgTariSignetGradient from '../../../styles/Icons/TariSignetGradient'
-import { useState } from 'react'
 import SvgTBotLoading from '../../../styles/Icons/TBotLoading'
-import Tag from '../../../components/Tag'
 import SvgTBotSearch from '../../../styles/Icons/TBotSearch'
+import SvgCloseCross from '../../../styles/Icons/CloseCross'
+
+import WalletConfig from '../../../config/wallet'
+import useTransactionsRepository from '../../../persistence/transactionsRepository'
+import {
+  TransactionDirection,
+  TransactionEvent,
+} from '../../../useWalletEvents'
+import { useAppSelector } from '../../../store/hooks'
+import { selectWalletPublicKey } from '../../../store/wallet/selectors'
 
 const defaultValues = {
   amount: 0,
   address: '',
   message: '',
+}
+
+interface SendTransferRecord {
+  address: string
+  failure_message?: string
+  is_success: boolean
+  transaction_id: number
+}
+
+interface SendTransferResponse {
+  payments: SendTransferRecord[]
 }
 
 /**
@@ -44,15 +68,21 @@ const defaultValues = {
  */
 const SendModal = ({ open, onClose, available }: SendModalProps) => {
   const theme = useTheme()
-  /**
-   * @TODO - replace with real data
-   */
-  const fee = 0.00043
+  const transactionsRepository = useTransactionsRepository()
+  const intervalRef = useRef<ReturnType<typeof setInterval> | undefined>()
 
-  /** ---- MOCK SEND PROCESS ------- */
+  const walletPublicKey = useAppSelector(selectWalletPublicKey)
+
+  const [fee, setFee] = useState(
+    WalletConfig.defaultFee * WalletConfig.defaultFeePerGram,
+  )
   const [isProcessing, setIsProcessing] = useState(false)
-  const [result, setResult] = useState<null | 'pending' | 'completing'>(null)
-  /** ---- END MOCK SEND PROCESS ------- */
+  const [result, setResult] = useState<
+    null | 'processing' | 'pending' | 'completing'
+  >(null)
+  const [error, setError] = useState<string | undefined>(undefined)
+  const [counter, setCounter] = useState(0)
+  const [tx, setTx] = useState<SendTransferRecord | undefined>(undefined)
 
   const { control, handleSubmit, reset, formState } = useForm<SendForm>({
     mode: 'onChange',
@@ -63,25 +93,112 @@ const SendModal = ({ open, onClose, available }: SendModalProps) => {
     reset(defaultValues)
     setIsProcessing(false)
     setResult(null)
+    setCounter(0)
     onClose()
   }
 
-  const onSubmitForm: SubmitHandler<SendForm> = _ => {
-    reset(defaultValues)
+  const onSubmitForm: SubmitHandler<SendForm> = async (data: SendForm) => {
+    setError(undefined)
     setIsProcessing(true)
+
+    try {
+      const sendResult: SendTransferResponse = await invoke('transfer', {
+        funds: {
+          payments: [
+            {
+              address: data.address,
+              amount: toMicroT(data.amount),
+              fee_per_gram: 1,
+              message: data.message,
+              payment_type: 0,
+            },
+          ],
+        },
+      })
+
+      if (sendResult?.payments?.length > 0) {
+        const sendTx = sendResult.payments[0]
+        if (sendTx.is_success) {
+          setTx(sendTx)
+          setResult('processing')
+          transactionsRepository.addOrReplace({
+            event: TransactionEvent.Initialized,
+            tx_id: sendTx.transaction_id.toString(),
+            source_pk: walletPublicKey,
+            dest_pk: sendTx.address,
+            status: 'initialized',
+            direction: TransactionDirection.Outbound,
+            amount: toMicroT(data.amount),
+            message: data.message || '',
+            is_coinbase: false,
+          })
+        } else {
+          setError(sendTx.failure_message)
+        }
+      }
+      setIsProcessing(false)
+    } catch (err) {
+      setError((err as unknown as Error).toString())
+      setIsProcessing(false)
+    }
   }
 
   const validateAmount = (amount: number) => {
-    if (amount > available + fee) {
-      return t.wallet.transaction.errors.exceedsAvailableAndFee
-    }
-
     if (amount === 0) {
       return
     }
 
+    if (amount + fee >= available) {
+      return t.wallet.transaction.errors.exceedsAvailableAndFee
+    }
+
     return
   }
+
+  useEffect(() => {
+    const getTxFee = async () => {
+      try {
+        const txFee: number = await invoke('transaction_fee')
+        setFee(txFee * WalletConfig.defaultFeePerGram)
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.log('Cannot get latest transaction fee', err)
+      }
+    }
+
+    if (open) {
+      getTxFee()
+    }
+  }, [open])
+
+  useEffect(() => {
+    if (result === 'processing' && tx) {
+      intervalRef.current = setInterval(async () => {
+        if (counter > 5) {
+          setResult('pending')
+          setCounter(0)
+          clearInterval(intervalRef.current)
+        } else {
+          const foundTx = await transactionsRepository.findById(
+            tx.transaction_id.toString(),
+          )
+          if (foundTx && foundTx.event !== TransactionEvent.Initialized) {
+            setResult('completing')
+            clearInterval(intervalRef.current)
+            setCounter(0)
+          }
+        }
+
+        setCounter(c => c + 1)
+      }, 500)
+    }
+
+    return () => {
+      if (intervalRef?.current) {
+        clearInterval(intervalRef.current)
+      }
+    }
+  }, [result, counter])
 
   if (result === 'pending') {
     return (
@@ -168,7 +285,7 @@ const SendModal = ({ open, onClose, available }: SendModalProps) => {
     )
   }
 
-  if (isProcessing) {
+  if (isProcessing || result === 'processing') {
     return (
       <Modal
         open={open}
@@ -187,9 +304,6 @@ const SendModal = ({ open, onClose, available }: SendModalProps) => {
           <Text type='smallMedium' color={theme.primary}>
             {t.wallet.transaction.searchingForRecipient}
           </Text>
-          {/* @TODO: remove these buttons when transactions are finalised */}
-          <button onClick={() => setResult('pending')}>Result 1</button>
-          <button onClick={() => setResult('completing')}>Result 2</button>
         </PleaseWaitContainer>
       </Modal>
     )
@@ -232,7 +346,7 @@ const SendModal = ({ open, onClose, available }: SendModalProps) => {
                 currency='XTR'
                 autoFocus
                 withFee
-                fee={fee}
+                fee={toT(fee)}
                 withError
                 error={formState.errors.amount?.message}
               />
@@ -285,6 +399,18 @@ const SendModal = ({ open, onClose, available }: SendModalProps) => {
         </SendFormContent>
 
         <FormButtons>
+          {error && (
+            <ErrorContainer onClick={() => setError(undefined)}>
+              <Text type='microMedium'>{error}</Text>
+              <SvgCloseCross
+                style={{
+                  position: 'absolute',
+                  top: 8,
+                  right: 8,
+                }}
+              />
+            </ErrorContainer>
+          )}
           <Button variant='secondary' onClick={cancel}>
             {t.common.verbs.cancel}
           </Button>

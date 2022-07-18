@@ -132,11 +132,6 @@ export const BlockchainSyncStep = ({
       ).unwrap()
       setSyncStarted(true)
     } catch (err) {
-      /**
-       * @TODO (#381) on first attempt, it returns :
-       * "Something went wrong with the Docker Wrapper caused by: The designated workspace, default, already exists"
-       * It happens when all containers, local storage and docker volumes are removed before the app launch.
-       */
       try {
         await dispatch(
           containersActions.startRecipe({ containerName: 'base_node' }),

@@ -80,7 +80,6 @@ const PasswordsPrompt = ({
         return
       }
 
-      // TODO await and error handling?
       callback()
     },
     [modalOpen, isParoleSet, areMoneroCredentialsPresent],

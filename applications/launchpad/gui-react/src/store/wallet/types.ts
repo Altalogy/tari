@@ -7,6 +7,7 @@ export type WalletState = {
   address: {
     uri: string
     emoji: string
+    publicKey: string
   }
   tari: {
     balance: number
