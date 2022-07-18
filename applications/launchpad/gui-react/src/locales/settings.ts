@@ -25,7 +25,7 @@ export default {
     submitAndFinish: 'Submit & finish',
     phraseConfirmError:
       // eslint-disable-next-line quotes
-      "Oh snap! Entered words doesn't match the Backup Recovery Phrase.",
+      'Oh snap! Entered words do not match the Backup Recovery Phrase.',
     confirmPhraseDesc:
       'Enter specific words according to their numbers on the Recovery Sheet.',
     couldNotGetSeedWords:
