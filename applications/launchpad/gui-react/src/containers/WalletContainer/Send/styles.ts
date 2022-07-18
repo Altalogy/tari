@@ -26,7 +26,7 @@ export const FormButtons = styled.div`
   justify-content: space-between;
   padding: ${({ theme }) => `${theme.spacing(0.67)} ${theme.spacing(1.67)}`};
   column-gap: ${({ theme }) => theme.spacingHorizontal(1)};
-  border-top: 1px solid ${({ theme }) => theme.borderColor};
+  border-top: 1px solid ${({ theme }) => theme.selectBorderColor};
 `
 
 export const TagBox = styled.div`
