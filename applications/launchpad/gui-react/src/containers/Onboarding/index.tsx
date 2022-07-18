@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { hideSplashscreen } from '../../splashscreen'
 import { isDockerInstalled } from '../../commands'
 
-// import Button from '../../components/Button'
+import Button from '../../components/Button'
 import TBotPrompt from '../../components/TBot/TBotPrompt'
 import { TBotMessage } from '../../components/TBot/TBotPrompt/types'
 import {
@@ -16,12 +16,14 @@ import {
 import {
   setExpertSwitchDisabled,
   setExpertView,
-  // setOnboardingComplete,
+  setOnboardingComplete,
 } from '../../store/app'
 import { selectOnboardingCheckpoint } from '../../store/app/selectors'
 import { OnboardingCheckpoints } from '../../store/app/types'
 import { useAppDispatch, useAppSelector } from '../../store/hooks'
+import t from '../../locales'
 import { StyledOnboardingContainer } from './styles'
+import Text from '../../components/Text'
 
 const OnboardingContainer = () => {
   const dispatch = useAppDispatch()
@@ -177,7 +179,8 @@ const OnboardingContainer = () => {
 
   return (
     <StyledOnboardingContainer>
-      {/* <Button
+      <Button
+        variant='secondary'
         onClick={() => dispatch(setOnboardingComplete(true))}
         style={{
           position: 'absolute',
@@ -185,8 +188,8 @@ const OnboardingContainer = () => {
           left: 40,
         }}
       >
-        EXIT TO HOME
-      </Button>*/}
+        <Text type='smallHeavy'>{t.onboarding.actions.skipOnboarding}</Text>
+      </Button>
       <TBotPrompt
         open={true}
         messages={messages}

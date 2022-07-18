@@ -2,6 +2,7 @@
 const translations = {
   actions: {
     skipChatting: 'Skip Chatting',
+    skipOnboarding: 'Skip',
   },
   status: {
     processing: 'processing',
