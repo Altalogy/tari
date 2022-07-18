@@ -432,8 +432,7 @@ impl LaunchpadConfig {
                 format!("WAIT_FOR_TOR={}", config.delay.as_secs() + 3),
                 "SHELL=/bin/bash".to_string(),
                 "TERM=linux".to_string(),
-                // format!("TARI_WALLET_PASSWORD={}", config.password),
-                format!("TARI_WALLET_PASSWORD={}", "abc"),
+                format!("TARI_WALLET_PASSWORD={}", config.password),
                 format!(
                     "TARI_WALLET__P2P__TRANSPORT__TOR__CONTROL_AUTH=password={}",
                     self.tor_control_password
