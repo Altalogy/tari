@@ -20,12 +20,14 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 mod base_node_api;
+mod health_check;
 mod wallet_api;
 use std::{convert::TryFrom, fmt::format};
 
 pub use base_node_api::{base_node_sync_progress, node_identity};
 use config::Config;
 use futures::StreamExt;
+pub use health_check::{subsribe_for_health_check_updates, wallet_password_check};
 use log::{debug, error, info, warn};
 use serde::Serialize;
 use tari_app_grpc::tari_rpc::wallet_client;
@@ -42,7 +44,15 @@ pub use wallet_api::{
 
 use crate::{
     commands::{status, AppState, ServiceSettings, DEFAULT_IMAGES},
-    docker::{ContainerState, ImageType, TariNetwork, TariWorkspace},
+    docker::{
+        check_status,
+        validate_wallet_password,
+        ContainerState,
+        ImageType,
+        TariNetwork,
+        TariWorkspace,
+        DOCKER_INSTANCE,
+    },
     grpc::{GrpcWalletClient, Payment, TransferFunds, WalletIdentity, WalletTransaction},
     rest::quay_io::get_tag_info,
 };
@@ -161,14 +171,6 @@ pub async fn image_info(settings: ServiceSettings) -> ImageListDto {
 
 pub fn event_list() -> Vec<String> {
     TRANSACTION_EVENTS.iter().map(|&s| s.into()).collect()
-}
-
-#[tauri::command]
-pub async fn health_check(image: &str) -> String {
-    match ImageType::try_from(image) {
-        Ok(img) => status(img).await,
-        Err(_err) => format!("image {} not found", image),
-    }
 }
 
 #[tokio::test]
