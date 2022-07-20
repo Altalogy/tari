@@ -102,11 +102,11 @@ mod docker_unit_tests {
     }
 
     async fn verify_streaming(workspace: TariWorkspace, image: ImageType, docker: &Docker) {
-        let log = workspace.logs(image.image_name(), &docker);
+        let log = workspace.logs(image.image_name(), docker);
         assert!(log.is_some());
         let mut log_stream = log.unwrap();
         assert!(log_stream.next().await.is_some());
-        let stat = workspace.resource_stats(image.image_name(), &docker);
+        let stat = workspace.resource_stats(image.image_name(), docker);
         assert!(stat.is_some());
         let mut stat_stream = stat.unwrap();
         assert!(stat_stream.next().await.is_some());
