@@ -72,7 +72,7 @@ mod docker_unit_tests {
         let config = launchpad_config();
         let mut workspace = TariWorkspace::new(DEFAULT_WORKSPACE_NAME, config);
         assert_eq!(DEFAULT_WORKSPACE_NAME, workspace.name());
-        let service_status = workspace.start_service(image, &docker).await;
+        let service_status = workspace.start_service(image, docker).await;
         assert!(service_status.is_ok());
         assert_eq!(image.image_name(), service_status.unwrap());
         workspace
