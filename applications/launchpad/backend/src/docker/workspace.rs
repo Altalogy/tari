@@ -257,7 +257,7 @@ impl TariWorkspace {
 
         for image in self.images_to_start() {
             // Start each container
-            let name = self.start_service(image, docker.clone()).await?;
+            let name = self.start_service(image, &docker).await?;
             info!(
                 "Docker container {} ({}) successfully started",
                 image.image_name(),
@@ -360,17 +360,17 @@ impl TariWorkspace {
     /// * starts the container
     /// * adds the container reference to the current list of containers being managed
     /// * Returns the container name
-    pub async fn start_service(&mut self, image: ImageType, docker: Docker) -> Result<String, DockerWrapperError> {
+    pub async fn start_service(&mut self, image: ImageType, docker: &Docker) -> Result<String, DockerWrapperError> {
         let fully_qualified_image_name = TariWorkspace::fully_qualified_image(image, self.config.registry.as_deref());
         info!("Creating {}", &fully_qualified_image_name);
         let workspace_image_name = format!("{}_{}", self.name, image.image_name());
-        let _unused = try_destroy_container(workspace_image_name.as_str(), docker.clone()).await;
+        let _unused = try_destroy_container(workspace_image_name.as_str(), &docker).await;
         let container = try_create_container(
             image,
             fully_qualified_image_name.clone(),
             self.name().to_string(),
             &self.config,
-            docker.clone(),
+            &docker,
         )
         .await?;
         let name = image.container_name();
