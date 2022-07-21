@@ -167,3 +167,90 @@ mod docker_unit_tests {
         verify_container_is_destroyed("default_tor", &docker).await;
     }
 }
+
+mod wallet_grpc_unit_tests {
+    use futures::StreamExt;
+
+    use crate::grpc::{GrpcWalletClient, Payment, TransferFunds, WalletIdentity, ONE_SIDED};
+
+    #[tokio::test]
+    #[ignore = "Start console wallet first."]
+    async fn wallet_identity_test() {
+        let mut client = GrpcWalletClient::new();
+        let response = client.identity().await;
+        assert!(response.is_ok());
+        let identity = response.unwrap();
+        assert!(!identity.public_key.is_empty());
+        assert!(!identity.public_address.is_empty());
+        assert!(!identity.node_id.is_empty());
+    }
+
+    #[tokio::test]
+    #[ignore = "Start console wallet first."]
+    async fn wallet_balance_test() {
+        let mut client = GrpcWalletClient::new();
+        let response = client.balance().await;
+        assert!(response.is_ok());
+        let balance = response.unwrap();
+        assert!(balance.available_balance > 0);
+        assert_eq!(0, balance.pending_outgoing_balance);
+        assert_eq!(0, balance.pending_incoming_balance);
+    }
+
+    #[tokio::test]
+    #[ignore = "Start console wallet first and make or receive a payment."]
+    async fn wallet_event_stream_test() {
+        let mut client = GrpcWalletClient::new();
+        let response = client.stream().await;
+        assert!(response.is_ok());
+        let mut stream = response.unwrap();
+        let payment = Payment {
+            amount: 10000,
+            address: "f09993a0e472f630fde1624eef8ef0f709073f1047457f80595ee2b7cf653616".to_string(),
+            fee_per_gram: 5,
+            message: "do not panic".to_string(),
+            payment_type: ONE_SIDED,
+        };
+        let funds = TransferFunds {
+            payments: vec![payment],
+        };
+        let fund_status = client.transfer_funds(funds).await;
+        assert!(fund_status.is_ok());
+        assert!(stream.next().await.is_some());
+    }
+}
+
+mod base_node_grpc_unit_tests {
+    use futures::StreamExt;
+    use tokio::stream;
+
+    use crate::grpc::GrpcBaseNodeClient;
+
+    #[tokio::test]
+    #[ignore = "Start base node first."]
+    async fn base_node_try_connect() {
+        let mut client = GrpcBaseNodeClient::new();
+        let success = client.try_connect().await;
+        assert!(success.is_ok());
+    }
+
+    #[tokio::test]
+    #[ignore = "Start base node first."]
+    async fn base_node_identity() {
+        let mut client = GrpcBaseNodeClient::new();
+        let success = client.identity().await;
+        assert!(success.is_ok());
+        let identity = success.unwrap();
+        assert!(!identity.public_key.is_empty());
+    }
+
+    #[tokio::test]
+    #[ignore = "Start base node first."]
+    async fn syncing_base_node_progress_test() {
+        let mut client = GrpcBaseNodeClient::new();
+        let success = client.stream().await;
+        assert!(success.is_ok());
+        let mut stream = success.unwrap();
+        assert!(stream.next().await.is_some());
+    }
+}
